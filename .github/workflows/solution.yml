@@ -70,8 +70,10 @@ jobs:
 
   frontend:
     name: Frontend
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
+    needs:
+      - changes
+      - infrastructure
+    if: ${{ !cancelled() && needs.changes.outputs.frontend == 'true' && (needs.infrastructure.result == 'success' || needs.infrastructure.result == 'skipped') }}
     concurrency:
       group: frontend-${{ github.ref }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}

@@ -3,11 +3,15 @@ data "aws_route53_zone" "main" {
   private_zone = false
 }
 
-# Cognito rejects a custom domain unless the parent name has a public A record.
+# Public A record for the site. Cognito also requires this parent name to resolve.
 resource "aws_route53_record" "apex" {
   zone_id = data.aws_route53_zone.main.zone_id
-  name    = local.domains.zone
+  name    = local.domains.frontend
   type    = "A"
-  ttl     = 300
-  records = ["192.0.2.1"]
+
+  alias {
+    name                   = aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    evaluate_target_health = false
+  }
 }

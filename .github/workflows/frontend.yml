@@ -49,3 +49,10 @@ jobs:
       - name: Deploy to S3
         if: inputs.deploy
         run: aws s3 sync dist/Frontend/browser s3://hackathon-solution-hosting-bucket --delete
+
+      - name: Invalidate CloudFront cache
+        if: inputs.deploy
+        run: |
+          set -euo pipefail
+          distribution_id="$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Aliases.Items, 'hackathon-solution.com')].Id | [0]" --output text)"
+          aws cloudfront create-invalidation --distribution-id "$distribution_id" --paths "/*"
