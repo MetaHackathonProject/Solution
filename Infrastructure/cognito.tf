@@ -90,10 +90,17 @@ resource "aws_acm_certificate_validation" "auth" {
   validation_record_fqdns = [for record in aws_route53_record.auth_cert_validation : record.fqdn]
 }
 
+resource "time_sleep" "apex_dns" {
+  depends_on      = [aws_route53_record.apex]
+  create_duration = "60s"
+}
+
 resource "aws_cognito_user_pool_domain" "auth" {
   domain          = local.domains.auth
   user_pool_id    = aws_cognito_user_pool.main.id
   certificate_arn = aws_acm_certificate_validation.auth.certificate_arn
+
+  depends_on = [time_sleep.apex_dns]
 }
 
 resource "aws_route53_record" "auth" {
