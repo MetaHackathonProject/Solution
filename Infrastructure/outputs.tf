@@ -7,7 +7,7 @@ output "domains" {
 }
 
 output "name_servers" {
-  value = aws_route53_zone.main.name_servers
+  value = data.aws_route53_zone.main.name_servers
 }
 
 output "user_pool_id" {
