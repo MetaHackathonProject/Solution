@@ -1,0 +1,55 @@
+name: Backend
+
+on:
+  workflow_call:
+    inputs:
+      deploy:
+        description: Publish Lambda packages. Pull requests package only.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: ${{ matrix.function }}
+    runs-on: ubuntu-latest
+    env:
+      FUNCTION_POSTFIX: -hackathon
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: Hackathon.Api
+            function: hackathon-solution-api
+    defaults:
+      run:
+        working-directory: Backend/${{ matrix.project }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Use .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Amazon.Lambda.Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
+
+      - name: Package ${{ matrix.function }}${{ env.FUNCTION_POSTFIX }}
+        if: ${{ !inputs.deploy }}
+        run: dotnet lambda package
+
+      - name: Configure AWS credentials
+        if: inputs.deploy
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: eu-central-1
+
+      - name: Deploy ${{ matrix.function }}${{ env.FUNCTION_POSTFIX }}
+        if: inputs.deploy
+        run: dotnet lambda deploy-function ${{ matrix.function }}${{ env.FUNCTION_POSTFIX }} --package-type zip

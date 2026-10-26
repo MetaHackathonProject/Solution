@@ -17,6 +17,7 @@ jobs:
     outputs:
       infrastructure: ${{ steps.filter.outputs.infrastructure }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -55,6 +56,7 @@ jobs:
 
           mark infrastructure '^Infrastructure/'
           mark frontend '^Frontend/'
+          mark backend '^Backend/'
 
   infrastructure:
     name: Infrastructure
@@ -67,6 +69,20 @@ jobs:
     secrets: inherit
     with:
       apply: ${{ github.event_name != 'pull_request' }}
+
+  backend:
+    name: Backend
+    needs:
+      - changes
+      - infrastructure
+    if: ${{ !cancelled() && needs.changes.outputs.backend == 'true' && (needs.infrastructure.result == 'success' || needs.infrastructure.result == 'skipped') }}
+    concurrency:
+      group: backend-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/backend.yml
+    secrets: inherit
+    with:
+      deploy: ${{ github.event_name != 'pull_request' }}
 
   frontend:
     name: Frontend

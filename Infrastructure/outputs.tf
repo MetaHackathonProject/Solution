@@ -33,3 +33,11 @@ output "cloudfront_distribution_id" {
 output "cloudfront_domain_name" {
   value = aws_cloudfront_distribution.frontend.domain_name
 }
+
+output "api_url" {
+  value = "https://${local.domains.api}"
+}
+
+output "api_function_name" {
+  value = module.api.function_name
+}

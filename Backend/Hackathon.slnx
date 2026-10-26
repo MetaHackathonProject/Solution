@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Api/">
+    <Project Path="Hackathon.Api/Hackathon.Api.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="Hackathon.Application/Hackathon.Application.csproj" />
+    <Project Path="Hackathon.Domain/Hackathon.Domain.csproj" />
+    <Project Path="Hackathon.Infrastructure/Hackathon.Infrastructure.csproj" />
+  </Folder>
+</Solution>
