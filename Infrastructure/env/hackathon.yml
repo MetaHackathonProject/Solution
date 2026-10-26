@@ -1,0 +1,4 @@
+region: eu-central-1
+environment: hackathon
+name_prefix: hackathon-solution
+domain: hackathon-solution.com

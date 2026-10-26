@@ -1,0 +1,5 @@
+bucket       = "hackathon-solution-tf-state-bucket"
+key          = "hackathon/terraform.tfstate"
+region       = "eu-central-1"
+encrypt      = true
+use_lockfile = true

@@ -1,0 +1,67 @@
+name: Solution
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      infrastructure: ${{ steps.filter.outputs.infrastructure }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed folders
+        id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+
+          mark() {
+            local name="$1"
+            local pattern="$2"
+            if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+              echo "${name}=true" >> "$GITHUB_OUTPUT"
+              return
+            fi
+            if printf '%s\n' "$CHANGED" | grep -q "$pattern"; then
+              echo "${name}=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "${name}=false" >> "$GITHUB_OUTPUT"
+            fi
+          }
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            CHANGED=""
+          elif [ -z "${BASE_SHA}" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            CHANGED="$(git ls-files)"
+          else
+            CHANGED="$(git diff --name-only "$BASE_SHA" HEAD)"
+          fi
+
+          mark infrastructure '^Infrastructure/'
+
+  infrastructure:
+    name: Infrastructure
+    needs: changes
+    if: needs.changes.outputs.infrastructure == 'true'
+    concurrency:
+      group: infrastructure-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/infrastructure.yml
+    secrets: inherit
+    with:
+      apply: ${{ github.event_name != 'pull_request' }}
