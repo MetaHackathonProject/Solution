@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       infrastructure: ${{ steps.filter.outputs.infrastructure }}
+      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -53,6 +54,7 @@ jobs:
           fi
 
           mark infrastructure '^Infrastructure/'
+          mark frontend '^Frontend/'
 
   infrastructure:
     name: Infrastructure
@@ -65,3 +67,15 @@ jobs:
     secrets: inherit
     with:
       apply: ${{ github.event_name != 'pull_request' }}
+
+  frontend:
+    name: Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    concurrency:
+      group: frontend-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/frontend.yml
+    secrets: inherit
+    with:
+      deploy: ${{ github.event_name != 'pull_request' }}

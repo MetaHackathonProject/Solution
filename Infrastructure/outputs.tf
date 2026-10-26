@@ -21,3 +21,7 @@ output "user_pool_client_id" {
 output "auth_url" {
   value = "https://${local.domains.auth}"
 }
+
+output "frontend_bucket" {
+  value = aws_s3_bucket.frontend.bucket
+}
