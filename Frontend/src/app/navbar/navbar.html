@@ -1,0 +1,19 @@
+<header class="nav-v2">
+  <nav class="nav-v2__inner" aria-label="Main">
+    <a class="nav-v2__brand" routerLink="/">
+      <app-brand-mark />
+      <span class="nav-v2__wordmark">Hackathon Solution</span>
+    </a>
+
+    <div class="nav-v2__actions">
+      @if (auth.isAuthenticated()) {
+        @if (auth.email()) {
+          <span class="nav-v2__email">{{ auth.email() }}</span>
+        }
+        <button type="button" class="nav-v2__login" (click)="auth.signOut()">Sign out</button>
+      } @else {
+        <button type="button" class="nav-v2__login" (click)="auth.signIn()">Sign in</button>
+      }
+    </div>
+  </nav>
+</header>

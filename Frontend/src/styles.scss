@@ -1,1 +1,32 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@fontsource/montserrat/400.css';
+@import '@fontsource/montserrat/500.css';
+@import '@fontsource/montserrat/600.css';
+@import '@fontsource/montserrat/800.css';
+
+:root {
+  --font-sans: "Montserrat", "Segoe UI", system-ui, sans-serif;
+  --color-text: #111;
+  --color-muted: #5c6370;
+  --color-border: #e4e7ec;
+  --color-border-strong: #d0d5dd;
+  --color-surface: #fff;
+  --color-surface-muted: #f4f5f7;
+  --color-accent: #1b64f2;
+  --color-accent-hover: #1554cc;
+}
+
+html,
+body {
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-family: var(--font-sans);
+  font-size-adjust: from-font;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
