@@ -1,7 +1,5 @@
-import { Injectable, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Injectable, computed, inject } from '@angular/core';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { map } from 'rxjs';
 import { environment } from '../environments/environment';
 
 @Injectable({
@@ -10,11 +8,11 @@ import { environment } from '../environments/environment';
 export class AuthService {
   private readonly oidc = inject(OidcSecurityService);
 
-  readonly isAuthenticated = toSignal(this.oidc.isAuthenticated('cognito'), { initialValue: false });
-  readonly email = toSignal(
-    this.oidc.getUserData('cognito').pipe(map((user) => (user?.email as string | undefined) ?? '')),
-    { initialValue: '' },
-  );
+  readonly isAuthenticated = computed(() => this.oidc.authenticated().isAuthenticated);
+  readonly email = computed(() => {
+    const userData = this.oidc.userData().userData as { email?: string } | null;
+    return userData?.email ?? '';
+  });
 
   signIn(): void {
     this.oidc.authorize('cognito', {
