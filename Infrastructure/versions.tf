@@ -21,3 +21,15 @@ provider "aws" {
     }
   }
 }
+
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      project     = local.env.name_prefix
+      environment = local.env.environment
+    }
+  }
+}
