@@ -68,6 +68,20 @@ data "aws_iam_policy_document" "agent" {
   statement {
     effect = "Allow"
     actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:Query",
+    ]
+    resources = [
+      aws_dynamodb_table.interview_session_questions.arn,
+      "${aws_dynamodb_table.interview_session_questions.arn}/index/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
       "bedrock-agentcore:GetWorkloadAccessToken",
       "bedrock-agentcore:GetWorkloadAccessTokenForJWT",
     ]
@@ -78,7 +92,7 @@ data "aws_iam_policy_document" "agent" {
   }
 
   dynamic "statement" {
-    for_each = contains([for tool in each.value.config.tools : tool.type], "agentcore_browser") ? [1] : []
+    for_each = contains([for tool in try(each.value.config.tools, []) : tool.type], "agentcore_browser") ? [1] : []
 
     content {
       effect = "Allow"
@@ -140,7 +154,8 @@ resource "aws_bedrockagentcore_harness" "agent" {
   max_iterations     = each.value.config.max_iterations
 
   environment_variables = {
-    INTERVIEW_SESSIONS_BUCKET = aws_s3_bucket.interview_sessions.bucket
+    INTERVIEW_SESSIONS_BUCKET         = aws_s3_bucket.interview_sessions.bucket
+    INTERVIEW_SESSION_QUESTIONS_TABLE = aws_dynamodb_table.interview_session_questions.name
   }
 
   model {
@@ -156,7 +171,7 @@ resource "aws_bedrockagentcore_harness" "agent" {
   }
 
   dynamic "tool" {
-    for_each = each.value.config.tools
+    for_each = try(each.value.config.tools, [])
 
     content {
       type = tool.value.type
