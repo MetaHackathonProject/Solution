@@ -48,6 +48,6 @@ output "interview_sessions_bucket" {
 
 output "agent_harnesses" {
   value = {
-    for name, harness in aws_bedrockagentcore_harness.agent : name => harness.harness_arn
+    for name, harness in aws_bedrockagentcore_harness.agent : name => harness.arn
   }
 }
