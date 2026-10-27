@@ -161,6 +161,16 @@ resource "aws_bedrockagentcore_harness" "agent" {
     content {
       type = tool.value.type
       name = tool.value.name
+
+      dynamic "config" {
+        for_each = tool.value.type == "agentcore_browser" ? [1] : []
+
+        content {
+          agentcore_browser {
+            browser_arn = try(tool.value.browser_arn, "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:aws:browser/aws.browser.v1")
+          }
+        }
+      }
     }
   }
 

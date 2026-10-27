@@ -54,7 +54,7 @@ jobs:
             CHANGED="$(git diff --name-only "$BASE_SHA" HEAD)"
           fi
 
-          mark infrastructure '^(Infrastructure|Agents)/'
+          mark infrastructure '^(Infrastructure/|Agents/AgentCore/)'
           mark frontend '^Frontend/'
           mark backend '^Backend/'
 

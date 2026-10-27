@@ -8,4 +8,5 @@ model:
   api_key_arn: arn:aws:bedrock-agentcore:eu-central-1:753350217363:token-vault/default/apikeycredentialprovider/resource-provider-api-key-6uzvg
 tools:
   - type: agentcore_browser
-    name: browser
+    name: aws_browser_v1
+    browser_arn: arn:aws:bedrock-agentcore:eu-central-1:aws:browser/aws.browser.v1
