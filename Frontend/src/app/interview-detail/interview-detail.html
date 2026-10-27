@@ -1,8 +1,19 @@
 <main class="page">
   <div class="page__inner">
     <header class="page__intro">
-      <p class="page__eyebrow">Interview details</p>
-      <h1 class="page__title">{{ session()?.name || 'Interview session' }}</h1>
+      <div class="page__intro-top">
+        <div>
+          <p class="page__eyebrow">Interview details</p>
+          <h1 class="page__title">{{ session()?.name || 'Interview session' }}</h1>
+        </div>
+        @if (session()) {
+          <app-session-actions-menu
+            [label]="'Actions for ' + (session()?.name || 'session')"
+            [busy]="deleting()"
+            (delete)="deleteSession()"
+          />
+        }
+      </div>
       <p class="page__lead">
         Follow preparation progress, then start the mock interview when the plan is ready.
       </p>
@@ -100,14 +111,6 @@
           } @else if (failed()) {
             <a class="btn btn--primary" routerLink="/">Create another session</a>
           }
-          <button
-            type="button"
-            class="btn btn--danger"
-            [disabled]="deleting()"
-            (click)="deleteSession()"
-          >
-            {{ deleting() ? 'Deleting…' : 'Delete session' }}
-          </button>
         </div>
       </section>
     }

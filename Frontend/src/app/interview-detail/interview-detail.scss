@@ -18,6 +18,14 @@
   margin-block-end: 1.5rem;
 }
 
+.page__intro-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block-end: 0.55rem;
+}
+
 .page__eyebrow {
   margin: 0 0 0.45rem;
   color: var(--color-accent);
@@ -28,7 +36,7 @@
 }
 
 .page__title {
-  margin: 0 0 0.55rem;
+  margin: 0;
   font-size: 1.65rem;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -270,12 +278,12 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  height: 2.75rem;
-  min-height: 2.75rem;
-  padding: 0.55rem 1.05rem;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.9rem;
   border: 1px solid transparent;
   border-radius: 8px;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 650;
   line-height: 1.2;
   text-decoration: none;
@@ -312,22 +320,6 @@
   }
 }
 
-.btn--danger {
-  border-color: #f3c1bd;
-  background: #fff5f4;
-  color: #b42318;
-  margin-inline-start: auto;
-
-  &:hover:not(:disabled) {
-    background: #fcecec;
-  }
-
-  &:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-}
-
 @keyframes prep-spin {
   to {
     transform: rotate(360deg);
@@ -356,10 +348,6 @@
 
   .btn {
     width: 100%;
-  }
-
-  .btn--danger {
-    margin-inline-start: 0;
   }
 }
 

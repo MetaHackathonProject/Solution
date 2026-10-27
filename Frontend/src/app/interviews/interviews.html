@@ -59,17 +59,15 @@
                         · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
                       </span>
                     </span>
-                    <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
-                  <button
-                    type="button"
-                    class="row__delete"
-                    [disabled]="deletingId() === session.sessionId"
-                    [attr.aria-label]="'Delete ' + session.name"
-                    (click)="deleteSession($event, session)"
-                  >
-                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
-                  </button>
+                  <div class="row__actions">
+                    <app-session-actions-menu
+                      [label]="'Actions for ' + session.name"
+                      [busy]="deletingId() === session.sessionId"
+                      [disabled]="deletingId() !== null && deletingId() !== session.sessionId"
+                      (delete)="deleteSession($event, session)"
+                    />
+                  </div>
                 </li>
               }
             </ul>
@@ -99,17 +97,15 @@
                         · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
                       </span>
                     </span>
-                    <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
-                  <button
-                    type="button"
-                    class="row__delete"
-                    [disabled]="deletingId() === session.sessionId"
-                    [attr.aria-label]="'Delete ' + session.name"
-                    (click)="deleteSession($event, session)"
-                  >
-                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
-                  </button>
+                  <div class="row__actions">
+                    <app-session-actions-menu
+                      [label]="'Actions for ' + session.name"
+                      [busy]="deletingId() === session.sessionId"
+                      [disabled]="deletingId() !== null && deletingId() !== session.sessionId"
+                      (delete)="deleteSession($event, session)"
+                    />
+                  </div>
                 </li>
               }
             </ul>
@@ -139,17 +135,15 @@
                         · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
                       </span>
                     </span>
-                    <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
-                  <button
-                    type="button"
-                    class="row__delete"
-                    [disabled]="deletingId() === session.sessionId"
-                    [attr.aria-label]="'Delete ' + session.name"
-                    (click)="deleteSession($event, session)"
-                  >
-                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
-                  </button>
+                  <div class="row__actions">
+                    <app-session-actions-menu
+                      [label]="'Actions for ' + session.name"
+                      [busy]="deletingId() === session.sessionId"
+                      [disabled]="deletingId() !== null && deletingId() !== session.sessionId"
+                      (delete)="deleteSession($event, session)"
+                    />
+                  </div>
                 </li>
               }
             </ul>

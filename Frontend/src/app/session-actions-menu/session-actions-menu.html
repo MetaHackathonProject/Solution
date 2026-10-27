@@ -1,0 +1,27 @@
+<div class="menu" [class.menu--open]="open()">
+  <button
+    type="button"
+    class="menu__trigger"
+    [disabled]="disabled() || busy()"
+    [attr.aria-label]="label()"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="menu"
+    (click)="toggle($event)"
+  >
+    <span class="menu__dots" aria-hidden="true">⋯</span>
+  </button>
+
+  @if (open()) {
+    <div class="menu__panel" role="menu">
+      <button
+        type="button"
+        class="menu__item menu__item--danger"
+        role="menuitem"
+        [disabled]="busy()"
+        (click)="onDelete($event)"
+      >
+        {{ busy() ? 'Deleting…' : 'Delete' }}
+      </button>
+    </div>
+  }
+</div>

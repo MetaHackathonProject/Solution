@@ -10,10 +10,11 @@ import {
   statusTone,
 } from '../interview-session-status';
 import { InterviewSession, InterviewSessionsService } from '../interview-sessions.service';
+import { SessionActionsMenu } from '../session-actions-menu/session-actions-menu';
 
 @Component({
   selector: 'app-interviews',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, SessionActionsMenu],
   templateUrl: './interviews.html',
   styleUrl: './interviews.scss',
 })

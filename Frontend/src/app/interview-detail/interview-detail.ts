@@ -13,10 +13,11 @@ import {
   stepState,
 } from '../interview-session-status';
 import { InterviewSession, InterviewSessionsService } from '../interview-sessions.service';
+import { SessionActionsMenu } from '../session-actions-menu/session-actions-menu';
 
 @Component({
   selector: 'app-interview-detail',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, SessionActionsMenu],
   templateUrl: './interview-detail.html',
   styleUrl: './interview-detail.scss',
 })
