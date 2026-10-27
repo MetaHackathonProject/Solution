@@ -50,6 +50,10 @@ output "interview_session_questions_table" {
   value = aws_dynamodb_table.interview_session_questions.name
 }
 
+output "interview_sessions_progress_table" {
+  value = aws_dynamodb_table.interview_sessions_progress.name
+}
+
 output "agent_harnesses" {
   value = {
     for name, harness in aws_bedrockagentcore_harness.agent : name => harness.arn
