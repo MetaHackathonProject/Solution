@@ -16,6 +16,7 @@ public sealed class StepFunctionsInterviewPreparationStarter(
         string sessionId,
         string offerUrl,
         string recruiterLanguage,
+        string difficulty,
         CancellationToken cancellationToken)
     {
         await stepFunctions.StartExecutionAsync(
@@ -30,6 +31,7 @@ public sealed class StepFunctionsInterviewPreparationStarter(
                         ["session_id"] = sessionId,
                         ["offer_url"] = offerUrl,
                         ["recruiter_language"] = recruiterLanguage,
+                        ["difficulty"] = difficulty,
                     }),
             },
             cancellationToken);

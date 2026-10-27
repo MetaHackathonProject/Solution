@@ -16,6 +16,13 @@ public sealed class StartInterviewPreparationCommandHandler(
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.OfferUrl);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Settings.Difficulty);
+        if (!InterviewDifficulty.IsDefined(request.Settings.Difficulty))
+        {
+            throw new ArgumentException(
+                "Difficulty must be auto, easy, medium, or hard.",
+                nameof(request));
+        }
 
         var sessionId = Guid.NewGuid().ToString();
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -37,6 +44,7 @@ public sealed class StartInterviewPreparationCommandHandler(
             sessionId,
             request.OfferUrl,
             request.Settings.RecruiterLanguage,
+            request.Settings.Difficulty,
             cancellationToken);
 
         return new StartInterviewPreparationResult(sessionId);

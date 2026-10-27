@@ -40,7 +40,7 @@ resource "aws_iam_role_policy" "interview_planner" {
 
 locals {
   interview_planner_offer_message = "{% 'user_id=' & $user_id & ' session_id=' & $session_id & ' offer_url=' & $offer_url %}"
-  interview_planner_user_message  = "{% 'user_id=' & $user_id & ' session_id=' & $session_id & ' recruiter_language=' & $recruiter_language %}"
+  interview_planner_user_message  = "{% 'user_id=' & $user_id & ' session_id=' & $session_id & ' recruiter_language=' & $recruiter_language & ' difficulty=' & $difficulty %}"
 
   interview_planner_status_key = {
     user_id    = { S = "{% $user_id %}" }
@@ -64,6 +64,7 @@ resource "aws_sfn_state_machine" "interview_planner" {
           session_id         = "{% $states.input.session_id %}"
           offer_url          = "{% $states.input.offer_url %}"
           recruiter_language = "{% $states.input.recruiter_language %}"
+          difficulty         = "{% $states.input.difficulty %}"
         }
         Next = "Set status to STARTED"
       }

@@ -24,6 +24,7 @@ public sealed class DynamoDbInterviewSessionStore(
                     ["name"] = new(session.Name),
                     ["offer_url"] = new(session.OfferUrl ?? string.Empty),
                     ["recruiter_language"] = new(session.Settings.RecruiterLanguage),
+                    ["difficulty"] = new(session.Settings.Difficulty),
                     ["status"] = new(session.Status),
                     ["created_at"] = new() { N = session.CreatedAt.ToString() },
                     ["updated_at"] = new() { N = session.UpdatedAt.ToString() },

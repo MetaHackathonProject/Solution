@@ -1,0 +1,138 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__intro">
+      <p class="page__eyebrow">Interview session</p>
+      <h1 class="page__title">Create a mock interview</h1>
+      <p class="page__lead">
+        Paste a public job offer. We extract the role, generate questions, and curate a spoken plan.
+      </p>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate" aria-labelledby="sign-in-title">
+        <h2 class="gate__title" id="sign-in-title">Sign in to start</h2>
+        <p class="gate__copy">Sessions are tied to your account so the plan stays private.</p>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in</button>
+      </section>
+    } @else if (createdSessionId()) {
+      <section class="result" aria-labelledby="result-title">
+        <h2 class="result__title" id="result-title">Preparation started</h2>
+        <p class="result__copy">
+          Status is <strong>STARTED</strong>. The planner will read the offer, generate questions, then write the plan.
+        </p>
+        <p class="result__id">
+          Session ID
+          <code>{{ createdSessionId() }}</code>
+        </p>
+        <button type="button" class="btn btn--secondary" (click)="resetForm()">Create another session</button>
+      </section>
+    } @else {
+      <form
+        class="form"
+        method="post"
+        [attr.action]="createAction"
+        (submit)="onSubmit($event)"
+      >
+        <fieldset class="form__card">
+          <legend class="form__legend">Session</legend>
+
+          <div class="field">
+            <label class="field__label" for="session_name">Session name</label>
+            <span class="field__hint" id="session_name_hint">A short label you will recognize in the list.</span>
+            <input
+              class="field__control"
+              id="session_name"
+              name="name"
+              type="text"
+              required
+              minlength="2"
+              maxlength="120"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="sentences"
+              spellcheck="true"
+              enterkeyhint="next"
+              aria-describedby="session_name_hint session_name_error"
+              placeholder="Senior backend, Acme"
+            />
+            <p class="field__error" id="session_name_error">Enter at least 2 characters.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="offer_url">Job offer URL</label>
+            <span class="field__hint" id="offer_url_hint">Public http or https posting. We open only this URL.</span>
+            <input
+              class="field__control"
+              id="offer_url"
+              name="offerUrl"
+              type="url"
+              required
+              inputmode="url"
+              autocomplete="url"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              enterkeyhint="next"
+              aria-describedby="offer_url_hint offer_url_error"
+              placeholder="https://"
+            />
+            <p class="field__error" id="offer_url_error">Enter a valid http or https URL.</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="form__card">
+          <legend class="form__legend">Difficulty</legend>
+          <span class="field__hint field__hint--block" id="difficulty_hint">
+            Pick how challenging you want the interviewer to be.
+          </span>
+          <div class="difficulty" role="radiogroup" aria-describedby="difficulty_hint">
+            @for (level of difficulties; track level.id) {
+              <label class="difficulty-card" [attr.data-level]="level.id">
+                <input
+                  class="visually-hidden"
+                  type="radio"
+                  name="difficulty"
+                  [id]="'difficulty_' + level.id"
+                  [value]="level.id"
+                  [checked]="level.id === defaultDifficulty"
+                  required
+                />
+                <span class="difficulty-card__title">{{ level.title }}</span>
+                <span class="difficulty-card__desc">{{ level.description }}</span>
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="form__card">
+          <legend class="form__legend">Interviewer language</legend>
+          <div class="field">
+            <label class="field__label" for="recruiter_language">Spoken session language</label>
+            <span class="field__hint" id="recruiter_language_hint">
+              Used to skip a foreign-language module that matches this language.
+            </span>
+            <select
+              class="field__control field__control--select"
+              id="recruiter_language"
+              name="recruiterLanguage"
+              required
+              aria-describedby="recruiter_language_hint"
+            >
+              @for (language of languages; track language) {
+                <option [value]="language">{{ language }}</option>
+              }
+            </select>
+          </div>
+        </fieldset>
+
+        @if (error()) {
+          <p class="form__alert" role="alert">{{ error() }}</p>
+        }
+
+        <button class="btn btn--primary" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Creating session…' : 'Create session' }}
+        </button>
+      </form>
+    }
+  </div>
+</main>

@@ -20,7 +20,9 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
             new StartInterviewPreparationCommand(
                 request.Name,
                 request.OfferUrl,
-                new InterviewSessionSettings(request.Settings.RecruiterLanguage)),
+                new InterviewSessionSettings(
+                    request.Settings.RecruiterLanguage,
+                    request.Settings.Difficulty)),
             cancellationToken);
     }
 }
@@ -37,4 +39,6 @@ public sealed class StartInterviewPreparationRequest
 public sealed class InterviewSessionSettingsRequest
 {
     public required string RecruiterLanguage { get; init; }
+
+    public required string Difficulty { get; init; }
 }

@@ -1,3 +1,3 @@
 namespace Hackathon.Domain.InterviewSessions;
 
-public sealed record InterviewSessionSettings(string RecruiterLanguage);
+public sealed record InterviewSessionSettings(string RecruiterLanguage, string Difficulty);

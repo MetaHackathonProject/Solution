@@ -7,5 +7,6 @@ public interface IInterviewPreparationStarter
         string sessionId,
         string offerUrl,
         string recruiterLanguage,
+        string difficulty,
         CancellationToken cancellationToken);
 }
