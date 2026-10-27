@@ -11,9 +11,11 @@ locals {
   api_parameter_prefix = "/${local.name_prefix}/${local.env.environment}"
 
   api_parameters = {
-    "JWT/ClientId"        = aws_cognito_user_pool_client.web.id
-    "JWT/AuthorityUrl"    = "https://cognito-idp.${data.aws_region.current.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
-    "Cors/AllowedOrigins" = join(",", local.allowed_origins)
+    "JWT/ClientId"                     = aws_cognito_user_pool_client.web.id
+    "JWT/AuthorityUrl"                 = "https://cognito-idp.${data.aws_region.current.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+    "Cors/AllowedOrigins"              = join(",", local.allowed_origins)
+    "InterviewSessions/TableName"      = aws_dynamodb_table.interview_sessions.name
+    "InterviewPlanner/StateMachineArn" = aws_sfn_state_machine.interview_planner.arn
   }
 }
 
@@ -27,7 +29,9 @@ module "api" {
   memory            = 512
 
   environment = {
-    ASPNETCORE_ENVIRONMENT = local.env.environment
+    ASPNETCORE_ENVIRONMENT                = local.env.environment
+    APP_InterviewSessions__TableName      = aws_dynamodb_table.interview_sessions.name
+    APP_InterviewPlanner__StateMachineArn = aws_sfn_state_machine.interview_planner.arn
   }
 
   depends_on = [aws_s3_bucket_versioning.lambdas]
@@ -53,6 +57,22 @@ data "aws_iam_policy_document" "api" {
       "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${local.api_parameter_prefix}",
       "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter${local.api_parameter_prefix}/*",
     ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+    ]
+    resources = [aws_dynamodb_table.interview_sessions.arn]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["states:StartExecution"]
+    resources = [aws_sfn_state_machine.interview_planner.arn]
   }
 }
 

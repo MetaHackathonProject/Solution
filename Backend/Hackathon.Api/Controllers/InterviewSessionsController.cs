@@ -27,7 +27,7 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
 
 public sealed class StartInterviewPreparationRequest
 {
-    public string? OfferUrl { get; init; }
+    public required string OfferUrl { get; init; }
 
     public required string Name { get; init; }
 

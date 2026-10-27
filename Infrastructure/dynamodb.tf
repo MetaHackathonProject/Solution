@@ -1,3 +1,20 @@
+resource "aws_dynamodb_table" "interview_sessions" {
+  name         = "${local.name_prefix}-interview-sessions-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "user_id"
+  range_key    = "session_id"
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "session_id"
+    type = "S"
+  }
+}
+
 resource "aws_dynamodb_table" "interview_session_questions" {
   name         = "${local.name_prefix}-interview-session-questions-table"
   billing_mode = "PAY_PER_REQUEST"

@@ -46,6 +46,14 @@ output "interview_sessions_bucket" {
   value = aws_s3_bucket.interview_sessions.bucket
 }
 
+output "interview_sessions_table" {
+  value = aws_dynamodb_table.interview_sessions.name
+}
+
+output "interview_planner_state_machine_arn" {
+  value = aws_sfn_state_machine.interview_planner.arn
+}
+
 output "interview_session_questions_table" {
   value = aws_dynamodb_table.interview_session_questions.name
 }

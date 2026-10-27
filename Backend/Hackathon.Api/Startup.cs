@@ -12,7 +12,7 @@ public sealed class Startup(IConfiguration configuration, IWebHostEnvironment en
         services.AddSwaggerGen();
 
         services.RegisterApplication();
-        services.RegisterInfrastructure();
+        services.RegisterInfrastructure(configuration);
         services.SetupUserApiContext();
         services.SetupAuth(configuration);
         services.SetupCors(configuration);

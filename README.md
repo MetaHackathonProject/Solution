@@ -42,7 +42,7 @@ Preparation is three AgentCore harnesses, in this order:
 2. **question_generation** reads that file and writes question items to DynamoDB.
 3. **interview_plan_generation** curates 10–12 questions into `{user_id}/{session_id}/plan.json`.
 
-The API `POST /api/interview-sessions` exists but does not start that chain yet. Session progress lives in a DynamoDB table for the live interview; agents do not fill it.
+`POST /api/interview-sessions` writes the session as `STARTED` and starts the Step Functions planner. Status then moves through `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, and ends at `SUCCESS` or `FAILED`. Live-interview progress is a separate DynamoDB table; agents do not fill it.
 
 ## Repository
 
@@ -76,6 +76,7 @@ Models go through AgentCore LiteLLM (`openai/muse-spark-1.3`, `https://api.meta.
 
 **DynamoDB**
 
+- `hackathon-solution-interview-sessions-table` — `user_id` + `session_id`, attribute `status`
 - `hackathon-solution-interview-session-questions-table` — `session_id` + `question_id`, GSI `module-index`
 - `hackathon-solution-interview-sessions-progress-table` — `session_id` + `question_id`, GSI `order-key-index` (runtime, not agents)
 

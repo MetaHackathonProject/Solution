@@ -56,7 +56,7 @@ Pipeline (do not collapse into one agent):
 
 Do **not** have agents write the progress table. That table is for live-interview runtime.
 
-Orchestrate with Step Functions around the three harnesses when asked. Do not start executions from a supervisor agent. `StartInterviewPreparationCommandHandler` is empty on purpose until that wiring exists.
+Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
 
 ## Interview domain
 
