@@ -12,6 +12,12 @@ public interface IInterviewProgressStore
         int count,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<InterviewProgressItem>> ListOrderedAsync(
+        string sessionId,
+        CancellationToken cancellationToken);
+
+    Task PutAsync(InterviewProgressItem item, CancellationToken cancellationToken);
+
     Task<bool> HasAnyAsync(string sessionId, CancellationToken cancellationToken);
 }
 

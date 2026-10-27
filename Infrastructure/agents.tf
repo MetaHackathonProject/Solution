@@ -76,6 +76,7 @@ data "aws_iam_policy_document" "agent" {
     resources = [
       aws_dynamodb_table.interview_session_questions.arn,
       "${aws_dynamodb_table.interview_session_questions.arn}/index/*",
+      aws_dynamodb_table.pending_interview_tasks.arn,
     ]
   }
 
@@ -172,6 +173,7 @@ resource "aws_bedrockagentcore_harness" "agent" {
   environment_variables = {
     INTERVIEW_SESSIONS_BUCKET         = aws_s3_bucket.interview_sessions.bucket
     INTERVIEW_SESSION_QUESTIONS_TABLE = aws_dynamodb_table.interview_session_questions.name
+    PENDING_INTERVIEW_TASKS_TABLE     = aws_dynamodb_table.pending_interview_tasks.name
   }
 
   model {

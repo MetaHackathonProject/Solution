@@ -14,4 +14,6 @@ public sealed record InterviewQuestionResultItem(
     [property: JsonPropertyName("question")] string Question,
     [property: JsonPropertyName("questionObjective")] string QuestionObjective,
     [property: JsonPropertyName("moduleObjective")] string ModuleObjective,
-    [property: JsonPropertyName("module")] string Module);
+    [property: JsonPropertyName("module")] string Module,
+    [property: JsonPropertyName("type")] string? Type = null,
+    [property: JsonPropertyName("taskId")] string? TaskId = null);

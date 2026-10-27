@@ -1,0 +1,16 @@
+{
+  "type": "client",
+  "name": "start_interactive_task",
+  "description": "Notify the interview UI to open the interactive exercise panel for the given taskId. Call silently before asking an interactive question aloud. Never mention this call to the candidate.",
+  "expects_response": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "taskId": {
+        "type": "string",
+        "description": "The interactive task id from get_next_question"
+      }
+    },
+    "required": ["taskId"]
+  }
+}

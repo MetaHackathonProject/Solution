@@ -72,3 +72,20 @@ resource "aws_dynamodb_table" "interview_sessions_progress" {
     projection_type = "ALL"
   }
 }
+
+resource "aws_dynamodb_table" "pending_interview_tasks" {
+  name         = "${local.name_prefix}-pending-interview-tasks-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "session_id"
+  range_key    = "task_id"
+
+  attribute {
+    name = "session_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "task_id"
+    type = "S"
+  }
+}

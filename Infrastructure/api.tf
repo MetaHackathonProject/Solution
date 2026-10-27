@@ -20,6 +20,7 @@ locals {
     "InterviewSessions/BucketName"           = aws_s3_bucket.interview_sessions.bucket
     "InterviewProgress/TableName"            = aws_dynamodb_table.interview_sessions_progress.name
     "InterviewProgress/BucketName"           = aws_s3_bucket.interview_sessions.bucket
+    "PendingInterviewTasks/TableName"        = aws_dynamodb_table.pending_interview_tasks.name
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
     "ElevenLabs/ApiUrl"                      = var.eleven_labs_api_url
     "ElevenLabs/AgentId"                     = var.eleven_labs_agent_id
@@ -47,6 +48,7 @@ module "api" {
     APP_InterviewSessions__BucketName          = aws_s3_bucket.interview_sessions.bucket
     APP_InterviewProgress__TableName           = aws_dynamodb_table.interview_sessions_progress.name
     APP_InterviewProgress__BucketName          = aws_s3_bucket.interview_sessions.bucket
+    APP_PendingInterviewTasks__TableName       = aws_dynamodb_table.pending_interview_tasks.name
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
     APP_ElevenLabs__ApiUrl                     = var.eleven_labs_api_url
     APP_ElevenLabs__AgentId                    = var.eleven_labs_agent_id
@@ -94,6 +96,7 @@ data "aws_iam_policy_document" "api" {
       "${aws_dynamodb_table.interview_session_questions.arn}/index/*",
       aws_dynamodb_table.interview_sessions_progress.arn,
       "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
+      aws_dynamodb_table.pending_interview_tasks.arn,
     ]
   }
 
@@ -109,6 +112,7 @@ data "aws_iam_policy_document" "api" {
     effect = "Allow"
     actions = [
       "s3:GetObject",
+      "s3:PutObject",
       "s3:DeleteObject",
     ]
     resources = ["${aws_s3_bucket.interview_sessions.arn}/*"]

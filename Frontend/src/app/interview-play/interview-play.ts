@@ -8,17 +8,22 @@ import {
   TextConversation,
   VoiceConversation,
 } from '@elevenlabs/client';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../auth.service';
 import { toElevenLabsLanguage } from '../eleven-labs-language';
+import {
+  InteractiveTaskResponse,
+  InteractiveTaskService,
+} from '../interactive-task.service';
 import {
   VoiceAgentContextResponse,
   VoiceAgentService,
 } from '../voice-agent.service';
+import { InteractivePanel } from './interactive-panel';
 
 @Component({
   selector: 'app-interview-play',
-  imports: [RouterLink],
+  imports: [RouterLink, InteractivePanel],
   templateUrl: './interview-play.html',
   styleUrl: './interview-play.scss',
 })
@@ -27,12 +32,14 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly voiceAgent = inject(VoiceAgentService);
+  private readonly interactiveTasks = inject(InteractiveTaskService);
 
   protected readonly loading = signal(true);
   protected readonly starting = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly connectionStatus = signal<Status | 'idle'>('idle');
   protected readonly mode = signal<Mode>('listening');
+  protected readonly interactiveTask = signal<InteractiveTaskResponse | null>(null);
 
   protected sessionId = '';
   private signedUrl: string | null = null;
@@ -57,11 +64,17 @@ export class InterviewPlay implements OnInit, OnDestroy {
     forkJoin({
       signed: this.voiceAgent.getSignedUrl(this.sessionId),
       context: this.voiceAgent.getVoiceContext(this.sessionId),
+      interactive: this.interactiveTasks.getActive(this.sessionId).pipe(
+        catchError(() => of(null)),
+      ),
     }).subscribe({
-      next: ({ signed, context }) => {
+      next: ({ signed, context, interactive }) => {
         this.signedUrl = signed.signedUrl;
         this.conversationId = signed.conversationId;
         this.agentContext = context;
+        if (interactive) {
+          this.interactiveTask.set(interactive);
+        }
         this.loading.set(false);
       },
       error: (err: unknown) => {
@@ -116,6 +129,17 @@ export class InterviewPlay implements OnInit, OnDestroy {
               agent: { language },
             }
           : undefined,
+        clientTools: {
+          start_interactive_task: async (parameters: { taskId?: string }) => {
+            const taskId = parameters?.taskId?.trim();
+            if (!taskId) {
+              return 'Missing taskId';
+            }
+
+            await this.openInteractiveTask(taskId);
+            return 'Interactive task opened on screen';
+          },
+        },
         onStatusChange: ({ status }) => {
           this.connectionStatus.set(status);
         },
@@ -146,6 +170,25 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     await this.conversation.endSession();
+  }
+
+  protected clearInteractiveTask(): void {
+    this.interactiveTask.set(null);
+  }
+
+  private openInteractiveTask(taskId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.interactiveTasks.getById(this.sessionId, taskId).subscribe({
+        next: (task) => {
+          this.interactiveTask.set(task);
+          resolve();
+        },
+        error: (err: unknown) => {
+          this.error.set(this.describeError(err));
+          reject(err instanceof Error ? err : new Error('Could not load interactive task.'));
+        },
+      });
+    });
   }
 
   private async endConversationLocally(): Promise<void> {

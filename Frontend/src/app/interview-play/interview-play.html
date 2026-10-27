@@ -56,6 +56,14 @@
           </button>
         </div>
       </section>
+
+      @if (interactiveTask(); as task) {
+        <app-interactive-panel
+          [sessionId]="sessionId"
+          [task]="task"
+          (closed)="clearInteractiveTask()"
+        />
+      }
     } @else {
       <section class="card">
         <h2 class="card__title">Ready when you are</h2>
@@ -72,6 +80,14 @@
           </button>
         </div>
       </section>
+
+      @if (interactiveTask(); as task) {
+        <app-interactive-panel
+          [sessionId]="sessionId"
+          [task]="task"
+          (closed)="clearInteractiveTask()"
+        />
+      }
     }
   </div>
 </main>

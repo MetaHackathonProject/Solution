@@ -1,6 +1,7 @@
 using Hackathon.Application.Context;
 using Hackathon.Application.InterviewProgress;
 using Hackathon.Application.InterviewSessions;
+using Hackathon.Application.InterviewTasks;
 using Hackathon.Domain.InterviewSessions;
 using MediatR;
 
@@ -9,7 +10,8 @@ namespace Hackathon.Application.VoiceAgent;
 public sealed class EndVoiceConversationCommandHandler(
     IUserContext userContext,
     IInterviewSessionStore sessionStore,
-    IInterviewProgressStore progressStore)
+    IInterviewProgressStore progressStore,
+    IPendingInterviewTaskStore pendingTasks)
     : IRequestHandler<EndVoiceConversationCommand, bool>
 {
     public async Task<bool> Handle(
@@ -29,7 +31,8 @@ public sealed class EndVoiceConversationCommandHandler(
             return false;
         }
 
-        if (await progressStore.HasAnyAsync(request.SessionId, cancellationToken))
+        if (await progressStore.HasAnyAsync(request.SessionId, cancellationToken)
+            || await pendingTasks.HasOpenAsync(request.SessionId, cancellationToken))
         {
             return true;
         }

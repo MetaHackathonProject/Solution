@@ -9,9 +9,10 @@ module "seed_interview_progress" {
   timeout           = 30
 
   environment = {
-    ASPNETCORE_ENVIRONMENT            = local.env.environment
-    APP_InterviewProgress__TableName  = aws_dynamodb_table.interview_sessions_progress.name
-    APP_InterviewProgress__BucketName = aws_s3_bucket.interview_sessions.bucket
+    ASPNETCORE_ENVIRONMENT                 = local.env.environment
+    APP_InterviewProgress__TableName       = aws_dynamodb_table.interview_sessions_progress.name
+    APP_InterviewProgress__BucketName      = aws_s3_bucket.interview_sessions.bucket
+    APP_PendingInterviewTasks__TableName   = aws_dynamodb_table.pending_interview_tasks.name
   }
 
   depends_on = [aws_s3_bucket_versioning.lambdas]
@@ -32,6 +33,7 @@ data "aws_iam_policy_document" "seed_interview_progress" {
     effect = "Allow"
     actions = [
       "dynamodb:Query",
+      "dynamodb:GetItem",
       "dynamodb:PutItem",
       "dynamodb:DeleteItem",
       "dynamodb:BatchWriteItem",
@@ -39,6 +41,7 @@ data "aws_iam_policy_document" "seed_interview_progress" {
     resources = [
       aws_dynamodb_table.interview_sessions_progress.arn,
       "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
+      aws_dynamodb_table.pending_interview_tasks.arn,
     ]
   }
 }

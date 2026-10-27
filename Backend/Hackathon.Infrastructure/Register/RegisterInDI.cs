@@ -4,10 +4,12 @@ using Amazon.StepFunctions;
 using Hackathon.Application.InterviewPreparation;
 using Hackathon.Application.InterviewProgress;
 using Hackathon.Application.InterviewSessions;
+using Hackathon.Application.InterviewTasks;
 using Hackathon.Application.VoiceAgent;
 using Hackathon.Infrastructure.InterviewPreparation;
 using Hackathon.Infrastructure.InterviewProgress;
 using Hackathon.Infrastructure.InterviewSessions;
+using Hackathon.Infrastructure.InterviewTasks;
 using Hackathon.Infrastructure.Options;
 using Hackathon.Infrastructure.VoiceAgent;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +24,7 @@ public static class RegisterInDI
         services.Configure<InterviewSessionsOptions>(configuration.GetSection(InterviewSessionsOptions.SectionName));
         services.Configure<InterviewPlannerOptions>(configuration.GetSection(InterviewPlannerOptions.SectionName));
         services.Configure<InterviewProgressOptions>(configuration.GetSection(InterviewProgressOptions.SectionName));
+        services.Configure<PendingInterviewTasksOptions>(configuration.GetSection(PendingInterviewTasksOptions.SectionName));
         services.Configure<ElevenLabsOptions>(configuration.GetSection(ElevenLabsOptions.SectionName));
 
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient());
@@ -32,6 +35,8 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewPreparationStarter, StepFunctionsInterviewPreparationStarter>();
         services.AddSingleton<IInterviewPlanReader, S3InterviewPlanReader>();
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
+        services.AddSingleton<IPendingInterviewTaskStore, DynamoDbPendingInterviewTaskStore>();
+        services.AddSingleton<IInteractiveAnswerStore, S3InteractiveAnswerStore>();
         services.AddSingleton<IOfferDetailsReader, S3OfferDetailsReader>();
         services.AddSingleton<IElevenLabsConversationClient, ElevenLabsConversationClient>();
 

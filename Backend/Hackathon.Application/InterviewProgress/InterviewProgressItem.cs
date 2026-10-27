@@ -9,4 +9,8 @@ public sealed record InterviewProgressItem(
     string OrderKey,
     string QuestionContent,
     string ModuleObjective,
-    string QuestionObjective);
+    string QuestionObjective,
+    string? TaskId = null)
+{
+    public bool IsInteractive => !string.IsNullOrWhiteSpace(TaskId);
+}

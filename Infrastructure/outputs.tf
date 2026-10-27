@@ -62,6 +62,10 @@ output "interview_sessions_progress_table" {
   value = aws_dynamodb_table.interview_sessions_progress.name
 }
 
+output "pending_interview_tasks_table" {
+  value = aws_dynamodb_table.pending_interview_tasks.name
+}
+
 output "seed_interview_progress_function_name" {
   value = module.seed_interview_progress.function_name
 }

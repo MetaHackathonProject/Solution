@@ -9,9 +9,10 @@ module "mcp_interview_questions" {
   timeout           = 30
 
   environment = {
-    ASPNETCORE_ENVIRONMENT            = local.env.environment
-    APP_InterviewProgress__TableName  = aws_dynamodb_table.interview_sessions_progress.name
-    APP_InterviewProgress__BucketName = aws_s3_bucket.interview_sessions.bucket
+    ASPNETCORE_ENVIRONMENT               = local.env.environment
+    APP_InterviewProgress__TableName     = aws_dynamodb_table.interview_sessions_progress.name
+    APP_InterviewProgress__BucketName    = aws_s3_bucket.interview_sessions.bucket
+    APP_PendingInterviewTasks__TableName = aws_dynamodb_table.pending_interview_tasks.name
   }
 
   depends_on = [aws_s3_bucket_versioning.lambdas]
@@ -31,12 +32,15 @@ data "aws_iam_policy_document" "mcp_interview_questions" {
     actions = [
       "dynamodb:Query",
       "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
       "dynamodb:DeleteItem",
       "dynamodb:BatchWriteItem",
     ]
     resources = [
       aws_dynamodb_table.interview_sessions_progress.arn,
       "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
+      aws_dynamodb_table.pending_interview_tasks.arn,
     ]
   }
 }

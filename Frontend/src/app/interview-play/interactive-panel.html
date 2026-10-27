@@ -1,0 +1,98 @@
+<section class="panel" aria-labelledby="interactive-title">
+  <header class="panel__header">
+    <div>
+      <p class="panel__eyebrow">Interactive exercise</p>
+      <h2 class="panel__title" id="interactive-title">{{ task().module }}</h2>
+    </div>
+    <button type="button" class="btn btn--ghost" (click)="dismiss()">Hide</button>
+  </header>
+
+  <article class="panel__prompt">
+    <pre class="panel__md">{{ task().questionContentFormatted }}</pre>
+  </article>
+
+  @if (submittedOk() || task().status === 'Answered') {
+    <p class="panel__done" role="status">Answer submitted. You can continue with the interviewer.</p>
+  } @else if (isCodeLike()) {
+    <label class="field">
+      <span class="field__label">Your answer</span>
+      <textarea
+        class="field__input"
+        rows="12"
+        [value]="answerText()"
+        (input)="onTextInput($event)"
+        [attr.placeholder]="
+          task().expectedInput === 'code'
+            ? 'Paste or write your code here…'
+            : 'Write your answer here…'
+        "
+      ></textarea>
+    </label>
+    <div class="panel__actions">
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="submitting() || !answerText().trim()"
+        (click)="submitText()"
+      >
+        {{ submitting() ? 'Submitting…' : 'Submit answer' }}
+      </button>
+    </div>
+  } @else if (isDrawLike()) {
+    <div class="draw">
+      <canvas
+        #canvas
+        class="draw__canvas"
+        width="960"
+        height="540"
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointerleave)="onPointerUp($event)"
+      ></canvas>
+      <div class="panel__actions">
+        <label class="btn btn--secondary file-btn">
+          Upload image
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+        </label>
+        <button type="button" class="btn btn--secondary" (click)="clearCanvas()">Clear</button>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="submitting()"
+          (click)="submitDrawing()"
+        >
+          {{ submitting() ? 'Submitting…' : 'Submit drawing' }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <label class="field">
+      <span class="field__label">Upload or write your answer</span>
+      <textarea
+        class="field__input"
+        rows="8"
+        [value]="answerText()"
+        (input)="onTextInput($event)"
+      ></textarea>
+    </label>
+    <div class="panel__actions">
+      <label class="btn btn--secondary file-btn">
+        Upload file
+        <input type="file" (change)="onFileSelected($event)" />
+      </label>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="submitting() || !answerText().trim()"
+        (click)="submitText()"
+      >
+        {{ submitting() ? 'Submitting…' : 'Submit answer' }}
+      </button>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+</section>

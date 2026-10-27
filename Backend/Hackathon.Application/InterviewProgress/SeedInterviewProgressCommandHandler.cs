@@ -1,10 +1,12 @@
+using Hackathon.Application.InterviewTasks;
 using MediatR;
 
 namespace Hackathon.Application.InterviewProgress;
 
 public sealed class SeedInterviewProgressCommandHandler(
     IInterviewPlanReader planReader,
-    IInterviewProgressStore progressStore) : IRequestHandler<SeedInterviewProgressCommand, SeedInterviewProgressResult>
+    IInterviewProgressStore progressStore,
+    IPendingInterviewTaskStore pendingTasks) : IRequestHandler<SeedInterviewProgressCommand, SeedInterviewProgressResult>
 {
     public async Task<SeedInterviewProgressResult> Handle(
         SeedInterviewProgressCommand request,
@@ -23,21 +25,24 @@ public sealed class SeedInterviewProgressCommandHandler(
                 $"Interview plan for session {request.SessionId} has no sections.");
         }
 
-        var items = plan.Sections
-            .OrderBy(section => section.ModuleOrder)
-            .SelectMany(section =>
+        var items = new List<InterviewProgressItem>();
+        foreach (var section in plan.Sections.OrderBy(section => section.ModuleOrder))
+        {
+            if (section.ModuleOrder < 0)
             {
-                if (section.ModuleOrder < 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Module order must be non-negative for module {section.Module}.");
-                }
+                throw new InvalidOperationException(
+                    $"Module order must be non-negative for module {section.Module}.");
+            }
 
-                return section.Questions
-                    .OrderBy(question => question.Order)
-                    .Select(question => ToProgressItem(request.SessionId, section, question));
-            })
-            .ToList();
+            foreach (var question in section.Questions.OrderBy(question => question.Order))
+            {
+                items.Add(await ToProgressItemAsync(
+                    request.SessionId,
+                    section,
+                    question,
+                    cancellationToken));
+            }
+        }
 
         if (items.Count == 0)
         {
@@ -50,10 +55,11 @@ public sealed class SeedInterviewProgressCommandHandler(
         return new SeedInterviewProgressResult(items.Count);
     }
 
-    private static InterviewProgressItem ToProgressItem(
+    private async Task<InterviewProgressItem> ToProgressItemAsync(
         string sessionId,
         InterviewPlanSection section,
-        InterviewPlanQuestion question)
+        InterviewPlanQuestion question,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(question.Id))
         {
@@ -67,6 +73,28 @@ public sealed class SeedInterviewProgressCommandHandler(
                 $"Question order must be non-negative for question {question.Id}.");
         }
 
+        string questionContent;
+        string questionObjective;
+        string? taskId = null;
+
+        if (question.IsInteractive)
+        {
+            var task = await pendingTasks.GetAsync(sessionId, question.TaskId!, cancellationToken)
+                ?? throw new InvalidOperationException(
+                    $"Interactive task {question.TaskId} not found for session {sessionId}.");
+
+            questionContent = task.QuestionContent;
+            questionObjective = string.IsNullOrWhiteSpace(task.AssessmentGoal)
+                ? question.AssessmentGoal
+                : task.AssessmentGoal;
+            taskId = task.TaskId;
+        }
+        else
+        {
+            questionContent = question.Question;
+            questionObjective = question.AssessmentGoal;
+        }
+
         return new InterviewProgressItem(
             sessionId,
             question.Id,
@@ -74,9 +102,10 @@ public sealed class SeedInterviewProgressCommandHandler(
             section.ModuleOrder,
             question.Order,
             BuildOrderKey(section.ModuleOrder, question.Order),
-            question.Question,
+            questionContent,
             section.Objective,
-            question.AssessmentGoal);
+            questionObjective,
+            taskId);
     }
 
     internal static string BuildOrderKey(int moduleOrder, int questionOrder) =>

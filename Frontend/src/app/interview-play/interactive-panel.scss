@@ -1,0 +1,127 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.15rem 1.25rem;
+  border: 1px solid #d7dee8;
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panel__eyebrow {
+  margin: 0 0 0.25rem;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.panel__prompt {
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5ebf3;
+}
+
+.panel__md {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.field__input {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  resize: vertical;
+  background: #fff;
+}
+
+.panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.panel__done {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  background: #eaf8f0;
+  color: #0f7a3d;
+  font-weight: 600;
+}
+
+.draw__canvas {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  background: #fff;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.file-btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.file-btn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.btn--ghost {
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alert {
+  margin: 0;
+  color: #b42318;
+  font-size: 0.9rem;
+}

@@ -69,6 +69,22 @@ public sealed class DynamoDbInterviewProgressStore(
         return response.Count > 0;
     }
 
+    public Task<IReadOnlyList<InterviewProgressItem>> ListOrderedAsync(
+        string sessionId,
+        CancellationToken cancellationToken) =>
+        QueryOrderedAsync(sessionId, cancellationToken);
+
+    public async Task PutAsync(InterviewProgressItem item, CancellationToken cancellationToken)
+    {
+        await dynamoDb.PutItemAsync(
+            new PutItemRequest
+            {
+                TableName = options.Value.TableName,
+                Item = ToItem(item),
+            },
+            cancellationToken);
+    }
+
     public async Task<PopInterviewProgressResult> PopNextAsync(
         string sessionId,
         int count,
@@ -200,7 +216,8 @@ public sealed class DynamoDbInterviewProgressStore(
             item.GetValueOrDefault("order_key")?.S ?? string.Empty,
             item.GetValueOrDefault("question_content")?.S ?? string.Empty,
             item.GetValueOrDefault("module_objective")?.S ?? string.Empty,
-            item.GetValueOrDefault("question_objective")?.S ?? string.Empty);
+            item.GetValueOrDefault("question_objective")?.S ?? string.Empty,
+            item.GetValueOrDefault("task_id")?.S);
 
     private static int ParseInt(AttributeValue? value) =>
         value?.N is { Length: > 0 } number && int.TryParse(number, out var parsed)
@@ -228,8 +245,9 @@ public sealed class DynamoDbInterviewProgressStore(
         }
     }
 
-    private static Dictionary<string, AttributeValue> ToItem(InterviewProgressItem item) =>
-        new()
+    private static Dictionary<string, AttributeValue> ToItem(InterviewProgressItem item)
+    {
+        var attributes = new Dictionary<string, AttributeValue>
         {
             ["session_id"] = new(item.SessionId),
             ["question_id"] = new(item.QuestionId),
@@ -241,4 +259,12 @@ public sealed class DynamoDbInterviewProgressStore(
             ["module_objective"] = new(item.ModuleObjective),
             ["question_objective"] = new(item.QuestionObjective),
         };
+
+        if (!string.IsNullOrWhiteSpace(item.TaskId))
+        {
+            attributes["task_id"] = new(item.TaskId);
+        }
+
+        return attributes;
+    }
 }

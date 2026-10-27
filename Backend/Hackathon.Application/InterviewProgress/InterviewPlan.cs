@@ -42,4 +42,14 @@ public sealed class InterviewPlanQuestion
 
     [JsonPropertyName("order")]
     public int Order { get; init; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; init; }
+
+    [JsonPropertyName("task_id")]
+    public string? TaskId { get; init; }
+
+    public bool IsInteractive =>
+        string.Equals(Type, "interactive", StringComparison.OrdinalIgnoreCase)
+        && !string.IsNullOrWhiteSpace(TaskId);
 }

@@ -82,7 +82,8 @@ Models go through AgentCore LiteLLM (`openai/muse-spark-1.3`, `https://api.meta.
 
 - `hackathon-solution-interview-sessions-table` — `user_id` + `session_id`, attribute `status`
 - `hackathon-solution-interview-session-questions-table` — `session_id` + `question_id`, GSI `module-index`
-- `hackathon-solution-interview-sessions-progress-table` — `session_id` + `question_id`, GSI `order-key-index` (runtime, not agents)
+- `hackathon-solution-pending-interview-tasks-table` — `session_id` + `task_id` (interactive exercises; status `NotAsked`/`InProgress`/`Answered`)
+- `hackathon-solution-interview-sessions-progress-table` — `session_id` + `question_id`, GSI `order-key-index` (runtime, not agents; optional `task_id` for interactive)
 
 Interview modules: `Communication`, `TechnicalKnowledge`, `PracticalSkills`, `ArchitectureAndDesign`, `ProblemSolving`, `ExperienceValidation`, `DomainKnowledge`, `Behavioral`, `ForeignLanguage`.
 
