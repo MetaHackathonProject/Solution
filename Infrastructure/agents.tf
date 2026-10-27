@@ -91,6 +91,20 @@ data "aws_iam_policy_document" "agent" {
     ]
   }
 
+  statement {
+    effect = "Allow"
+    actions = [
+      "bedrock-agentcore:CreateEvent",
+      "bedrock-agentcore:DeleteEvent",
+      "bedrock-agentcore:GetEvent",
+      "bedrock-agentcore:ListEvents",
+      "bedrock-agentcore:RetrieveMemoryRecords",
+    ]
+    resources = [
+      "arn:aws:bedrock-agentcore:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:memory/*",
+    ]
+  }
+
   dynamic "statement" {
     for_each = contains([for tool in try(each.value.config.tools, []) : tool.type], "agentcore_browser") ? [1] : []
 
