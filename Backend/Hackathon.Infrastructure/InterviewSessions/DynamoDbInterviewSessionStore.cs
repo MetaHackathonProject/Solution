@@ -39,7 +39,9 @@ public sealed class DynamoDbInterviewSessionStore(
             },
             cancellationToken);
 
-        return response.Item.Count == 0 ? null : FromItem(response.Item);
+        return response.Item is null || response.Item.Count == 0
+            ? null
+            : FromItem(response.Item);
     }
 
     public async Task<IReadOnlyList<InterviewSession>> ListByUserAsync(
@@ -51,21 +53,30 @@ public sealed class DynamoDbInterviewSessionStore(
 
         do
         {
-            var response = await dynamoDb.QueryAsync(
-                new QueryRequest
+            var request = new QueryRequest
+            {
+                TableName = options.Value.TableName,
+                KeyConditionExpression = "user_id = :user_id",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
-                    TableName = options.Value.TableName,
-                    KeyConditionExpression = "user_id = :user_id",
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                    {
-                        [":user_id"] = new(userId),
-                    },
-                    ExclusiveStartKey = exclusiveStartKey,
+                    [":user_id"] = new(userId),
                 },
-                cancellationToken);
+            };
 
-            sessions.AddRange(response.Items.Select(FromItem));
-            exclusiveStartKey = response.LastEvaluatedKey.Count == 0 ? null : response.LastEvaluatedKey;
+            if (exclusiveStartKey is { Count: > 0 })
+            {
+                request.ExclusiveStartKey = exclusiveStartKey;
+            }
+
+            var response = await dynamoDb.QueryAsync(request, cancellationToken);
+            if (response.Items is { Count: > 0 })
+            {
+                sessions.AddRange(response.Items.Select(FromItem));
+            }
+
+            exclusiveStartKey = response.LastEvaluatedKey is { Count: > 0 }
+                ? response.LastEvaluatedKey
+                : null;
         }
         while (exclusiveStartKey is not null);
 
