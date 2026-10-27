@@ -56,7 +56,7 @@ Pipeline (do not collapse into one agent):
 
 Do **not** have agents write the progress table. That table is for live-interview runtime.
 
-Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
+Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. After plan generation, Step Functions invokes `Hackathon.SeedInterviewProgress` to fill the progress table from `plan.json`, then sets `SUCCESS`. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
 
 ## Interview domain
 
@@ -72,6 +72,7 @@ Plan: 10–12 questions including 1–2 opening warm-ups. Copy assessment `quest
 - JWT from Cognito. Lambda reads SSM `/hackathon-solution/hackathon/JWT/*` and `Cors/AllowedOrigins`.
 - New C# Lambdas: add a matrix row in `.github/workflows/backend.yml`. Function name pattern `{name}-hackathon` (API is `hackathon-solution-api-hackathon`).
 - Handler for the API: `Hackathon.Api::Hackathon.Api.LambdaEntryPoint::FunctionHandlerAsync`.
+- Progress seeding: `Hackathon.SeedInterviewProgress` reads `{user_id}/{session_id}/plan.json` and replaces rows in the progress table (`order_key` = `{module_order:D4}#{order:D4}`). Step Functions invokes it after plan generation with `{ "user_id", "session_id" }`. Do not seed from AgentCore.
 
 ## Frontend
 

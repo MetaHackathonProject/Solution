@@ -30,6 +30,12 @@ data "aws_iam_policy_document" "interview_planner" {
     actions   = ["dynamodb:UpdateItem"]
     resources = [aws_dynamodb_table.interview_sessions.arn]
   }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [module.seed_interview_progress.function_arn]
+  }
 }
 
 resource "aws_iam_role_policy" "interview_planner" {
@@ -53,7 +59,7 @@ resource "aws_sfn_state_machine" "interview_planner" {
   role_arn = aws_iam_role.interview_planner.arn
 
   definition = jsonencode({
-    Comment       = "Offer extract, question generation, then interview plan"
+    Comment       = "Offer extract, question generation, interview plan, then seed progress"
     QueryLanguage = "JSONata"
     StartAt       = "Set variables"
     States = {
@@ -201,6 +207,29 @@ resource "aws_sfn_state_machine" "interview_planner" {
         Output = "{% $states.input %}"
         Retry = [{
           ErrorEquals     = ["BedrockAgentCore.ThrottlingException"]
+          IntervalSeconds = 2
+          MaxAttempts     = 3
+          BackoffRate     = 2
+        }]
+        Catch = [{
+          ErrorEquals = ["States.ALL"]
+          Next        = "Set status to FAILED"
+        }]
+        Next = "Seed interview progress"
+      }
+      "Seed interview progress" = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::lambda:invoke"
+        Arguments = {
+          FunctionName = module.seed_interview_progress.function_arn
+          Payload = {
+            user_id    = "{% $user_id %}"
+            session_id = "{% $session_id %}"
+          }
+        }
+        Output = "{% $states.input %}"
+        Retry = [{
+          ErrorEquals     = ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"]
           IntervalSeconds = 2
           MaxAttempts     = 3
           BackoffRate     = 2

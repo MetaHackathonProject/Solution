@@ -42,7 +42,7 @@ Preparation is three AgentCore harnesses, in this order:
 2. **question_generation** reads that file and writes question items to DynamoDB.
 3. **interview_plan_generation** curates 10–12 questions into `{user_id}/{session_id}/plan.json`.
 
-`POST /api/interview-sessions` writes the session as `STARTED` and starts the Step Functions planner. Status then moves through `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, and ends at `SUCCESS` or `FAILED`. Live-interview progress is a separate DynamoDB table; agents do not fill it.
+`POST /api/interview-sessions` writes the session as `STARTED` and starts the Step Functions planner. Status then moves through `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, and ends at `SUCCESS` or `FAILED`. After the plan is written, Step Functions invokes `seed-interview-progress` to fill the live-interview progress table from `plan.json`; agents do not write that table.
 
 ## Repository
 

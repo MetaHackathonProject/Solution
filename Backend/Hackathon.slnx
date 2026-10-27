@@ -7,4 +7,7 @@
     <Project Path="Hackathon.Domain/Hackathon.Domain.csproj" />
     <Project Path="Hackathon.Infrastructure/Hackathon.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/Functions/">
+    <Project Path="Hackathon.SeedInterviewProgress/Hackathon.SeedInterviewProgress.csproj" />
+  </Folder>
 </Solution>

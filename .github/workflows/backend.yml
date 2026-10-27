@@ -23,6 +23,8 @@ jobs:
         include:
           - project: Hackathon.Api
             function: hackathon-solution-api
+          - project: Hackathon.SeedInterviewProgress
+            function: hackathon-solution-seed-interview-progress
     defaults:
       run:
         working-directory: Backend/${{ matrix.project }}
