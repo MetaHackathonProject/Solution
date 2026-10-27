@@ -1,0 +1,109 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__header">
+      <div>
+        <p class="page__eyebrow">Interviews</p>
+        <h1 class="page__title">Your sessions</h1>
+        <p class="page__lead">Track preparation progress and open ready interview plans.</p>
+      </div>
+      <a class="btn btn--primary" routerLink="/">New interview</a>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate" aria-labelledby="sign-in-title">
+        <h2 class="gate__title" id="sign-in-title">Sign in to view sessions</h2>
+        <p class="gate__copy">Your interview list is private to your account.</p>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in</button>
+      </section>
+    } @else if (loading()) {
+      <div class="loading" role="status" aria-live="polite">
+        <span class="loading__spinner" aria-hidden="true"></span>
+        <span>Loading interviews…</span>
+      </div>
+    } @else if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    } @else if (sessions().length === 0) {
+      <section class="blank">
+        <h2 class="blank__title">No interviews yet</h2>
+        <p class="blank__copy">Create a session from a public job offer to start preparation.</p>
+        <a class="btn btn--primary" routerLink="/">Create interview</a>
+      </section>
+    } @else {
+      <div class="sections">
+        @if (preparing().length > 0) {
+          <section class="section" aria-labelledby="section-preparing">
+            <h2 class="section__title" id="section-preparing">
+              Preparing
+              <span class="section__count">{{ preparing().length }}</span>
+            </h2>
+            <ul class="list">
+              @for (session of preparing(); track session.sessionId) {
+                <li class="row" [attr.data-tone]="statusTone(session.status)">
+                  <span class="row__tile" aria-hidden="true">
+                    <span class="row__spinner"></span>
+                  </span>
+                  <span class="row__copy">
+                    <span class="row__title">{{ session.name }}</span>
+                    <span class="row__sub">
+                      {{ statusLabel(session.status) }}
+                      · {{ difficultyLabel(session.settings.difficulty) }}
+                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                    </span>
+                  </span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (ready().length > 0) {
+          <section class="section" aria-labelledby="section-ready">
+            <h2 class="section__title" id="section-ready">
+              Ready
+              <span class="section__count">{{ ready().length }}</span>
+            </h2>
+            <ul class="list">
+              @for (session of ready(); track session.sessionId) {
+                <li class="row" [attr.data-tone]="statusTone(session.status)">
+                  <span class="row__tile" aria-hidden="true">✓</span>
+                  <span class="row__copy">
+                    <span class="row__title">{{ session.name }}</span>
+                    <span class="row__sub">
+                      {{ statusLabel(session.status) }}
+                      · {{ difficultyLabel(session.settings.difficulty) }}
+                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                    </span>
+                  </span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (failed().length > 0) {
+          <section class="section" aria-labelledby="section-failed">
+            <h2 class="section__title" id="section-failed">
+              Failed
+              <span class="section__count">{{ failed().length }}</span>
+            </h2>
+            <ul class="list">
+              @for (session of failed(); track session.sessionId) {
+                <li class="row" [attr.data-tone]="statusTone(session.status)">
+                  <span class="row__tile" aria-hidden="true">!</span>
+                  <span class="row__copy">
+                    <span class="row__title">{{ session.name }}</span>
+                    <span class="row__sub">
+                      {{ statusLabel(session.status) }}
+                      · {{ difficultyLabel(session.settings.difficulty) }}
+                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                    </span>
+                  </span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    }
+  </div>
+</main>

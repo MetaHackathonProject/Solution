@@ -65,6 +65,7 @@ data "aws_iam_policy_document" "api" {
       "dynamodb:PutItem",
       "dynamodb:GetItem",
       "dynamodb:UpdateItem",
+      "dynamodb:Query",
     ]
     resources = [aws_dynamodb_table.interview_sessions.arn]
   }

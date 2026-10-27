@@ -53,6 +53,23 @@
   min-width: 0;
 }
 
+.nav-v2__link {
+  color: #111;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+
+  &:hover {
+    color: #1554cc;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #1b64f2;
+    outline-offset: 2px;
+  }
+}
+
 .nav-v2__email {
   max-width: 16rem;
   overflow: hidden;

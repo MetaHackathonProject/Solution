@@ -7,6 +7,8 @@
 
     <div class="nav-v2__actions">
       @if (auth.isAuthenticated()) {
+        <a class="nav-v2__link" routerLink="/interviews">Interviews</a>
+        <a class="nav-v2__link" routerLink="/">New</a>
         @if (auth.email()) {
           <span class="nav-v2__email">{{ auth.email() }}</span>
         }
