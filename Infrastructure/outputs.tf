@@ -45,3 +45,9 @@ output "api_function_name" {
 output "interview_sessions_bucket" {
   value = aws_s3_bucket.interview_sessions.bucket
 }
+
+output "agent_harnesses" {
+  value = {
+    for name, harness in aws_bedrockagentcore_harness.agent : name => harness.harness_arn
+  }
+}

@@ -39,7 +39,7 @@ jobs:
               echo "${name}=true" >> "$GITHUB_OUTPUT"
               return
             fi
-            if printf '%s\n' "$CHANGED" | grep -q "$pattern"; then
+            if printf '%s\n' "$CHANGED" | grep -Eq "$pattern"; then
               echo "${name}=true" >> "$GITHUB_OUTPUT"
             else
               echo "${name}=false" >> "$GITHUB_OUTPUT"
@@ -54,7 +54,7 @@ jobs:
             CHANGED="$(git diff --name-only "$BASE_SHA" HEAD)"
           fi
 
-          mark infrastructure '^Infrastructure/'
+          mark infrastructure '^(Infrastructure|Agents)/'
           mark frontend '^Frontend/'
           mark backend '^Backend/'
 
