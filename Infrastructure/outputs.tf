@@ -46,6 +46,10 @@ output "interview_sessions_bucket" {
   value = aws_s3_bucket.interview_sessions.bucket
 }
 
+output "interview_session_questions_table" {
+  value = aws_dynamodb_table.interview_session_questions.name
+}
+
 output "agent_harnesses" {
   value = {
     for name, harness in aws_bedrockagentcore_harness.agent : name => harness.arn
