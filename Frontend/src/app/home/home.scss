@@ -222,7 +222,15 @@
 .prep__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.6rem;
+
+  .btn {
+    align-self: center;
+    height: 2.75rem;
+    min-height: 2.75rem;
+    box-sizing: border-box;
+  }
 }
 
 @keyframes prep-spin {
@@ -424,9 +432,10 @@
   align-items: center;
   justify-content: center;
   align-self: flex-start;
+  box-sizing: border-box;
   min-height: 3rem;
   padding: 0.65rem 1.15rem;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 650;
@@ -446,7 +455,7 @@
 }
 
 .btn--primary {
-  border: 0;
+  border-color: var(--color-accent);
   background: var(--color-accent);
   color: #fff;
 
