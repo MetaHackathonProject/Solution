@@ -31,7 +31,12 @@ export class Interviews implements OnInit, OnDestroy {
     this.sessions().filter((session) => isPreparingStatus(session.status)),
   );
   protected readonly ready = computed(() =>
-    this.sessions().filter((session) => session.status === 'SUCCESS'),
+    this.sessions().filter(
+      (session) => session.status === 'SUCCESS' || session.status === 'IN_PROGRESS',
+    ),
+  );
+  protected readonly completed = computed(() =>
+    this.sessions().filter((session) => session.status === 'COMPLETED'),
   );
   protected readonly failed = computed(() =>
     this.sessions().filter((session) => session.status === 'FAILED'),

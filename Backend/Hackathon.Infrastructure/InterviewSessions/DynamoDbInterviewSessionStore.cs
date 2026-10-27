@@ -62,6 +62,36 @@ public sealed class DynamoDbInterviewSessionStore(
             cancellationToken);
     }
 
+    public async Task UpdateStatusAsync(
+        string userId,
+        string sessionId,
+        string status,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        await dynamoDb.UpdateItemAsync(
+            new UpdateItemRequest
+            {
+                TableName = options.Value.TableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["user_id"] = new(userId),
+                    ["session_id"] = new(sessionId),
+                },
+                UpdateExpression = "SET #status = :status, updated_at = :updated_at",
+                ExpressionAttributeNames = new Dictionary<string, string>
+                {
+                    ["#status"] = "status",
+                },
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":status"] = new(status),
+                    [":updated_at"] = new() { N = now.ToString() },
+                },
+            },
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyList<InterviewSession>> ListByUserAsync(
         string userId,
         CancellationToken cancellationToken)

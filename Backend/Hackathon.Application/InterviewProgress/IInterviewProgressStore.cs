@@ -11,6 +11,8 @@ public interface IInterviewProgressStore
         string sessionId,
         int count,
         CancellationToken cancellationToken);
+
+    Task<bool> HasAnyAsync(string sessionId, CancellationToken cancellationToken);
 }
 
 public sealed record PopInterviewProgressResult(

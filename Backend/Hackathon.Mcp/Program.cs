@@ -22,11 +22,14 @@ builder.Services.AddMcpServer()
 
 var app = builder.Build();
 
+// API Gateway forwards /mcp/interview-questions[/...]. Strip that prefix so MapMcp
+// endpoints resolve. Keep both "" and "agent" so either public URL works.
 if (!env.IsDevelopment())
 {
     app.UsePathBase("/mcp/interview-questions");
 }
 
+app.MapMcp();
 app.MapMcp(pattern: "agent");
 
 app.Run();

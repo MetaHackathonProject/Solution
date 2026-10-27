@@ -1,5 +1,6 @@
 using Hackathon.Application.InterviewPreparation;
 using Hackathon.Application.InterviewSessions;
+using Hackathon.Application.VoiceAgent;
 using Hackathon.Domain.InterviewSessions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -61,6 +62,27 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         return deleted ? NoContent() : NotFound();
     }
 
+    [HttpGet("{sessionId}/voice-context")]
+    public async Task<ActionResult<VoiceAgentContextResponse>> GetVoiceContext(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var context = await mediator.Send(
+            new GetVoiceAgentContextQuery(sessionId),
+            cancellationToken);
+
+        if (context is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new VoiceAgentContextResponse(
+            context.JobTitle,
+            context.Company,
+            context.JobOverview,
+            context.Language));
+    }
+
     private static InterviewSessionResponse ToResponse(InterviewSession session) =>
         new(
             session.SessionId,
@@ -102,3 +124,9 @@ public sealed record InterviewSessionResponse(
 public sealed record InterviewSessionSettingsResponse(
     string RecruiterLanguage,
     string Difficulty);
+
+public sealed record VoiceAgentContextResponse(
+    string? JobTitle,
+    string? Company,
+    string? JobOverview,
+    string? Language);

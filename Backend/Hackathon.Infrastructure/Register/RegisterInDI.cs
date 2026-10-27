@@ -4,10 +4,12 @@ using Amazon.StepFunctions;
 using Hackathon.Application.InterviewPreparation;
 using Hackathon.Application.InterviewProgress;
 using Hackathon.Application.InterviewSessions;
+using Hackathon.Application.VoiceAgent;
 using Hackathon.Infrastructure.InterviewPreparation;
 using Hackathon.Infrastructure.InterviewProgress;
 using Hackathon.Infrastructure.InterviewSessions;
 using Hackathon.Infrastructure.Options;
+using Hackathon.Infrastructure.VoiceAgent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +22,7 @@ public static class RegisterInDI
         services.Configure<InterviewSessionsOptions>(configuration.GetSection(InterviewSessionsOptions.SectionName));
         services.Configure<InterviewPlannerOptions>(configuration.GetSection(InterviewPlannerOptions.SectionName));
         services.Configure<InterviewProgressOptions>(configuration.GetSection(InterviewProgressOptions.SectionName));
+        services.Configure<ElevenLabsOptions>(configuration.GetSection(ElevenLabsOptions.SectionName));
 
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient());
         services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client());
@@ -29,5 +32,16 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewPreparationStarter, StepFunctionsInterviewPreparationStarter>();
         services.AddSingleton<IInterviewPlanReader, S3InterviewPlanReader>();
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
+        services.AddSingleton<IOfferDetailsReader, S3OfferDetailsReader>();
+        services.AddSingleton<IElevenLabsConversationClient, ElevenLabsConversationClient>();
+
+        var elevenLabs = configuration.GetSection(ElevenLabsOptions.SectionName).Get<ElevenLabsOptions>();
+        services.AddHttpClient("ElevenLabs", client =>
+        {
+            var baseUrl = string.IsNullOrWhiteSpace(elevenLabs?.ApiUrl)
+                ? "https://api.elevenlabs.io"
+                : elevenLabs.ApiUrl.TrimEnd('/');
+            client.BaseAddress = new Uri(baseUrl);
+        });
     }
 }

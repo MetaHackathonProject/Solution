@@ -44,7 +44,9 @@ Preparation is three AgentCore harnesses, in this order:
 
 `POST /api/interview-sessions` writes the session as `STARTED` and starts the Step Functions planner. Status then moves through `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, and ends at `SUCCESS` or `FAILED`. After the plan is written, Step Functions invokes `seed-interview-progress` to fill the live-interview progress table from `plan.json`; agents do not write that table.
 
-During the voice interview, ElevenLabs calls MCP `get_next_question` on `https://api.hackathon-solution.com/mcp/interview-questions/agent` (public) to pop the next questions from that progress queue.
+Live interview: the app opens `/interviews/:sessionId/play`, fetches a ConvAI signed URL (`GET /api/voice-agent/signed-url`) and offer voice context, then connects with `@elevenlabs/client`. Session status becomes `IN_PROGRESS`; ending the call via `POST /api/voice-agent/end-conversation` sets `COMPLETED` only when the progress queue is empty.
+
+During the call, ElevenLabs calls MCP `get_next_question` on `https://api.hackathon-solution.com/mcp/interview-questions/agent` (public Streamable HTTP; set ElevenLabs transport to **STREAMABLE_HTTP**, not SSE) to pop the next questions from that progress queue.
 
 ## Repository
 
@@ -130,4 +132,4 @@ Push or PR on `main` runs `.github/workflows/solution.yml`. Path filters:
 - `Backend/` → `dotnet lambda package` (deploy `hackathon-solution-api-hackathon` on non-PR)
 - `Frontend/` → `npm run build` (sync hosting bucket + CloudFront invalidation on non-PR)
 
-Secrets: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `COGNITO_AUTHORITY`, `COGNITO_CLIENT_ID`.
+Secrets: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `COGNITO_AUTHORITY`, `COGNITO_CLIENT_ID`, `ELEVEN_LABS_API_KEY`.

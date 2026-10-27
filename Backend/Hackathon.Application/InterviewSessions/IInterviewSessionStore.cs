@@ -11,4 +11,10 @@ public interface IInterviewSessionStore
     Task<IReadOnlyList<InterviewSession>> ListByUserAsync(string userId, CancellationToken cancellationToken);
 
     Task DeleteAsync(string userId, string sessionId, CancellationToken cancellationToken);
+
+    Task UpdateStatusAsync(
+        string userId,
+        string sessionId,
+        string status,
+        CancellationToken cancellationToken);
 }

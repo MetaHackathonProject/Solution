@@ -56,7 +56,14 @@ Pipeline (do not collapse into one agent):
 
 Do **not** have agents write the progress table. That table is for live-interview runtime.
 
-Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. After plan generation, Step Functions invokes `Hackathon.SeedInterviewProgress` to fill the progress table from `plan.json`, then sets `SUCCESS`. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
+Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. After plan generation, Step Functions invokes `Hackathon.SeedInterviewProgress` to fill the progress table from `plan.json`, then sets `SUCCESS`. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `IN_PROGRESS`, `COMPLETED`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
+
+Live interview (API + frontend, not AgentCore):
+
+1. `GET /api/voice-agent/signed-url?sessionId=` — ElevenLabs ConvAI signed URL; sets status `IN_PROGRESS` when session is `SUCCESS` or `IN_PROGRESS`.
+2. `GET /api/interview-sessions/{sessionId}/voice-context` — job title/company/overview/language for ConvAI dynamic variables.
+3. Frontend `/interviews/:sessionId/play` starts `@elevenlabs/client` with `sessionId`, `job_title`, `company`, `job_overview`.
+4. `POST /api/voice-agent/end-conversation` — if the progress table has no remaining rows, sets `COMPLETED`; otherwise leaves status alone (no transcription/orders).
 
 ## Interview domain
 
@@ -73,11 +80,14 @@ Plan: 10–12 questions including mandatory 1–2 opening warm-ups (intro + opti
 - New C# Lambdas: add a matrix row in `.github/workflows/backend.yml`. Function name pattern `{name}-hackathon` (API is `hackathon-solution-api-hackathon`).
 - Handler for the API: `Hackathon.Api::Hackathon.Api.LambdaEntryPoint::FunctionHandlerAsync`.
 - Progress seeding: `Hackathon.SeedInterviewProgress` reads `{user_id}/{session_id}/plan.json` and replaces rows in the progress table (`order_key` = `{module_order:D4}#{order:D4}`). Step Functions invokes it after plan generation with `{ "user_id", "session_id" }`. Do not seed from AgentCore.
-- Live questions MCP: `Hackathon.Mcp` exposes `get_next_question(sessionId)` at `https://api.hackathon-solution.com/mcp/interview-questions/agent` (public, no JWT). Pops 2 ordered progress rows and deletes them. Point the ElevenLabs agent MCP server at that URL; pass `sessionId` as a ConvAI dynamic variable.
+- Live questions MCP: `Hackathon.Mcp` exposes `get_next_question(sessionId)` at `https://api.hackathon-solution.com/mcp/interview-questions/agent` (also `/mcp/interview-questions`; public, no JWT). Pops 2 ordered progress rows and deletes them.
+  - In ElevenLabs MCP server settings set **transport = `STREAMABLE_HTTP`** (default is `SSE`, which will show zero tools against this Lambda).
+  - URL must be HTTPS and end with `/mcp/interview-questions` or `/mcp/interview-questions/agent`.
+  - Pass `sessionId` as a ConvAI dynamic variable when starting the call.
 
 ## Frontend
 
-- Routes in `Frontend/src/app/app.routes.ts`. Auth callback: `/callback/oauth`.
+- Routes in `Frontend/src/app/app.routes.ts`. Auth callback: `/callback/oauth`. Live interview: `/interviews/:sessionId/play`.
 - CORS origins: `http://localhost:4200` and `https://hackathon-solution.com`.
 - After UI changes, verify in the browser (behavior, not only a screenshot). Check every route that shares the state you touched.
 

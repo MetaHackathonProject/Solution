@@ -18,7 +18,15 @@ locals {
     "InterviewSessions/QuestionsTableName"   = aws_dynamodb_table.interview_session_questions.name
     "InterviewSessions/ProgressTableName"    = aws_dynamodb_table.interview_sessions_progress.name
     "InterviewSessions/BucketName"           = aws_s3_bucket.interview_sessions.bucket
+    "InterviewProgress/TableName"            = aws_dynamodb_table.interview_sessions_progress.name
+    "InterviewProgress/BucketName"           = aws_s3_bucket.interview_sessions.bucket
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
+    "ElevenLabs/ApiUrl"                      = var.eleven_labs_api_url
+    "ElevenLabs/AgentId"                     = var.eleven_labs_agent_id
+  }
+
+  api_secure_parameters = {
+    "ElevenLabs/ApiKey" = var.eleven_labs_api_key
   }
 }
 
@@ -37,7 +45,12 @@ module "api" {
     APP_InterviewSessions__QuestionsTableName  = aws_dynamodb_table.interview_session_questions.name
     APP_InterviewSessions__ProgressTableName   = aws_dynamodb_table.interview_sessions_progress.name
     APP_InterviewSessions__BucketName          = aws_s3_bucket.interview_sessions.bucket
+    APP_InterviewProgress__TableName           = aws_dynamodb_table.interview_sessions_progress.name
+    APP_InterviewProgress__BucketName          = aws_s3_bucket.interview_sessions.bucket
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
+    APP_ElevenLabs__ApiUrl                     = var.eleven_labs_api_url
+    APP_ElevenLabs__AgentId                    = var.eleven_labs_agent_id
+    APP_ElevenLabs__ApiKey                     = var.eleven_labs_api_key
   }
 
   depends_on = [aws_s3_bucket_versioning.lambdas]
@@ -124,5 +137,17 @@ resource "aws_ssm_parameter" "api" {
   name  = "${local.api_parameter_prefix}/${each.key}"
   type  = "String"
   value = each.value
+}
+
+resource "aws_ssm_parameter" "api_secure" {
+  for_each = local.api_secure_parameters
+
+  name  = "${local.api_parameter_prefix}/${each.key}"
+  type  = "SecureString"
+  value = each.value
+
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 

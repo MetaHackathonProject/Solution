@@ -220,6 +220,16 @@
   color: #18a957;
 }
 
+.row[data-tone='active'] .row__tile {
+  background: #fff4e5;
+  color: #b54708;
+}
+
+.row[data-tone='done'] .row__tile {
+  background: #eef2f6;
+  color: #475467;
+}
+
 .row[data-tone='failed'] .row__tile {
   background: #fcecec;
   color: #b42318;

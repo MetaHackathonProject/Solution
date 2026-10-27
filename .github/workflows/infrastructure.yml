@@ -18,6 +18,8 @@ jobs:
     defaults:
       run:
         working-directory: Infrastructure
+    env:
+      TF_VAR_eleven_labs_api_key: ${{ secrets.ELEVEN_LABS_API_KEY }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4

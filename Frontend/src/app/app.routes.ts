@@ -7,6 +7,11 @@ import { Interviews } from './interviews/interviews';
 export const routes: Routes = [
   { path: '', pathMatch: 'full', component: Home },
   { path: 'interviews', component: Interviews },
+  {
+    path: 'interviews/:sessionId/play',
+    loadComponent: () =>
+      import('./interview-play/interview-play').then((m) => m.InterviewPlay),
+  },
   { path: 'interviews/:sessionId', component: InterviewDetail },
   { path: 'callback/oauth', component: CallbackAuth },
 ];

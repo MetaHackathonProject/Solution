@@ -92,6 +92,16 @@
   background: #f3fbf6;
 }
 
+.prep[data-tone='active'] {
+  border-color: #f5c07a;
+  background: #fff8ef;
+}
+
+.prep[data-tone='done'] {
+  border-color: #c8d0da;
+  background: #f6f8fa;
+}
+
 .prep[data-tone='failed'] {
   border-color: #f0b4ae;
   background: #fff6f5;

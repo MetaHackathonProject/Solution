@@ -4,6 +4,8 @@ export type InterviewSessionStatus =
   | 'GENERATING_QUESTIONS'
   | 'GENERATING_PLAN'
   | 'SUCCESS'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
   | 'FAILED';
 
 export interface StatusStep {
@@ -36,7 +38,12 @@ export const PREPARING_STEPS: StatusStep[] = [
 ];
 
 export function isTerminalStatus(status: string): boolean {
-  return status === 'SUCCESS' || status === 'FAILED';
+  return (
+    status === 'SUCCESS' ||
+    status === 'FAILED' ||
+    status === 'IN_PROGRESS' ||
+    status === 'COMPLETED'
+  );
 }
 
 export function isPreparingStatus(status: string): boolean {
@@ -60,6 +67,10 @@ export function statusLabel(status: string): string {
       return 'Generating plan';
     case 'SUCCESS':
       return 'Ready';
+    case 'IN_PROGRESS':
+      return 'In progress';
+    case 'COMPLETED':
+      return 'Completed';
     case 'FAILED':
       return 'Failed';
     default:
@@ -79,6 +90,10 @@ export function statusDetail(status: string): string {
       return 'Curating the spoken interview plan.';
     case 'SUCCESS':
       return 'The interview plan is ready.';
+    case 'IN_PROGRESS':
+      return 'The live interview is in progress. You can continue from where you left off if the queue still has questions.';
+    case 'COMPLETED':
+      return 'This interview is finished. The question queue was exhausted.';
     case 'FAILED':
       return 'Preparation failed. Create a new session to try again.';
     default:
@@ -86,9 +101,17 @@ export function statusDetail(status: string): string {
   }
 }
 
-export function statusTone(status: string): 'preparing' | 'ready' | 'failed' {
+export function statusTone(status: string): 'preparing' | 'ready' | 'failed' | 'active' | 'done' {
   if (status === 'SUCCESS') {
     return 'ready';
+  }
+
+  if (status === 'IN_PROGRESS') {
+    return 'active';
+  }
+
+  if (status === 'COMPLETED') {
+    return 'done';
   }
 
   if (status === 'FAILED') {

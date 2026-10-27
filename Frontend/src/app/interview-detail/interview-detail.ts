@@ -37,7 +37,10 @@ export class InterviewDetail implements OnInit, OnDestroy {
 
   protected readonly status = computed(() => this.session()?.status ?? 'STARTED');
   protected readonly preparing = computed(() => isPreparingStatus(this.status()));
-  protected readonly ready = computed(() => this.status() === 'SUCCESS');
+  protected readonly ready = computed(
+    () => this.status() === 'SUCCESS' || this.status() === 'IN_PROGRESS',
+  );
+  protected readonly completed = computed(() => this.status() === 'COMPLETED');
   protected readonly failed = computed(() => this.status() === 'FAILED');
   protected readonly statusTitle = computed(() => statusLabel(this.status()));
   protected readonly statusCopy = computed(() => statusDetail(this.status()));
@@ -96,13 +99,12 @@ export class InterviewDetail implements OnInit, OnDestroy {
   }
 
   protected startInterview(): void {
-    if (!this.ready()) {
+    if (!this.ready() && this.status() !== 'IN_PROGRESS') {
       return;
     }
 
     this.starting.set(true);
-    // Voice interview wiring comes next; keep the ready CTA in place.
-    window.setTimeout(() => this.starting.set(false), 600);
+    void this.router.navigate(['/interviews', this.sessionId, 'play']);
   }
 
   protected deleteSession(): void {

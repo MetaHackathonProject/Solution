@@ -88,7 +88,47 @@
                     [attr.data-tone]="statusTone(session.status)"
                     [routerLink]="['/interviews', session.sessionId]"
                   >
-                    <span class="row__tile" aria-hidden="true">✓</span>
+                    <span class="row__tile" aria-hidden="true">
+                      {{ session.status === 'IN_PROGRESS' ? '▶' : '✓' }}
+                    </span>
+                    <span class="row__copy">
+                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__sub">
+                        {{ statusLabel(session.status) }}
+                        · {{ difficultyLabel(session.settings.difficulty) }}
+                        · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                      </span>
+                    </span>
+                  </a>
+                  <div class="row__actions">
+                    <app-session-actions-menu
+                      [label]="'Actions for ' + session.name"
+                      [busy]="deletingId() === session.sessionId"
+                      [disabled]="deletingId() !== null && deletingId() !== session.sessionId"
+                      (delete)="deleteSession($event, session)"
+                    />
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (completed().length > 0) {
+          <section class="section" aria-labelledby="section-completed">
+            <h2 class="section__title" id="section-completed">
+              Completed
+              <span class="section__count">{{ completed().length }}</span>
+            </h2>
+            <ul class="list">
+              @for (session of completed(); track session.sessionId) {
+                <li class="row-item">
+                  <a
+                    class="row"
+                    [attr.data-tone]="statusTone(session.status)"
+                    [routerLink]="['/interviews', session.sessionId]"
+                  >
+                    <span class="row__tile" aria-hidden="true">●</span>
                     <span class="row__copy">
                       <span class="row__title">{{ session.name }}</span>
                       <span class="row__sub">

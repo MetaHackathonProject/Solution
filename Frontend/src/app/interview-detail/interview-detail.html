@@ -39,7 +39,17 @@
     } @else if (session(); as activeSession) {
       <section
         class="prep"
-        [attr.data-tone]="ready() ? 'ready' : failed() ? 'failed' : 'preparing'"
+        [attr.data-tone]="
+          completed()
+            ? 'done'
+            : ready()
+              ? status() === 'IN_PROGRESS'
+                ? 'active'
+                : 'ready'
+              : failed()
+                ? 'failed'
+                : 'preparing'
+        "
         aria-labelledby="prep-title"
         aria-live="polite"
       >
@@ -106,8 +116,16 @@
               [disabled]="starting() || deleting()"
               (click)="startInterview()"
             >
-              {{ starting() ? 'Starting…' : 'Start interview' }}
+              {{
+                starting()
+                  ? 'Starting…'
+                  : status() === 'IN_PROGRESS'
+                    ? 'Continue interview'
+                    : 'Start interview'
+              }}
             </button>
+          } @else if (completed()) {
+            <a class="btn btn--secondary" routerLink="/">Create another session</a>
           } @else if (failed()) {
             <a class="btn btn--primary" routerLink="/">Create another session</a>
           }

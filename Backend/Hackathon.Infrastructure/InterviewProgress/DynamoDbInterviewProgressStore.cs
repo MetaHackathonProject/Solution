@@ -50,6 +50,25 @@ public sealed class DynamoDbInterviewProgressStore(
         }
     }
 
+    public async Task<bool> HasAnyAsync(string sessionId, CancellationToken cancellationToken)
+    {
+        var response = await dynamoDb.QueryAsync(
+            new QueryRequest
+            {
+                TableName = options.Value.TableName,
+                KeyConditionExpression = "session_id = :session_id",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":session_id"] = new(sessionId),
+                },
+                Limit = 1,
+                Select = Select.COUNT,
+            },
+            cancellationToken);
+
+        return response.Count > 0;
+    }
+
     public async Task<PopInterviewProgressResult> PopNextAsync(
         string sessionId,
         int count,
