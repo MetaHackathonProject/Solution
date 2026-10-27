@@ -64,7 +64,7 @@ Modules (exact strings): `Communication`, `TechnicalKnowledge`, `PracticalSkills
 
 Offer JSON: keep the offer language; no invented employers, skills, or years. `seniority` and `languages.proficiency` enums are in `OfferExtractor/prompt.md`. Module `score` is 1–10.
 
-Plan: 10–12 questions including 1–2 opening warm-ups. Copy assessment `question` and `assessment_goal` verbatim. Do not invent assessment questions.
+Plan: 10–12 questions including mandatory 1–2 opening warm-ups (intro + optional motivation for the offer) that the plan agent may write; every other question is copied verbatim with `assessment_goal`. Do not invent assessment questions.
 
 ## Backend
 
