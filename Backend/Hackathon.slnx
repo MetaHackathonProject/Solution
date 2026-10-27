@@ -9,5 +9,6 @@
   </Folder>
   <Folder Name="/Functions/">
     <Project Path="Hackathon.SeedInterviewProgress/Hackathon.SeedInterviewProgress.csproj" />
+    <Project Path="Hackathon.Mcp/Hackathon.Mcp.csproj" />
   </Folder>
 </Solution>

@@ -70,6 +70,14 @@ output "seed_interview_progress_function_arn" {
   value = module.seed_interview_progress.function_arn
 }
 
+output "mcp_interview_questions_function_name" {
+  value = module.mcp_interview_questions.function_name
+}
+
+output "mcp_interview_questions_url" {
+  value = "https://${local.domains.api}/mcp/interview-questions/agent"
+}
+
 output "agent_harnesses" {
   value = {
     for name, harness in aws_bedrockagentcore_harness.agent : name => harness.arn

@@ -10,6 +10,7 @@ public sealed class DynamoDbInterviewProgressStore(
     IAmazonDynamoDB dynamoDb,
     IOptions<InterviewProgressOptions> options) : IInterviewProgressStore
 {
+    private const string OrderKeyIndexName = "order-key-index";
     private const int BatchSize = 25;
 
     public async Task ReplaceSessionAsync(
@@ -17,7 +18,7 @@ public sealed class DynamoDbInterviewProgressStore(
         IReadOnlyList<InterviewProgressItem> items,
         CancellationToken cancellationToken)
     {
-        var existing = await QueryAllAsync(sessionId, cancellationToken);
+        var existing = await QueryQuestionIdsAsync(sessionId, cancellationToken);
         foreach (var chunk in existing.Chunk(BatchSize))
         {
             await WriteBatchAsync(
@@ -49,7 +50,43 @@ public sealed class DynamoDbInterviewProgressStore(
         }
     }
 
-    private async Task<IReadOnlyList<string>> QueryAllAsync(
+    public async Task<PopInterviewProgressResult> PopNextAsync(
+        string sessionId,
+        int count,
+        CancellationToken cancellationToken)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+
+        var ordered = await QueryOrderedAsync(sessionId, cancellationToken);
+        if (ordered.Count == 0)
+        {
+            return new PopInterviewProgressResult([], 0);
+        }
+
+        var toPop = ordered.Take(count).ToList();
+        foreach (var chunk in toPop.Chunk(BatchSize))
+        {
+            await WriteBatchAsync(
+                chunk.Select(item => new WriteRequest
+                {
+                    DeleteRequest = new DeleteRequest
+                    {
+                        Key = new Dictionary<string, AttributeValue>
+                        {
+                            ["session_id"] = new(item.SessionId),
+                            ["question_id"] = new(item.QuestionId),
+                        },
+                    },
+                }),
+                cancellationToken);
+        }
+
+        return new PopInterviewProgressResult(
+            toPop,
+            Math.Max(0, ordered.Count - toPop.Count));
+    }
+
+    private async Task<IReadOnlyList<string>> QueryQuestionIdsAsync(
         string sessionId,
         CancellationToken cancellationToken)
     {
@@ -92,6 +129,64 @@ public sealed class DynamoDbInterviewProgressStore(
 
         return questionIds;
     }
+
+    private async Task<IReadOnlyList<InterviewProgressItem>> QueryOrderedAsync(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var items = new List<InterviewProgressItem>();
+        Dictionary<string, AttributeValue>? exclusiveStartKey = null;
+
+        do
+        {
+            var request = new QueryRequest
+            {
+                TableName = options.Value.TableName,
+                IndexName = OrderKeyIndexName,
+                KeyConditionExpression = "session_id = :session_id",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":session_id"] = new(sessionId),
+                },
+                ScanIndexForward = true,
+            };
+
+            if (exclusiveStartKey is { Count: > 0 })
+            {
+                request.ExclusiveStartKey = exclusiveStartKey;
+            }
+
+            var response = await dynamoDb.QueryAsync(request, cancellationToken);
+            if (response.Items is { Count: > 0 })
+            {
+                items.AddRange(response.Items.Select(FromItem));
+            }
+
+            exclusiveStartKey = response.LastEvaluatedKey is { Count: > 0 }
+                ? response.LastEvaluatedKey
+                : null;
+        }
+        while (exclusiveStartKey is not null);
+
+        return items;
+    }
+
+    private static InterviewProgressItem FromItem(Dictionary<string, AttributeValue> item) =>
+        new(
+            item["session_id"].S,
+            item["question_id"].S,
+            item.GetValueOrDefault("module")?.S ?? string.Empty,
+            ParseInt(item.GetValueOrDefault("module_order")),
+            ParseInt(item.GetValueOrDefault("question_order")),
+            item.GetValueOrDefault("order_key")?.S ?? string.Empty,
+            item.GetValueOrDefault("question_content")?.S ?? string.Empty,
+            item.GetValueOrDefault("module_objective")?.S ?? string.Empty,
+            item.GetValueOrDefault("question_objective")?.S ?? string.Empty);
+
+    private static int ParseInt(AttributeValue? value) =>
+        value?.N is { Length: > 0 } number && int.TryParse(number, out var parsed)
+            ? parsed
+            : 0;
 
     private async Task WriteBatchAsync(
         IEnumerable<WriteRequest> requests,

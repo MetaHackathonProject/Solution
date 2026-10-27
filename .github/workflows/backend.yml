@@ -25,6 +25,8 @@ jobs:
             function: hackathon-solution-api
           - project: Hackathon.SeedInterviewProgress
             function: hackathon-solution-seed-interview-progress
+          - project: Hackathon.Mcp
+            function: hackathon-solution-mcp-interview-questions
     defaults:
       run:
         working-directory: Backend/${{ matrix.project }}

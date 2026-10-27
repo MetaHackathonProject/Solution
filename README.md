@@ -44,6 +44,8 @@ Preparation is three AgentCore harnesses, in this order:
 
 `POST /api/interview-sessions` writes the session as `STARTED` and starts the Step Functions planner. Status then moves through `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, and ends at `SUCCESS` or `FAILED`. After the plan is written, Step Functions invokes `seed-interview-progress` to fill the live-interview progress table from `plan.json`; agents do not write that table.
 
+During the voice interview, ElevenLabs calls MCP `get_next_question` on `https://api.hackathon-solution.com/mcp/interview-questions/agent` (public) to pop the next questions from that progress queue.
+
 ## Repository
 
 | Path | What it is |

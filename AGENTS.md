@@ -73,6 +73,7 @@ Plan: 10–12 questions including mandatory 1–2 opening warm-ups (intro + opti
 - New C# Lambdas: add a matrix row in `.github/workflows/backend.yml`. Function name pattern `{name}-hackathon` (API is `hackathon-solution-api-hackathon`).
 - Handler for the API: `Hackathon.Api::Hackathon.Api.LambdaEntryPoint::FunctionHandlerAsync`.
 - Progress seeding: `Hackathon.SeedInterviewProgress` reads `{user_id}/{session_id}/plan.json` and replaces rows in the progress table (`order_key` = `{module_order:D4}#{order:D4}`). Step Functions invokes it after plan generation with `{ "user_id", "session_id" }`. Do not seed from AgentCore.
+- Live questions MCP: `Hackathon.Mcp` exposes `get_next_question(sessionId)` at `https://api.hackathon-solution.com/mcp/interview-questions/agent` (public, no JWT). Pops 2 ordered progress rows and deletes them. Point the ElevenLabs agent MCP server at that URL; pass `sessionId` as a ConvAI dynamic variable.
 
 ## Frontend
 
