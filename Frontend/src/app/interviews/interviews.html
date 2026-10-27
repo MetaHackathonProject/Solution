@@ -38,18 +38,25 @@
             </h2>
             <ul class="list">
               @for (session of preparing(); track session.sessionId) {
-                <li class="row" [attr.data-tone]="statusTone(session.status)">
-                  <span class="row__tile" aria-hidden="true">
-                    <span class="row__spinner"></span>
-                  </span>
-                  <span class="row__copy">
-                    <span class="row__title">{{ session.name }}</span>
-                    <span class="row__sub">
-                      {{ statusLabel(session.status) }}
-                      · {{ difficultyLabel(session.settings.difficulty) }}
-                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                <li>
+                  <a
+                    class="row"
+                    [attr.data-tone]="statusTone(session.status)"
+                    [routerLink]="['/interviews', session.sessionId]"
+                  >
+                    <span class="row__tile" aria-hidden="true">
+                      <span class="row__spinner"></span>
                     </span>
-                  </span>
+                    <span class="row__copy">
+                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__sub">
+                        {{ statusLabel(session.status) }}
+                        · {{ difficultyLabel(session.settings.difficulty) }}
+                        · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                      </span>
+                    </span>
+                    <span class="row__chevron" aria-hidden="true">›</span>
+                  </a>
                 </li>
               }
             </ul>
@@ -64,16 +71,23 @@
             </h2>
             <ul class="list">
               @for (session of ready(); track session.sessionId) {
-                <li class="row" [attr.data-tone]="statusTone(session.status)">
-                  <span class="row__tile" aria-hidden="true">✓</span>
-                  <span class="row__copy">
-                    <span class="row__title">{{ session.name }}</span>
-                    <span class="row__sub">
-                      {{ statusLabel(session.status) }}
-                      · {{ difficultyLabel(session.settings.difficulty) }}
-                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                <li>
+                  <a
+                    class="row"
+                    [attr.data-tone]="statusTone(session.status)"
+                    [routerLink]="['/interviews', session.sessionId]"
+                  >
+                    <span class="row__tile" aria-hidden="true">✓</span>
+                    <span class="row__copy">
+                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__sub">
+                        {{ statusLabel(session.status) }}
+                        · {{ difficultyLabel(session.settings.difficulty) }}
+                        · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                      </span>
                     </span>
-                  </span>
+                    <span class="row__chevron" aria-hidden="true">›</span>
+                  </a>
                 </li>
               }
             </ul>
@@ -88,16 +102,23 @@
             </h2>
             <ul class="list">
               @for (session of failed(); track session.sessionId) {
-                <li class="row" [attr.data-tone]="statusTone(session.status)">
-                  <span class="row__tile" aria-hidden="true">!</span>
-                  <span class="row__copy">
-                    <span class="row__title">{{ session.name }}</span>
-                    <span class="row__sub">
-                      {{ statusLabel(session.status) }}
-                      · {{ difficultyLabel(session.settings.difficulty) }}
-                      · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                <li>
+                  <a
+                    class="row"
+                    [attr.data-tone]="statusTone(session.status)"
+                    [routerLink]="['/interviews', session.sessionId]"
+                  >
+                    <span class="row__tile" aria-hidden="true">!</span>
+                    <span class="row__copy">
+                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__sub">
+                        {{ statusLabel(session.status) }}
+                        · {{ difficultyLabel(session.settings.difficulty) }}
+                        · {{ createdLabel(session.createdAt) | date: 'mediumDate' }}
+                      </span>
                     </span>
-                  </span>
+                    <span class="row__chevron" aria-hidden="true">›</span>
+                  </a>
                 </li>
               }
             </ul>

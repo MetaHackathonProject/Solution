@@ -1,0 +1,107 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__intro">
+      <p class="page__eyebrow">Interview details</p>
+      <h1 class="page__title">{{ session()?.name || 'Interview session' }}</h1>
+      <p class="page__lead">
+        Follow preparation progress, then start the mock interview when the plan is ready.
+      </p>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate" aria-labelledby="sign-in-title">
+        <h2 class="gate__title" id="sign-in-title">Sign in to open this session</h2>
+        <p class="gate__copy">Session details are private to your account.</p>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in</button>
+      </section>
+    } @else if (loading()) {
+      <div class="loading" role="status" aria-live="polite">
+        <span class="prep__spinner" aria-hidden="true"></span>
+        <span>Loading session…</span>
+      </div>
+    } @else if (error() && !session()) {
+      <section class="gate">
+        <h2 class="gate__title">Could not open session</h2>
+        <p class="gate__copy">{{ error() }}</p>
+        <a class="btn btn--secondary" routerLink="/interviews">Back to interviews</a>
+      </section>
+    } @else if (session(); as activeSession) {
+      <section
+        class="prep"
+        [attr.data-tone]="ready() ? 'ready' : failed() ? 'failed' : 'preparing'"
+        aria-labelledby="prep-title"
+        aria-live="polite"
+      >
+        <div class="prep__hero">
+          @if (preparing()) {
+            <span class="prep__spinner" aria-hidden="true"></span>
+          } @else if (ready()) {
+            <span class="prep__icon prep__icon--ready" aria-hidden="true">✓</span>
+          } @else {
+            <span class="prep__icon prep__icon--failed" aria-hidden="true">!</span>
+          }
+          <div>
+            <h2 class="prep__title" id="prep-title">{{ statusTitle() }}</h2>
+            <p class="prep__copy">{{ statusCopy() }}</p>
+          </div>
+        </div>
+
+        @if (preparing() || failed()) {
+          <ol class="prep__steps">
+            @for (step of preparingSteps; track step.id) {
+              <li [class]="stepClass(step.id)">
+                <span class="prep-step__marker" aria-hidden="true"></span>
+                <span class="prep-step__body">
+                  <span class="prep-step__label">{{ step.label }}</span>
+                  <span class="prep-step__detail">{{ step.detail }}</span>
+                </span>
+              </li>
+            }
+          </ol>
+        }
+
+        @if (ready()) {
+          <dl class="facts">
+            <div class="facts__item">
+              <dt>Difficulty</dt>
+              <dd>{{ difficultyLabel(activeSession.settings.difficulty) }}</dd>
+            </div>
+            <div class="facts__item">
+              <dt>Language</dt>
+              <dd>{{ activeSession.settings.recruiterLanguage }}</dd>
+            </div>
+            <div class="facts__item">
+              <dt>Created</dt>
+              <dd>{{ createdLabel(activeSession.createdAt) | date: 'medium' }}</dd>
+            </div>
+          </dl>
+        }
+
+        <p class="prep__meta">
+          <span>Session ID</span>
+          <code>{{ activeSession.sessionId }}</code>
+        </p>
+
+        @if (error()) {
+          <p class="alert" role="alert">{{ error() }}</p>
+        }
+
+        <div class="prep__actions">
+          <a class="btn btn--secondary" routerLink="/interviews">Back to interviews</a>
+          @if (ready()) {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="starting()"
+              (click)="startInterview()"
+            >
+              {{ starting() ? 'Starting…' : 'Start interview' }}
+            </button>
+          } @else if (failed()) {
+            <a class="btn btn--primary" routerLink="/">Create another session</a>
+          }
+        </div>
+      </section>
+    }
+  </div>
+</main>

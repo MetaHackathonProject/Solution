@@ -14,55 +14,6 @@
         <p class="gate__copy">Sessions are tied to your account so the plan stays private.</p>
         <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in</button>
       </section>
-    } @else if (session(); as activeSession) {
-      <section
-        class="prep"
-        [attr.data-tone]="terminal() ? (status() === 'SUCCESS' ? 'ready' : 'failed') : 'preparing'"
-        aria-labelledby="prep-title"
-        aria-live="polite"
-      >
-        <div class="prep__hero">
-          @if (preparing()) {
-            <span class="prep__spinner" aria-hidden="true"></span>
-          } @else if (status() === 'SUCCESS') {
-            <span class="prep__icon prep__icon--ready" aria-hidden="true">✓</span>
-          } @else {
-            <span class="prep__icon prep__icon--failed" aria-hidden="true">!</span>
-          }
-          <div>
-            <h2 class="prep__title" id="prep-title">{{ statusTitle() }}</h2>
-            <p class="prep__copy">{{ statusCopy() }}</p>
-          </div>
-        </div>
-
-        <ol class="prep__steps">
-          @for (step of preparingSteps; track step.id) {
-            <li [class]="stepClass(step.id)">
-              <span class="prep-step__marker" aria-hidden="true"></span>
-              <span class="prep-step__body">
-                <span class="prep-step__label">{{ step.label }}</span>
-                <span class="prep-step__detail">{{ step.detail }}</span>
-              </span>
-            </li>
-          }
-        </ol>
-
-        <p class="prep__meta">
-          <span>{{ activeSession.name }}</span>
-          <code>{{ activeSession.sessionId }}</code>
-        </p>
-
-        @if (error()) {
-          <p class="form__alert" role="alert">{{ error() }}</p>
-        }
-
-        <div class="prep__actions">
-          <a class="btn btn--secondary" routerLink="/interviews">View interviews</a>
-          <button type="button" class="btn btn--primary" (click)="resetForm()">
-            Create another session
-          </button>
-        </div>
-      </section>
     } @else {
       <form
         class="form"
