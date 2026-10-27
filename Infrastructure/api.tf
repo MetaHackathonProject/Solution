@@ -11,11 +11,14 @@ locals {
   api_parameter_prefix = "/${local.name_prefix}/${local.env.environment}"
 
   api_parameters = {
-    "JWT/ClientId"                     = aws_cognito_user_pool_client.web.id
-    "JWT/AuthorityUrl"                 = "https://cognito-idp.${data.aws_region.current.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
-    "Cors/AllowedOrigins"              = join(",", local.allowed_origins)
-    "InterviewSessions/TableName"      = aws_dynamodb_table.interview_sessions.name
-    "InterviewPlanner/StateMachineArn" = aws_sfn_state_machine.interview_planner.arn
+    "JWT/ClientId"                           = aws_cognito_user_pool_client.web.id
+    "JWT/AuthorityUrl"                       = "https://cognito-idp.${data.aws_region.current.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+    "Cors/AllowedOrigins"                    = join(",", local.allowed_origins)
+    "InterviewSessions/TableName"            = aws_dynamodb_table.interview_sessions.name
+    "InterviewSessions/QuestionsTableName"   = aws_dynamodb_table.interview_session_questions.name
+    "InterviewSessions/ProgressTableName"    = aws_dynamodb_table.interview_sessions_progress.name
+    "InterviewSessions/BucketName"           = aws_s3_bucket.interview_sessions.bucket
+    "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
   }
 }
 
@@ -29,9 +32,12 @@ module "api" {
   memory            = 512
 
   environment = {
-    ASPNETCORE_ENVIRONMENT                = local.env.environment
-    APP_InterviewSessions__TableName      = aws_dynamodb_table.interview_sessions.name
-    APP_InterviewPlanner__StateMachineArn = aws_sfn_state_machine.interview_planner.arn
+    ASPNETCORE_ENVIRONMENT                     = local.env.environment
+    APP_InterviewSessions__TableName           = aws_dynamodb_table.interview_sessions.name
+    APP_InterviewSessions__QuestionsTableName  = aws_dynamodb_table.interview_session_questions.name
+    APP_InterviewSessions__ProgressTableName   = aws_dynamodb_table.interview_sessions_progress.name
+    APP_InterviewSessions__BucketName          = aws_s3_bucket.interview_sessions.bucket
+    APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
   }
 
   depends_on = [aws_s3_bucket_versioning.lambdas]
@@ -65,9 +71,34 @@ data "aws_iam_policy_document" "api" {
       "dynamodb:PutItem",
       "dynamodb:GetItem",
       "dynamodb:UpdateItem",
+      "dynamodb:DeleteItem",
       "dynamodb:Query",
+      "dynamodb:BatchWriteItem",
     ]
-    resources = [aws_dynamodb_table.interview_sessions.arn]
+    resources = [
+      aws_dynamodb_table.interview_sessions.arn,
+      aws_dynamodb_table.interview_session_questions.arn,
+      "${aws_dynamodb_table.interview_session_questions.arn}/index/*",
+      aws_dynamodb_table.interview_sessions_progress.arn,
+      "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [aws_s3_bucket.interview_sessions.arn]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:DeleteObject",
+    ]
+    resources = ["${aws_s3_bucket.interview_sessions.arn}/*"]
   }
 
   statement {

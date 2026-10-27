@@ -25,6 +25,7 @@ public static class RegisterInDI
         services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client());
         services.AddSingleton<IAmazonStepFunctions>(_ => new AmazonStepFunctionsClient());
         services.AddSingleton<IInterviewSessionStore, DynamoDbInterviewSessionStore>();
+        services.AddSingleton<IInterviewSessionArtifactStore, InterviewSessionArtifactStore>();
         services.AddSingleton<IInterviewPreparationStarter, StepFunctionsInterviewPreparationStarter>();
         services.AddSingleton<IInterviewPlanReader, S3InterviewPlanReader>();
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();

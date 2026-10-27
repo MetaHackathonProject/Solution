@@ -312,6 +312,22 @@
   }
 }
 
+.btn--danger {
+  border-color: #f3c1bd;
+  background: #fff5f4;
+  color: #b42318;
+  margin-inline-start: auto;
+
+  &:hover:not(:disabled) {
+    background: #fcecec;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
 @keyframes prep-spin {
   to {
     transform: rotate(360deg);
@@ -340,6 +356,10 @@
 
   .btn {
     width: 100%;
+  }
+
+  .btn--danger {
+    margin-inline-start: 0;
   }
 }
 

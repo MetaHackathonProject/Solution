@@ -44,6 +44,24 @@ public sealed class DynamoDbInterviewSessionStore(
             : FromItem(response.Item);
     }
 
+    public async Task DeleteAsync(
+        string userId,
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        await dynamoDb.DeleteItemAsync(
+            new DeleteItemRequest
+            {
+                TableName = options.Value.TableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["user_id"] = new(userId),
+                    ["session_id"] = new(sessionId),
+                },
+            },
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyList<InterviewSession>> ListByUserAsync(
         string userId,
         CancellationToken cancellationToken)

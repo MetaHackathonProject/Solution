@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, catchError, of, switchMap, timer } from 'rxjs';
 import { AuthService } from '../auth.service';
 import {
@@ -23,6 +23,7 @@ import { InterviewSession, InterviewSessionsService } from '../interview-session
 export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly sessionsApi = inject(InterviewSessionsService);
 
   protected readonly preparingSteps = PREPARING_STEPS;
@@ -31,6 +32,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly session = signal<InterviewSession | null>(null);
   protected readonly lastPreparingStatus = signal('STARTED');
   protected readonly starting = signal(false);
+  protected readonly deleting = signal(false);
 
   protected readonly status = computed(() => this.session()?.status ?? 'STARTED');
   protected readonly preparing = computed(() => isPreparingStatus(this.status()));
@@ -100,6 +102,54 @@ export class InterviewDetail implements OnInit, OnDestroy {
     this.starting.set(true);
     // Voice interview wiring comes next; keep the ready CTA in place.
     window.setTimeout(() => this.starting.set(false), 600);
+  }
+
+  protected deleteSession(): void {
+    if (!this.sessionId || this.deleting()) {
+      return;
+    }
+
+    const name = this.session()?.name || 'this interview';
+    if (!window.confirm(`Delete ${name}? This removes the plan, questions, and progress.`)) {
+      return;
+    }
+
+    this.deleting.set(true);
+    this.pollSub?.unsubscribe();
+    this.pollSub = null;
+
+    this.sessionsApi.delete(this.sessionId).subscribe({
+      next: () => {
+        void this.router.navigate(['/interviews']);
+      },
+      error: (err: unknown) => {
+        this.deleting.set(false);
+        this.error.set(this.describeDeleteError(err));
+        if (!isTerminalStatus(this.status()) && this.sessionId) {
+          this.startPolling(this.sessionId);
+        }
+      },
+    });
+  }
+
+  private describeDeleteError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 404) {
+        return 'Interview session was already deleted.';
+      }
+
+      if (err.status === 401) {
+        return 'Sign in expired. Sign in again and retry.';
+      }
+
+      if (err.status === 0) {
+        return 'Could not reach the API. Check your connection and try again.';
+      }
+
+      return err.error?.title || err.error?.detail || err.message || 'Could not delete the session.';
+    }
+
+    return 'Could not delete the session.';
   }
 
   private startPolling(sessionId: string): void {

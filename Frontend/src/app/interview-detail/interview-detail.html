@@ -92,7 +92,7 @@
             <button
               type="button"
               class="btn btn--primary"
-              [disabled]="starting()"
+              [disabled]="starting() || deleting()"
               (click)="startInterview()"
             >
               {{ starting() ? 'Starting…' : 'Start interview' }}
@@ -100,6 +100,14 @@
           } @else if (failed()) {
             <a class="btn btn--primary" routerLink="/">Create another session</a>
           }
+          <button
+            type="button"
+            class="btn btn--danger"
+            [disabled]="deleting()"
+            (click)="deleteSession()"
+          >
+            {{ deleting() ? 'Deleting…' : 'Delete session' }}
+          </button>
         </div>
       </section>
     }

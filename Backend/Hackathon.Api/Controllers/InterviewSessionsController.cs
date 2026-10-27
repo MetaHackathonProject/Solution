@@ -49,6 +49,18 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
             cancellationToken);
     }
 
+    [HttpDelete("{sessionId}")]
+    public async Task<IActionResult> Delete(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var deleted = await mediator.Send(
+            new DeleteInterviewSessionCommand(sessionId),
+            cancellationToken);
+
+        return deleted ? NoContent() : NotFound();
+    }
+
     private static InterviewSessionResponse ToResponse(InterviewSession session) =>
         new(
             session.SessionId,

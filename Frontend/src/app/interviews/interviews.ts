@@ -24,6 +24,7 @@ export class Interviews implements OnInit, OnDestroy {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly sessions = signal<InterviewSession[]>([]);
+  protected readonly deletingId = signal<string | null>(null);
 
   protected readonly preparing = computed(() =>
     this.sessions().filter((session) => isPreparingStatus(session.status)),
@@ -72,6 +73,46 @@ export class Interviews implements OnInit, OnDestroy {
     return new Date(unixSeconds * 1000);
   }
 
+  protected deleteSession(event: Event, session: InterviewSession): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.deletingId()) {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Delete ${session.name}? This removes the plan, questions, and progress.`,
+      )
+    ) {
+      return;
+    }
+
+    this.deletingId.set(session.sessionId);
+    this.sessionsApi.delete(session.sessionId).subscribe({
+      next: () => {
+        this.sessions.update((items) =>
+          items.filter((item) => item.sessionId !== session.sessionId),
+        );
+        this.deletingId.set(null);
+        this.error.set(null);
+
+        if (
+          !this.sessions().some((item) => isPreparingStatus(item.status)) &&
+          this.pollSub
+        ) {
+          this.pollSub.unsubscribe();
+          this.pollSub = null;
+        }
+      },
+      error: (err: unknown) => {
+        this.deletingId.set(null);
+        this.error.set(this.describeDeleteError(err));
+      },
+    });
+  }
+
   private startPolling(): void {
     this.pollSub?.unsubscribe();
     this.pollSub = timer(0, 4000)
@@ -116,5 +157,25 @@ export class Interviews implements OnInit, OnDestroy {
     }
 
     return 'Could not load interviews.';
+  }
+
+  private describeDeleteError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 404) {
+        return 'Interview session was already deleted.';
+      }
+
+      if (err.status === 401) {
+        return 'Sign in expired. Sign in again and retry.';
+      }
+
+      if (err.status === 0) {
+        return 'Could not reach the API. Check your connection and try again.';
+      }
+
+      return err.error?.title || err.error?.detail || err.message || 'Could not delete the session.';
+    }
+
+    return 'Could not delete the session.';
   }
 }

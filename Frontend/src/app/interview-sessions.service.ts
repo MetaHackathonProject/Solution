@@ -48,4 +48,8 @@ export class InterviewSessionsService {
   list(): Observable<InterviewSession[]> {
     return this.http.get<InterviewSession[]>(this.baseUrl);
   }
+
+  delete(sessionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${sessionId}`);
+  }
 }

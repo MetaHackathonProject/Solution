@@ -20,7 +20,7 @@
         <span class="loading__spinner" aria-hidden="true"></span>
         <span>Loading interviews…</span>
       </div>
-    } @else if (error()) {
+    } @else if (error() && sessions().length === 0) {
       <p class="alert" role="alert">{{ error() }}</p>
     } @else if (sessions().length === 0) {
       <section class="blank">
@@ -29,6 +29,10 @@
         <a class="btn btn--primary" routerLink="/">Create interview</a>
       </section>
     } @else {
+      @if (error()) {
+        <p class="alert" role="alert">{{ error() }}</p>
+      }
+
       <div class="sections">
         @if (preparing().length > 0) {
           <section class="section" aria-labelledby="section-preparing">
@@ -38,7 +42,7 @@
             </h2>
             <ul class="list">
               @for (session of preparing(); track session.sessionId) {
-                <li>
+                <li class="row-item">
                   <a
                     class="row"
                     [attr.data-tone]="statusTone(session.status)"
@@ -57,6 +61,15 @@
                     </span>
                     <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
+                  <button
+                    type="button"
+                    class="row__delete"
+                    [disabled]="deletingId() === session.sessionId"
+                    [attr.aria-label]="'Delete ' + session.name"
+                    (click)="deleteSession($event, session)"
+                  >
+                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
+                  </button>
                 </li>
               }
             </ul>
@@ -71,7 +84,7 @@
             </h2>
             <ul class="list">
               @for (session of ready(); track session.sessionId) {
-                <li>
+                <li class="row-item">
                   <a
                     class="row"
                     [attr.data-tone]="statusTone(session.status)"
@@ -88,6 +101,15 @@
                     </span>
                     <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
+                  <button
+                    type="button"
+                    class="row__delete"
+                    [disabled]="deletingId() === session.sessionId"
+                    [attr.aria-label]="'Delete ' + session.name"
+                    (click)="deleteSession($event, session)"
+                  >
+                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
+                  </button>
                 </li>
               }
             </ul>
@@ -102,7 +124,7 @@
             </h2>
             <ul class="list">
               @for (session of failed(); track session.sessionId) {
-                <li>
+                <li class="row-item">
                   <a
                     class="row"
                     [attr.data-tone]="statusTone(session.status)"
@@ -119,6 +141,15 @@
                     </span>
                     <span class="row__chevron" aria-hidden="true">›</span>
                   </a>
+                  <button
+                    type="button"
+                    class="row__delete"
+                    [disabled]="deletingId() === session.sessionId"
+                    [attr.aria-label]="'Delete ' + session.name"
+                    (click)="deleteSession($event, session)"
+                  >
+                    {{ deletingId() === session.sessionId ? '…' : 'Delete' }}
+                  </button>
                 </li>
               }
             </ul>
