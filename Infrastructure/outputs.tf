@@ -41,3 +41,7 @@ output "api_url" {
 output "api_function_name" {
   value = module.api.function_name
 }
+
+output "interview_sessions_bucket" {
+  value = aws_s3_bucket.interview_sessions.bucket
+}
