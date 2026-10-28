@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import loader from '@monaco-editor/loader';
+import JSZip from 'jszip';
 import type * as Monaco from 'monaco-editor';
 
 export type CodeEditorLanguage =
@@ -249,8 +250,40 @@ export class CodeEditor implements AfterViewInit, OnDestroy {
     void this.editor?.getAction('editor.action.formatDocument')?.run();
   }
 
-  getValue(): string {
-    return this.serializeFiles();
+  hasContent(): boolean {
+    return this.files().some((file) => file.model.getValue().trim().length > 0);
+  }
+
+  async buildSubmissionZip(): Promise<File | null> {
+    const files = this.files();
+    if (!files.length || !this.hasContent()) {
+      return null;
+    }
+
+    const entry =
+      files.find((file) => file.id === this.activeFileId())?.name ??
+      files.find((file) => /^main\./i.test(file.name))?.name ??
+      files[0].name;
+
+    const manifest = {
+      language: this.language(),
+      entry,
+      files: files.map((file) => file.name),
+    };
+
+    const zip = new JSZip();
+    for (const file of files) {
+      zip.file(file.name, file.model.getValue());
+    }
+    zip.file('manifest.json', `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const blob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 },
+    });
+
+    return new File([blob], 'answer.zip', { type: 'application/zip' });
   }
 
   private async mountEditor(): Promise<void> {
@@ -391,19 +424,9 @@ export class CodeEditor implements AfterViewInit, OnDestroy {
     return cleaned;
   }
 
-  private serializeFiles(): string {
-    const files = this.files();
-    if (files.length === 1) {
-      return files[0].model.getValue();
-    }
-
-    return files
-      .map((file) => `===== ${file.name} =====\n${file.model.getValue().replace(/\s+$/, '')}\n`)
-      .join('\n');
-  }
-
   private emitValue(): void {
-    this.valueChange.emit(this.serializeFiles());
+    // Non-empty marker so the panel can enable Submit without shipping concatenated source.
+    this.valueChange.emit(this.hasContent() ? '1' : '');
   }
 }
 

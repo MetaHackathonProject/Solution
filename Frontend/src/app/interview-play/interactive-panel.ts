@@ -139,13 +139,18 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   }
 
   protected submitCode(): void {
-    const text = (this.codeEditor?.getValue() ?? this.answerText()).trim();
-    if (!text || this.submitting()) {
+    if (this.submitting() || !this.codeEditor?.hasContent()) {
       return;
     }
 
-    this.answerText.set(text);
-    this.submitTextValue(text);
+    void this.codeEditor.buildSubmissionZip().then((file) => {
+      if (!file) {
+        this.error.set('Add some code before submitting.');
+        return;
+      }
+
+      this.submitFile(file);
+    });
   }
 
   protected submitText(): void {
