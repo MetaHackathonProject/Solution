@@ -54,29 +54,22 @@
     </div>
   } @else if (isDrawLike()) {
     <div class="draw">
-      <canvas
-        #canvas
-        class="draw__canvas"
-        width="960"
-        height="540"
-        (pointerdown)="onPointerDown($event)"
-        (pointermove)="onPointerMove($event)"
-        (pointerup)="onPointerUp($event)"
-        (pointerleave)="onPointerUp($event)"
-      ></canvas>
+      <app-drawio-editor
+        [readOnly]="submitting()"
+        (stateChange)="onDiagramState($event)"
+      />
       <div class="panel__actions">
         <label class="btn btn--secondary file-btn">
           Upload image
           <input type="file" accept="image/*" (change)="onFileSelected($event)" />
         </label>
-        <button type="button" class="btn btn--secondary" (click)="clearCanvas()">Clear</button>
         <button
           type="button"
           class="btn btn--primary"
-          [disabled]="submitting()"
-          (click)="submitDrawing()"
+          [disabled]="submitting() || !canSubmitDiagram()"
+          (click)="submitDiagram()"
         >
-          {{ submitting() ? 'Submitting…' : 'Submit drawing' }}
+          {{ submitting() ? 'Submitting…' : 'Submit diagram' }}
         </button>
       </div>
     </div>

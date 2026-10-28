@@ -1,9 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import {
-  AfterViewInit,
   Component,
-  ElementRef,
-  OnDestroy,
   ViewChild,
   computed,
   inject,
@@ -17,6 +14,7 @@ import {
   InteractiveTaskService,
 } from '../interactive-task.service';
 import { CodeEditor } from './code-editor';
+import { DrawioEditor, DrawioEditorState } from './drawio-editor';
 import { detectCodeLanguage } from './detect-code-language';
 import {
   InteractiveSubmissionPayload,
@@ -29,11 +27,11 @@ marked.setOptions({ gfm: true, breaks: true });
 
 @Component({
   selector: 'app-interactive-panel',
-  imports: [CodeEditor],
+  imports: [CodeEditor, DrawioEditor],
   templateUrl: './interactive-panel.html',
   styleUrl: './interactive-panel.scss',
 })
-export class InteractivePanel implements AfterViewInit, OnDestroy {
+export class InteractivePanel {
   private readonly tasksApi = inject(InteractiveTaskService);
 
   readonly sessionId = input.required<string>();
@@ -41,13 +39,15 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   readonly closed = output<void>();
   readonly submitted = output<InteractiveSubmissionPayload>();
 
-  @ViewChild('canvas') private canvasRef?: ElementRef<HTMLCanvasElement>;
   @ViewChild(CodeEditor) private codeEditor?: CodeEditor;
+  @ViewChild(DrawioEditor) private drawioEditor?: DrawioEditor;
 
   protected readonly answerText = signal('');
   protected readonly submitting = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly submittedOk = signal(false);
+  protected readonly diagramReady = signal(false);
+  protected readonly diagramHasContent = signal(false);
 
   protected readonly isCodeTask = computed(() => this.task().expectedInput === 'code');
   protected readonly isTextLike = computed(() => {
@@ -71,19 +71,8 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
     return marked.parse(source, { async: false }) as string;
   });
 
-  private drawing = false;
-  private lastX = 0;
-  private lastY = 0;
   /** Text snapshot for walkthrough; null for diagram/schema until we support those. */
   private pendingSolution: string | null = null;
-
-  ngAfterViewInit(): void {
-    this.resetCanvas();
-  }
-
-  ngOnDestroy(): void {
-    this.drawing = false;
-  }
 
   protected onTextInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
@@ -104,48 +93,6 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
     // Binary/file answers are not passed to the walkthrough agent yet.
     this.pendingSolution = null;
     this.submitFile(file);
-  }
-
-  protected clearCanvas(): void {
-    this.resetCanvas();
-  }
-
-  protected onPointerDown(event: PointerEvent): void {
-    const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) {
-      return;
-    }
-
-    this.drawing = true;
-    const point = this.pointerPosition(event, canvas);
-    this.lastX = point.x;
-    this.lastY = point.y;
-    canvas.setPointerCapture(event.pointerId);
-  }
-
-  protected onPointerMove(event: PointerEvent): void {
-    if (!this.drawing) {
-      return;
-    }
-
-    const canvas = this.canvasRef?.nativeElement;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) {
-      return;
-    }
-
-    const point = this.pointerPosition(event, canvas);
-    ctx.beginPath();
-    ctx.moveTo(this.lastX, this.lastY);
-    ctx.lineTo(point.x, point.y);
-    ctx.stroke();
-    this.lastX = point.x;
-    this.lastY = point.y;
-  }
-
-  protected onPointerUp(event: PointerEvent): void {
-    this.drawing = false;
-    this.canvasRef?.nativeElement.releasePointerCapture(event.pointerId);
   }
 
   protected submitCode(): void {
@@ -175,22 +122,34 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
     this.submitTextValue(text);
   }
 
-  protected submitDrawing(): void {
-    const canvas = this.canvasRef?.nativeElement;
-    if (!canvas || this.submitting()) {
+  protected onDiagramState(state: DrawioEditorState): void {
+    this.diagramReady.set(state.ready);
+    this.diagramHasContent.set(state.hasContent);
+  }
+
+  protected canSubmitDiagram(): boolean {
+    return this.diagramReady() && this.diagramHasContent();
+  }
+
+  protected submitDiagram(): void {
+    if (this.submitting() || !this.canSubmitDiagram() || !this.drawioEditor) {
       return;
     }
 
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        this.error.set('Could not export the drawing.');
+    this.submitting.set(true);
+    this.error.set(null);
+
+    void this.drawioEditor.exportAnswer().then((file) => {
+      if (!file) {
+        this.submitting.set(false);
+        this.error.set('Could not export the diagram. Try again.');
         return;
       }
 
+      // Images are not passed to the walkthrough agent yet.
       this.pendingSolution = null;
-      const file = new File([blob], 'answer.png', { type: 'image/png' });
       this.submitFile(file);
-    }, 'image/png');
+    });
   }
 
   protected dismiss(): void {
@@ -242,34 +201,6 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
         ? truncateForWalkthrough(solution, WALKTHROUGH_SOLUTION_MAX_CHARS)
         : null,
     });
-  }
-
-  private resetCanvas(): void {
-    const canvas = this.canvasRef?.nativeElement;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) {
-      return;
-    }
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }
-
-  private pointerPosition(
-    event: PointerEvent,
-    canvas: HTMLCanvasElement,
-  ): { x: number; y: number } {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      x: (event.clientX - rect.left) * scaleX,
-      y: (event.clientY - rect.top) * scaleY,
-    };
   }
 
   private describeError(err: unknown): string {

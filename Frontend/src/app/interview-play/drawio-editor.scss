@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.drawio {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  background: #fff;
+  min-height: 28rem;
+}
+
+.drawio--busy {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.drawio__frame {
+  display: block;
+  width: 100%;
+  height: min(70vh, 36rem);
+  min-height: 28rem;
+  border: 0;
+  background: #fff;
+}
+
+.drawio__status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: rgb(255 255 255 / 88%);
+  color: var(--color-muted, #5c6370);
+  font-size: 0.92rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .drawio,
+  .drawio__frame {
+    min-height: 22rem;
+  }
+
+  .drawio__frame {
+    height: min(65vh, 28rem);
+  }
+}

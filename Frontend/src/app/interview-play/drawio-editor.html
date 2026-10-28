@@ -1,0 +1,12 @@
+<div class="drawio" [class.drawio--busy]="readOnly()">
+  <iframe
+    #frame
+    class="drawio__frame"
+    [src]="editorUrl"
+    title="Diagram editor"
+    allow="clipboard-read; clipboard-write"
+  ></iframe>
+  @if (!ready()) {
+    <p class="drawio__status" role="status">Loading diagram editor…</p>
+  }
+</div>

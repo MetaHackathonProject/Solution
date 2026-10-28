@@ -201,15 +201,10 @@
   font-weight: 600;
 }
 
-.draw__canvas {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  border: 1px solid #cfd8e3;
-  border-radius: 8px;
-  background: #fff;
-  touch-action: none;
-  cursor: crosshair;
+.draw {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .file-btn {
