@@ -4,14 +4,19 @@ import {
   ElementRef,
   OnDestroy,
   ViewChild,
+  inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 const DRAWIO_ORIGIN = 'https://embed.diagrams.net';
 const EMPTY_DIAGRAM =
   '<mxGraphModel><root><mxCell id="0"/><mxCell id="1" parent="0"/></root></mxGraphModel>';
+const DRAWIO_EMBED_URL =
+  `${DRAWIO_ORIGIN}/?embed=1&proto=json&libraries=1&spin=1&ui=atlas` +
+  '&saveAndExit=0&noSaveBtn=1&noExitBtn=1';
 
 interface DrawioMessage {
   event?: string;
@@ -31,15 +36,16 @@ export interface DrawioEditorState {
   styleUrl: './drawio-editor.scss',
 })
 export class DrawioEditor implements AfterViewInit, OnDestroy {
+  private readonly sanitizer = inject(DomSanitizer);
+
   readonly readOnly = input(false);
   readonly stateChange = output<DrawioEditorState>();
 
   @ViewChild('frame', { static: true })
   private readonly frameRef!: ElementRef<HTMLIFrameElement>;
 
-  protected readonly editorUrl =
-    `${DRAWIO_ORIGIN}/?embed=1&proto=json&libraries=1&spin=1&ui=atlas` +
-    '&saveAndExit=0&noSaveBtn=1&noExitBtn=1';
+  protected readonly editorUrl: SafeResourceUrl =
+    this.sanitizer.bypassSecurityTrustResourceUrl(DRAWIO_EMBED_URL);
 
   protected readonly ready = signal(false);
   protected readonly hasContent = signal(false);

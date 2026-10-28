@@ -54,15 +54,7 @@
     </div>
   } @else if (isDrawLike()) {
     <div class="draw">
-      <app-drawio-editor
-        [readOnly]="submitting()"
-        (stateChange)="onDiagramState($event)"
-      />
-      <div class="panel__actions">
-        <label class="btn btn--secondary file-btn">
-          Upload image
-          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
-        </label>
+      <div class="panel__actions panel__actions--end">
         <button
           type="button"
           class="btn btn--primary"
@@ -72,6 +64,10 @@
           {{ submitting() ? 'Submitting…' : 'Submit diagram' }}
         </button>
       </div>
+      <app-drawio-editor
+        [readOnly]="submitting()"
+        (stateChange)="onDiagramState($event)"
+      />
     </div>
   } @else {
     <label class="field">
