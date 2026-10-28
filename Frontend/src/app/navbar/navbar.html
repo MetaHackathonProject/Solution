@@ -1,14 +1,21 @@
 <header class="nav-v2">
   <nav class="nav-v2__inner" aria-label="Main">
-    <a class="nav-v2__brand" routerLink="/">
-      <app-brand-mark />
-      <span class="nav-v2__wordmark">Hackathon Solution</span>
-    </a>
+    <div class="nav-v2__start">
+      <a class="nav-v2__brand" routerLink="/">
+        <app-brand-mark />
+        <span class="nav-v2__wordmark">Hackathon Solution</span>
+      </a>
+
+      @if (auth.isAuthenticated()) {
+        <div class="nav-v2__links">
+          <a class="nav-v2__link" routerLink="/interviews">Interviews</a>
+          <a class="nav-v2__link" routerLink="/">New</a>
+        </div>
+      }
+    </div>
 
     <div class="nav-v2__actions">
       @if (auth.isAuthenticated()) {
-        <a class="nav-v2__link" routerLink="/interviews">Interviews</a>
-        <a class="nav-v2__link" routerLink="/">New</a>
         <app-profile-menu />
       } @else {
         <button type="button" class="nav-v2__login" (click)="auth.signIn()">Sign in</button>
