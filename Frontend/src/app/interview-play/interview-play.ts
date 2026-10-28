@@ -8,8 +8,9 @@ import {
   TextConversation,
   VoiceConversation,
 } from '@elevenlabs/client';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
 import { AuthService } from '../auth.service';
+import { continueInterviewFirstMessage } from '../continue-interview-first-message';
 import { toElevenLabsLanguage } from '../eleven-labs-language';
 import {
   InteractiveTaskResponse,
@@ -18,9 +19,14 @@ import {
 import { interviewOpeningMessage } from '../interview-opening-message';
 import {
   VoiceAgentContextResponse,
+  VoiceAgentPurpose,
   VoiceAgentService,
 } from '../voice-agent.service';
+import { walkthroughFirstMessage } from '../walkthrough-first-message';
 import { InteractivePanel } from './interactive-panel';
+
+type VoicePhase = 'idle' | 'interview' | 'paused' | 'walkthrough';
+type DisconnectIntent = 'none' | 'pause' | 'walkthrough_done' | 'user_end';
 
 @Component({
   selector: 'app-interview-play',
@@ -41,6 +47,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected readonly connectionStatus = signal<Status | 'idle'>('idle');
   protected readonly mode = signal<Mode>('listening');
   protected readonly interactiveTask = signal<InteractiveTaskResponse | null>(null);
+  protected readonly panelCollapsed = signal(false);
+  protected readonly voicePhase = signal<VoicePhase>('idle');
 
   protected sessionId = '';
   private signedUrl: string | null = null;
@@ -49,6 +57,11 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private agentContext: VoiceAgentContextResponse | null = null;
   private conversation: VoiceConversation | TextConversation | null = null;
   private ending = false;
+  private disconnectIntent: DisconnectIntent = 'none';
+  private pendingPauseAfterSpeech = false;
+  private sawSpeakingForPause = false;
+  private pauseGraceTimer: ReturnType<typeof setTimeout> | null = null;
+  private activePurpose: VoiceAgentPurpose = 'interview';
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -64,7 +77,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     forkJoin({
-      signed: this.voiceAgent.getSignedUrl(this.sessionId),
+      signed: this.voiceAgent.getSignedUrl(this.sessionId, 'interview'),
       context: this.voiceAgent.getVoiceContext(this.sessionId),
       interactive: this.interactiveTasks.getActive(this.sessionId).pipe(
         catchError(() => of(null)),
@@ -75,8 +88,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
         this.conversationId = signed.conversationId;
         this.isResume = signed.isResume;
         this.agentContext = context;
-        if (interactive) {
+        if (interactive && interactive.status !== 'Answered') {
           this.interactiveTask.set(interactive);
+          this.voicePhase.set('paused');
         }
         this.loading.set(false);
       },
@@ -88,16 +102,122 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearPauseGraceTimer();
+    if (this.voicePhase() === 'paused') {
+      this.conversation = null;
+      return;
+    }
+
     void this.endConversationLocally();
   }
 
   protected async startConversation(): Promise<void> {
+    if (this.voicePhase() === 'paused' || this.starting()) {
+      return;
+    }
+
+    await this.connectVoice({
+      purpose: 'interview',
+      firstMessage: interviewOpeningMessage({
+        isResume: this.isResume,
+        language: toElevenLabsLanguage(this.agentContext?.language),
+        jobTitle: this.agentContext?.jobTitle,
+        company: this.agentContext?.company,
+      }),
+      phase: 'interview',
+    });
+  }
+
+  protected async stopConversation(): Promise<void> {
+    this.clearPauseGraceTimer();
+    this.pendingPauseAfterSpeech = false;
+    this.disconnectIntent = 'user_end';
+    if (!this.conversation) {
+      void this.completeAndLeave();
+      return;
+    }
+
+    await this.conversation.endSession();
+  }
+
+  protected clearInteractiveTask(): void {
+    this.panelCollapsed.set(true);
+  }
+
+  protected showInteractiveTask(): void {
+    this.panelCollapsed.set(false);
+  }
+
+  protected onInteractiveSubmitted(): void {
+    this.panelCollapsed.set(false);
+    void this.startWalkthrough();
+  }
+
+  private async startWalkthrough(): Promise<void> {
+    this.clearPauseGraceTimer();
+    this.pendingPauseAfterSpeech = false;
+    this.error.set(null);
+
+    try {
+      const signed = await firstValueFrom(
+        this.voiceAgent.getSignedUrl(this.sessionId, 'walkthrough'),
+      );
+      this.signedUrl = signed.signedUrl;
+      this.conversationId = signed.conversationId;
+
+      await this.connectVoice({
+        purpose: 'walkthrough',
+        firstMessage: walkthroughFirstMessage(
+          toElevenLabsLanguage(this.agentContext?.language),
+        ),
+        phase: 'walkthrough',
+      });
+    } catch (err: unknown) {
+      this.voicePhase.set('paused');
+      this.error.set(this.describeError(err));
+    }
+  }
+
+  private async continueInterviewAfterWalkthrough(): Promise<void> {
+    this.error.set(null);
+    this.interactiveTask.set(null);
+    this.panelCollapsed.set(false);
+
+    try {
+      const signed = await firstValueFrom(
+        this.voiceAgent.getSignedUrl(this.sessionId, 'interview'),
+      );
+      this.signedUrl = signed.signedUrl;
+      this.conversationId = signed.conversationId;
+      this.isResume = true;
+
+      await this.connectVoice({
+        purpose: 'interview',
+        firstMessage: continueInterviewFirstMessage(
+          toElevenLabsLanguage(this.agentContext?.language),
+        ),
+        phase: 'interview',
+      });
+    } catch (err: unknown) {
+      this.voicePhase.set('idle');
+      this.connectionStatus.set('idle');
+      this.error.set(this.describeError(err));
+    }
+  }
+
+  private async connectVoice(options: {
+    purpose: VoiceAgentPurpose;
+    firstMessage: string;
+    phase: Exclude<VoicePhase, 'idle' | 'paused'>;
+  }): Promise<void> {
     if (!this.sessionId || !this.signedUrl || this.starting()) {
       return;
     }
 
     this.starting.set(true);
     this.error.set(null);
+    this.activePurpose = options.purpose;
+    this.disconnectIntent = 'none';
 
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -108,13 +228,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     const language = toElevenLabsLanguage(this.agentContext?.language);
-    const openingMessage = interviewOpeningMessage({
-      isResume: this.isResume,
-      language,
-      jobTitle: this.agentContext?.jobTitle,
-      company: this.agentContext?.company,
-    });
-
     const dynamicVariables: Record<string, string> = {
       sessionId: this.sessionId,
       is_resume: this.isResume ? 'true' : 'false',
@@ -137,8 +250,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
         overrides: {
           agent: {
             ...(language ? { language } : {}),
-            // Always override: language presets would otherwise force the stock intro.
-            firstMessage: openingMessage,
+            firstMessage: options.firstMessage,
           },
         },
         clientTools: {
@@ -149,7 +261,15 @@ export class InterviewPlay implements OnInit, OnDestroy {
             }
 
             await this.openInteractiveTask(taskId);
-            return 'Interactive task opened on screen';
+            this.armPauseAfterSpeech();
+            return 'Interactive task opened on screen; voice will pause after you finish speaking';
+          },
+          finish_solution_walkthrough: async () => {
+            this.disconnectIntent = 'walkthrough_done';
+            if (this.conversation) {
+              await this.conversation.endSession();
+            }
+            return 'Returning to the main interview';
           },
         },
         onStatusChange: ({ status }) => {
@@ -157,6 +277,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
         },
         onModeChange: ({ mode }) => {
           this.mode.set(mode);
+          this.onVoiceModeChange(mode);
         },
         onError: () => {
           this.error.set('The voice interview connection failed. Try again.');
@@ -164,10 +285,11 @@ export class InterviewPlay implements OnInit, OnDestroy {
         },
         onConnect: () => {
           this.starting.set(false);
+          this.voicePhase.set(options.phase);
         },
         onDisconnect: () => {
           this.connectionStatus.set('disconnected');
-          this.completeAndLeave();
+          this.onVoiceDisconnected();
         },
       });
     } catch {
@@ -176,16 +298,85 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
   }
 
-  protected async stopConversation(): Promise<void> {
+  private armPauseAfterSpeech(): void {
+    this.clearPauseGraceTimer();
+    this.pendingPauseAfterSpeech = true;
+    this.sawSpeakingForPause = this.mode() === 'speaking';
+
+    if (!this.sawSpeakingForPause) {
+      // Tool often returns before the spoken intro; wait briefly for speaking to start.
+      this.pauseGraceTimer = setTimeout(() => {
+        if (this.pendingPauseAfterSpeech && !this.sawSpeakingForPause) {
+          void this.pauseInterviewLocally();
+        }
+      }, 2500);
+    }
+  }
+
+  private onVoiceModeChange(mode: Mode): void {
+    if (!this.pendingPauseAfterSpeech) {
+      return;
+    }
+
+    if (mode === 'speaking') {
+      this.sawSpeakingForPause = true;
+      this.clearPauseGraceTimer();
+      return;
+    }
+
+    if (mode === 'listening' && this.sawSpeakingForPause) {
+      void this.pauseInterviewLocally();
+    }
+  }
+
+  private async pauseInterviewLocally(): Promise<void> {
+    if (!this.pendingPauseAfterSpeech) {
+      return;
+    }
+
+    this.pendingPauseAfterSpeech = false;
+    this.clearPauseGraceTimer();
+    this.disconnectIntent = 'pause';
+    this.voicePhase.set('paused');
+
     if (!this.conversation) {
       return;
     }
 
-    await this.conversation.endSession();
+    const conversation = this.conversation;
+    this.conversation = null;
+    await conversation.endSession();
   }
 
-  protected clearInteractiveTask(): void {
-    this.interactiveTask.set(null);
+  private onVoiceDisconnected(): void {
+    const intent = this.disconnectIntent;
+    this.disconnectIntent = 'none';
+    this.conversation = null;
+    this.starting.set(false);
+
+    if (intent === 'pause') {
+      this.voicePhase.set('paused');
+      this.connectionStatus.set('idle');
+      return;
+    }
+
+    if (intent === 'walkthrough_done') {
+      void this.continueInterviewAfterWalkthrough();
+      return;
+    }
+
+    if (intent === 'user_end') {
+      void this.completeAndLeave();
+      return;
+    }
+
+    // Agent ended the call (end_call) or unexpected drop.
+    if (this.activePurpose === 'walkthrough') {
+      void this.continueInterviewAfterWalkthrough();
+      return;
+    }
+
+    void this.completeAndLeave();
   }
 
   private openInteractiveTask(taskId: string): Promise<void> {
@@ -193,6 +384,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
       this.interactiveTasks.getById(this.sessionId, taskId).subscribe({
         next: (task) => {
           this.interactiveTask.set(task);
+          this.panelCollapsed.set(false);
           resolve();
         },
         error: (err: unknown) => {
@@ -219,8 +411,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     this.ending = true;
-    const conversationId = this.conversation?.getId() ?? this.conversationId;
+    const conversationId = this.conversationId;
     this.conversation = null;
+    this.voicePhase.set('idle');
 
     if (!conversationId) {
       void this.router.navigate(['/interviews', this.sessionId]);
@@ -235,6 +428,13 @@ export class InterviewPlay implements OnInit, OnDestroy {
         void this.router.navigate(['/interviews', this.sessionId]);
       },
     });
+  }
+
+  private clearPauseGraceTimer(): void {
+    if (this.pauseGraceTimer) {
+      clearTimeout(this.pauseGraceTimer);
+      this.pauseGraceTimer = null;
+    }
   }
 
   private describeError(err: unknown): string {

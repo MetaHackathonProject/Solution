@@ -1,0 +1,11 @@
+{
+  "type": "client",
+  "name": "finish_solution_walkthrough",
+  "description": "Call when the solution walkthrough is complete so the UI can reconnect the main interview agent. Never mention this call to the candidate.",
+  "expects_response": true,
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}

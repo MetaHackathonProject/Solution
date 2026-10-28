@@ -8,7 +8,8 @@ This repo is a mock-interview product: extract a job offer, generate questions, 
 - `Backend/` — .NET 10, MediatR. `Hackathon.Api` → `Hackathon.Application` → `Hackathon.Domain`. `Hackathon.Infrastructure` is AWS adapters. Lambda is an **Event Function** (`Amazon.Lambda.AspNetCoreServer`), not a Web Function.
 - `Infrastructure/` — Terraform. Agents are not defined here; Terraform reads YAML.
 - `Agents/AgentCore/<Name>/` — one harness per folder. This is the only AgentCore source of truth.
-- `Agents/ElevenLabsAgent/` — voice agent export. Do not Terraform it.
+- `Agents/ElevenLabsAgent/` — main voice interviewer export. Do not Terraform it.
+- `Agents/ElevenLabsWalkthroughAgent/` — post-submit solution walkthrough voice agent (no interview-questions MCP). Do not Terraform it; set `eleven_labs_walkthrough_agent_id`.
 
 ## AgentCore
 
@@ -60,11 +61,13 @@ Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supe
 
 Live interview (API + frontend, not AgentCore):
 
-1. `GET /api/voice-agent/signed-url?sessionId=` — ElevenLabs ConvAI signed URL; sets status `IN_PROGRESS` when session is `SUCCESS` or `IN_PROGRESS`.
+1. `GET /api/voice-agent/signed-url?sessionId=&purpose=interview|walkthrough` — ElevenLabs ConvAI signed URL for the main interviewer or walkthrough agent; sets status `IN_PROGRESS` when session is `SUCCESS` or `IN_PROGRESS`.
 2. `GET /api/interview-sessions/{sessionId}/voice-context` — job title/company/overview/language for ConvAI dynamic variables.
-3. Frontend `/interviews/:sessionId/play` starts `@elevenlabs/client` with `sessionId`, `job_title`, `company`, `job_overview`, and `is_resume` (`true` when session was already `IN_PROGRESS`). Always passes `overrides.agent.firstMessage` (intro or resume text); agent Security must allow First message overrides so language presets do not force the stock greeting.
-4. `POST /api/voice-agent/end-conversation` — if the progress table has no remaining rows **and** no pending interactive tasks are `NotAsked`/`InProgress`, sets `COMPLETED`; otherwise leaves status alone (no transcription/orders).
-5. Interactive tasks: `GET /api/interview-sessions/{sessionId}/interactive-task` (active / resume), `GET .../interactive-task/{taskId}`, `POST .../answer` (multipart `text` or `file` → S3 `{user_id}/{session_id}/interactive-tasks/{task_id}/answer.*`). Code answers upload `answer.zip` (solution files + `manifest.json` with `language` / `entry` / `files`) for the review agent’s code interpreter. Voice agent client tool `start_interactive_task(taskId)` opens the play UI panel.
+3. Frontend `/interviews/:sessionId/play` starts `@elevenlabs/client` with `sessionId`, `job_title`, `company`, `job_overview`, and `is_resume` (`true` when session was already `IN_PROGRESS`). Always passes `overrides.agent.firstMessage` (intro, resume, walkthrough, or continue-after-walkthrough); agent Security must allow First message overrides so language presets do not force the stock greeting.
+4. Interactive pause: after `start_interactive_task` and the agent finishes speaking the intro, the frontend **locally** ends the ConvAI session (no `end-conversation` API) so idle exercise time is not billed. Stay paused until submit.
+5. After submit: frontend connects `purpose=walkthrough` with a localized walkthrough first message. Walkthrough agent has **no** interview-questions MCP; client tool `finish_solution_walkthrough` reconnects `purpose=interview` with a localized continue message.
+6. `POST /api/voice-agent/end-conversation` — if the progress table has no remaining rows **and** no pending interactive tasks are `NotAsked`/`InProgress`, sets `COMPLETED`; otherwise leaves status alone (no transcription/orders). Only for real interview end, not interactive pause.
+7. Interactive tasks: `GET /api/interview-sessions/{sessionId}/interactive-task` (active / resume), `GET .../interactive-task/{taskId}`, `POST .../answer` (multipart `text` or `file` → S3 `{user_id}/{session_id}/interactive-tasks/{task_id}/answer.*`). Code answers upload `answer.zip` (solution files + `manifest.json` with `language` / `entry` / `files`) for the review agent’s code interpreter. Voice agent client tool `start_interactive_task(taskId)` opens the play UI panel.
 
 ## Interview domain
 

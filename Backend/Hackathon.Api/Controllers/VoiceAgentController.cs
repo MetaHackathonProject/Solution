@@ -13,12 +13,14 @@ public sealed class VoiceAgentController(IMediator mediator) : ControllerBase
     [HttpGet("signed-url")]
     public async Task<ActionResult<VoiceAgentSignedUrlResponse>> GetSignedUrl(
         [FromQuery] string sessionId,
+        [FromQuery] string? purpose,
         CancellationToken cancellationToken)
     {
         try
         {
+            var agentPurpose = ParsePurpose(purpose);
             var result = await mediator.Send(
-                new GetVoiceAgentSignedUrlQuery(sessionId),
+                new GetVoiceAgentSignedUrlQuery(sessionId, agentPurpose),
                 cancellationToken);
 
             if (result is null)
@@ -47,6 +49,22 @@ public sealed class VoiceAgentController(IMediator mediator) : ControllerBase
             cancellationToken);
 
         return found ? NoContent() : NotFound();
+    }
+
+    private static VoiceAgentPurpose ParsePurpose(string? purpose)
+    {
+        if (string.IsNullOrWhiteSpace(purpose)
+            || purpose.Equals("interview", StringComparison.OrdinalIgnoreCase))
+        {
+            return VoiceAgentPurpose.Interview;
+        }
+
+        if (purpose.Equals("walkthrough", StringComparison.OrdinalIgnoreCase))
+        {
+            return VoiceAgentPurpose.Walkthrough;
+        }
+
+        throw new InvalidOperationException("purpose must be 'interview' or 'walkthrough'.");
     }
 }
 

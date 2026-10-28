@@ -10,17 +10,28 @@ public sealed class ElevenLabsConversationClient(
     IHttpClientFactory httpClientFactory,
     IOptions<ElevenLabsOptions> options) : IElevenLabsConversationClient
 {
-    public async Task<ElevenLabsSignedConversation> GetSignedUrlAsync(CancellationToken cancellationToken)
+    public async Task<ElevenLabsSignedConversation> GetSignedUrlAsync(
+        VoiceAgentPurpose purpose,
+        CancellationToken cancellationToken)
     {
         var config = options.Value;
-        if (string.IsNullOrWhiteSpace(config.ApiKey) || string.IsNullOrWhiteSpace(config.AgentId))
+        if (string.IsNullOrWhiteSpace(config.ApiKey))
         {
-            throw new InvalidOperationException("ElevenLabs ApiKey and AgentId must be configured.");
+            throw new InvalidOperationException("ElevenLabs ApiKey must be configured.");
+        }
+
+        var agentId = ResolveAgentId(config, purpose);
+        if (string.IsNullOrWhiteSpace(agentId))
+        {
+            throw new InvalidOperationException(
+                purpose == VoiceAgentPurpose.Walkthrough
+                    ? "ElevenLabs WalkthroughAgentId must be configured."
+                    : "ElevenLabs AgentId must be configured.");
         }
 
         var client = httpClientFactory.CreateClient("ElevenLabs");
         var path =
-            $"/v1/convai/conversation/get-signed-url?agent_id={Uri.EscapeDataString(config.AgentId)}&include_conversation_id=true";
+            $"/v1/convai/conversation/get-signed-url?agent_id={Uri.EscapeDataString(agentId)}&include_conversation_id=true";
 
         using var request = new HttpRequestMessage(HttpMethod.Get, path);
         request.Headers.Add("xi-api-key", config.ApiKey);
@@ -47,6 +58,13 @@ public sealed class ElevenLabsConversationClient(
 
         return new ElevenLabsSignedConversation(body.SignedUrl, conversationId);
     }
+
+    private static string ResolveAgentId(ElevenLabsOptions config, VoiceAgentPurpose purpose) =>
+        purpose switch
+        {
+            VoiceAgentPurpose.Walkthrough => config.WalkthroughAgentId,
+            _ => config.AgentId,
+        };
 
     private static string? ExtractConversationId(string signedUrl)
     {

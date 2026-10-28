@@ -10,6 +10,12 @@ variable "eleven_labs_agent_id" {
   default     = "agent_9101m5wv7xt4e64b8mn2mpz55djr"
 }
 
+variable "eleven_labs_walkthrough_agent_id" {
+  description = "ElevenLabs ConvAI agent id for post-submit solution walkthrough (no interview-questions MCP)"
+  type        = string
+  default     = "agent_0701m61ez7y3fnpb96fej5kcqsra"
+}
+
 variable "eleven_labs_api_url" {
   description = "ElevenLabs API base URL"
   type        = string

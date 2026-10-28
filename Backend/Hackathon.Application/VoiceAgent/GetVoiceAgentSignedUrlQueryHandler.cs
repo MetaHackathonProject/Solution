@@ -35,7 +35,7 @@ public sealed class GetVoiceAgentSignedUrlQueryHandler(
 
         var isResume = session.Status == InterviewSessionStatus.InProgress;
 
-        var signed = await elevenLabs.GetSignedUrlAsync(cancellationToken);
+        var signed = await elevenLabs.GetSignedUrlAsync(request.Purpose, cancellationToken);
 
         await sessionStore.UpdateStatusAsync(
             userContext.UserId,

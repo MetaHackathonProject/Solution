@@ -24,6 +24,7 @@ locals {
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
     "ElevenLabs/ApiUrl"                      = var.eleven_labs_api_url
     "ElevenLabs/AgentId"                     = var.eleven_labs_agent_id
+    "ElevenLabs/WalkthroughAgentId"          = var.eleven_labs_walkthrough_agent_id
   }
 
   api_secure_parameters = {
@@ -52,6 +53,7 @@ module "api" {
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
     APP_ElevenLabs__ApiUrl                     = var.eleven_labs_api_url
     APP_ElevenLabs__AgentId                    = var.eleven_labs_agent_id
+    APP_ElevenLabs__WalkthroughAgentId         = var.eleven_labs_walkthrough_agent_id
     APP_ElevenLabs__ApiKey                     = var.eleven_labs_api_key
   }
 

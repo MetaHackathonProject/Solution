@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
+export type VoiceAgentPurpose = 'interview' | 'walkthrough';
+
 export interface VoiceAgentSignedUrlResponse {
   signedUrl: string;
   conversationId: string;
@@ -23,8 +25,11 @@ export class VoiceAgentService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api`;
 
-  getSignedUrl(sessionId: string): Observable<VoiceAgentSignedUrlResponse> {
-    const params = new HttpParams().set('sessionId', sessionId);
+  getSignedUrl(
+    sessionId: string,
+    purpose: VoiceAgentPurpose = 'interview',
+  ): Observable<VoiceAgentSignedUrlResponse> {
+    const params = new HttpParams().set('sessionId', sessionId).set('purpose', purpose);
     return this.http.get<VoiceAgentSignedUrlResponse>(`${this.baseUrl}/voice-agent/signed-url`, {
       params,
     });

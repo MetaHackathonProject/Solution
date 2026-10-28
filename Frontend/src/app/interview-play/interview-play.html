@@ -20,7 +20,7 @@
         <h2 class="card__title">Preparing connection…</h2>
         <p class="card__copy">Fetching the interview room and role context.</p>
       </section>
-    } @else if (error() && connectionStatus() === 'idle') {
+    } @else if (error() && connectionStatus() === 'idle' && voicePhase() === 'idle' && !interactiveTask()) {
       <section class="card card--error" role="alert">
         <h2 class="card__title">Could not start</h2>
         <p class="card__copy">{{ error() }}</p>
@@ -30,12 +30,14 @@
       <section class="card" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
         <h2 class="card__title">Connecting…</h2>
-        <p class="card__copy">Opening the voice room and waiting for the interviewer.</p>
+        <p class="card__copy">Opening the voice connection…</p>
       </section>
     } @else if (connectionStatus() === 'connected' || connectionStatus() === 'disconnecting') {
       <section class="live" [attr.data-mode]="mode()">
         <div class="live__panel">
-          <p class="live__label">AI interviewer</p>
+          <p class="live__label">
+            {{ voicePhase() === 'walkthrough' ? 'Solution walkthrough' : 'AI interviewer' }}
+          </p>
           <p class="live__mode">
             {{ mode() === 'speaking' ? 'Speaking' : 'Listening' }}
           </p>
@@ -56,14 +58,27 @@
           </button>
         </div>
       </section>
-
-      @if (interactiveTask(); as task) {
-        <app-interactive-panel
-          [sessionId]="sessionId"
-          [task]="task"
-          (closed)="clearInteractiveTask()"
-        />
-      }
+    } @else if (voicePhase() === 'paused') {
+      <section class="card" role="status">
+        <h2 class="card__title">Interview paused</h2>
+        <p class="card__copy">
+          Voice is off while you work on the interactive exercise so idle time is not billed.
+          Submit your answer to continue with a short walkthrough.
+        </p>
+        @if (error()) {
+          <p class="alert" role="alert">{{ error() }}</p>
+        }
+        <div class="card__actions">
+          @if (panelCollapsed() && interactiveTask()) {
+            <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
+              Show exercise
+            </button>
+          }
+          <button type="button" class="btn btn--danger" (click)="stopConversation()">
+            End interview
+          </button>
+        </div>
+      </section>
     } @else {
       <section class="card">
         <h2 class="card__title">Ready when you are</h2>
@@ -80,12 +95,15 @@
           </button>
         </div>
       </section>
+    }
 
-      @if (interactiveTask(); as task) {
+    @if (interactiveTask(); as task) {
+      @if (!panelCollapsed()) {
         <app-interactive-panel
           [sessionId]="sessionId"
           [task]="task"
           (closed)="clearInteractiveTask()"
+          (submitted)="onInteractiveSubmitted()"
         />
       }
     }
