@@ -58,6 +58,22 @@
           </button>
         </div>
       </section>
+    } @else if (voicePhase() === 'reviewing') {
+      <section class="card" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <h2 class="card__title">Reviewing your solution</h2>
+        <p class="card__copy">
+          Interviewer is now checking your solution…
+        </p>
+        @if (error()) {
+          <p class="alert" role="alert">{{ error() }}</p>
+        }
+        <div class="card__actions">
+          <button type="button" class="btn btn--danger" (click)="stopConversation()">
+            End interview
+          </button>
+        </div>
+      </section>
     } @else if (voicePhase() === 'paused') {
       <section class="card" role="status">
         <h2 class="card__title">Interview paused</h2>

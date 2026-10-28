@@ -7,4 +7,6 @@ public sealed record SubmitInteractiveAnswerCommand(
     string TaskId,
     Stream Content,
     string ContentType,
-    string FileExtension) : IRequest<bool>;
+    string FileExtension) : IRequest<SubmitInteractiveAnswerResult?>;
+
+public sealed record SubmitInteractiveAnswerResult(string VisionReviewStatus);

@@ -12,6 +12,7 @@ import { marked } from 'marked';
 import {
   InteractiveTaskResponse,
   InteractiveTaskService,
+  SubmitInteractiveAnswerResponse,
 } from '../interactive-task.service';
 import { CodeEditor } from './code-editor';
 import { DrawioEditor, DrawioEditorState } from './drawio-editor';
@@ -20,7 +21,6 @@ import {
   InteractiveSubmissionPayload,
   WALKTHROUGH_SOLUTION_MAX_CHARS,
   WALKTHROUGH_TASK_PROMPT_MAX_CHARS,
-  isWalkthroughAttachableFile,
   truncateForWalkthrough,
 } from './walkthrough-submission';
 
@@ -72,10 +72,7 @@ export class InteractivePanel {
     return marked.parse(source, { async: false }) as string;
   });
 
-  /** Text snapshot for walkthrough dynamic var. */
   private pendingSolution: string | null = null;
-  /** Diagram/image/PDF to attach to the walkthrough conversation after connect. */
-  private pendingImage: File | null = null;
 
   protected onTextInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
@@ -94,7 +91,6 @@ export class InteractivePanel {
     }
 
     this.pendingSolution = null;
-    this.pendingImage = isWalkthroughAttachableFile(file) ? file : null;
     this.submitFile(file);
   }
 
@@ -111,7 +107,6 @@ export class InteractivePanel {
       }
 
       this.pendingSolution = solutionText;
-      this.pendingImage = null;
       this.submitFile(file);
     });
   }
@@ -123,7 +118,6 @@ export class InteractivePanel {
     }
 
     this.pendingSolution = text;
-    this.pendingImage = null;
     this.submitTextValue(text);
   }
 
@@ -152,7 +146,6 @@ export class InteractivePanel {
       }
 
       this.pendingSolution = null;
-      this.pendingImage = file;
       this.submitFile(file);
     });
   }
@@ -165,7 +158,7 @@ export class InteractivePanel {
     this.submitting.set(true);
     this.error.set(null);
     this.tasksApi.submitText(this.sessionId(), this.task().taskId, text).subscribe({
-      next: () => this.markSubmitted(),
+      next: (response) => this.markSubmitted(response),
       error: (err: unknown) => {
         this.submitting.set(false);
         this.error.set(this.describeError(err));
@@ -177,7 +170,7 @@ export class InteractivePanel {
     this.submitting.set(true);
     this.error.set(null);
     this.tasksApi.submitFile(this.sessionId(), this.task().taskId, file).subscribe({
-      next: () => this.markSubmitted(),
+      next: (response) => this.markSubmitted(response),
       error: (err: unknown) => {
         this.submitting.set(false);
         this.error.set(this.describeError(err));
@@ -185,7 +178,7 @@ export class InteractivePanel {
     });
   }
 
-  private markSubmitted(): void {
+  private markSubmitted(response: SubmitInteractiveAnswerResponse): void {
     this.submitting.set(false);
     this.submittedOk.set(true);
 
@@ -196,18 +189,18 @@ export class InteractivePanel {
       ''
     );
     const solution = this.pendingSolution?.trim() || null;
-    const image = this.pendingImage;
     this.pendingSolution = null;
-    this.pendingImage = null;
 
+    const visionStatus = response.visionReviewStatus ?? 'Skipped';
     this.submitted.emit({
       expectedInput: task.expectedInput,
       module: task.module,
+      taskId: task.taskId,
       taskPrompt: truncateForWalkthrough(taskPrompt, WALKTHROUGH_TASK_PROMPT_MAX_CHARS),
       submittedSolution: solution
         ? truncateForWalkthrough(solution, WALKTHROUGH_SOLUTION_MAX_CHARS)
         : null,
-      submittedImage: image,
+      awaitVisionReview: visionStatus === 'Pending' || visionStatus === 'Running',
     });
   }
 

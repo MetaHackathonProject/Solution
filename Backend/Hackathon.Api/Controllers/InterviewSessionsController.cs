@@ -145,9 +145,27 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         return Ok(ToInteractiveResponse(task));
     }
 
+    [HttpGet("{sessionId}/interactive-task/{taskId}/vision-review")]
+    public async Task<ActionResult<VisionReviewResponse>> GetVisionReview(
+        string sessionId,
+        string taskId,
+        CancellationToken cancellationToken)
+    {
+        var review = await mediator.Send(
+            new GetVisionReviewQuery(sessionId, taskId),
+            cancellationToken);
+
+        if (review is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new VisionReviewResponse(review.TaskId, review.Status, review.Description));
+    }
+
     [HttpPost("{sessionId}/interactive-task/{taskId}/answer")]
     [RequestSizeLimit(10 * 1024 * 1024)]
-    public async Task<IActionResult> SubmitInteractiveAnswer(
+    public async Task<ActionResult<SubmitInteractiveAnswerResponse>> SubmitInteractiveAnswer(
         string sessionId,
         string taskId,
         IFormFile? file,
@@ -173,7 +191,12 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
                         content.Extension),
                     cancellationToken);
 
-                return saved ? NoContent() : NotFound();
+                if (saved is null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(new SubmitInteractiveAnswerResponse(saved.VisionReviewStatus));
             }
         }
         catch (InvalidOperationException ex)
@@ -284,6 +307,13 @@ public sealed record InteractiveTaskResponse(
     string QuestionContent,
     string Status,
     string ExpectedInput);
+
+public sealed record SubmitInteractiveAnswerResponse(string VisionReviewStatus);
+
+public sealed record VisionReviewResponse(
+    string TaskId,
+    string Status,
+    string? Description);
 
 public sealed record RetakeInterviewSessionResponse(
     string SessionId,

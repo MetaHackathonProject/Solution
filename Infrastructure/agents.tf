@@ -70,6 +70,7 @@ data "aws_iam_policy_document" "agent" {
     actions = [
       "dynamodb:GetItem",
       "dynamodb:PutItem",
+      "dynamodb:UpdateItem",
       "dynamodb:BatchWriteItem",
       "dynamodb:Query",
     ]
@@ -78,6 +79,14 @@ data "aws_iam_policy_document" "agent" {
       "${aws_dynamodb_table.interview_session_questions.arn}/index/*",
       aws_dynamodb_table.pending_interview_tasks.arn,
     ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [aws_s3_bucket.interview_sessions.arn]
   }
 
   statement {

@@ -8,7 +8,16 @@ import {
   TextConversation,
   VoiceConversation,
 } from '@elevenlabs/client';
-import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import {
+  Subscription,
+  catchError,
+  firstValueFrom,
+  forkJoin,
+  of,
+  switchMap,
+  takeWhile,
+  timer,
+} from 'rxjs';
 import { AuthService } from '../auth.service';
 import { continueInterviewFirstMessage } from '../continue-interview-first-message';
 import { toElevenLabsLanguage } from '../eleven-labs-language';
@@ -24,9 +33,15 @@ import {
 } from '../voice-agent.service';
 import { walkthroughFirstMessage } from '../walkthrough-first-message';
 import { InteractivePanel } from './interactive-panel';
-import { InteractiveSubmissionPayload } from './walkthrough-submission';
+import {
+  InteractiveSubmissionPayload,
+  VISION_REVIEW_MAX_WAIT_MS,
+  VISION_REVIEW_POLL_MS,
+  WALKTHROUGH_SOLUTION_MAX_CHARS,
+  truncateForWalkthrough,
+} from './walkthrough-submission';
 
-type VoicePhase = 'idle' | 'interview' | 'paused' | 'walkthrough';
+type VoicePhase = 'idle' | 'interview' | 'paused' | 'reviewing' | 'walkthrough';
 type DisconnectIntent = 'none' | 'pause' | 'walkthrough_done' | 'user_end';
 /** After current TTS finishes, disconnect for pause or full interview end. */
 type AfterSpeechAction = 'none' | 'pause' | 'complete';
@@ -71,8 +86,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private pauseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePurpose: VoiceAgentPurpose = 'interview';
   private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
-  /** Wait for the walkthrough greeting to finish before attaching the diagram. */
-  private pendingWalkthroughImageAttach = false;
+  private visionReviewSub: Subscription | null = null;
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -114,8 +128,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearPauseTimers();
-    this.pendingWalkthroughImageAttach = false;
-    if (this.voicePhase() === 'paused') {
+    this.stopVisionReviewPoll();
+    if (this.voicePhase() === 'paused' || this.voicePhase() === 'reviewing') {
       this.conversation = null;
       return;
     }
@@ -142,6 +156,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   protected async stopConversation(): Promise<void> {
     this.clearPauseTimers();
+    this.stopVisionReviewPoll();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
     this.disconnectIntent = 'user_end';
@@ -164,11 +179,95 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected onInteractiveSubmitted(payload: InteractiveSubmissionPayload): void {
     this.panelCollapsed.set(false);
     this.walkthroughSubmission = payload;
+    if (payload.awaitVisionReview) {
+      this.beginVisionReview(payload);
+      return;
+    }
+
     void this.startWalkthrough();
+  }
+
+  private beginVisionReview(payload: InteractiveSubmissionPayload): void {
+    this.stopVisionReviewPoll();
+    this.error.set(null);
+    this.voicePhase.set('reviewing');
+    this.panelCollapsed.set(true);
+
+    const startedAt = Date.now();
+    this.visionReviewSub = timer(0, VISION_REVIEW_POLL_MS)
+      .pipe(
+        switchMap(() =>
+          this.interactiveTasks.getVisionReview(this.sessionId, payload.taskId).pipe(
+            catchError(() => of(null)),
+          ),
+        ),
+        takeWhile((review) => {
+          if (Date.now() - startedAt >= VISION_REVIEW_MAX_WAIT_MS) {
+            return false;
+          }
+
+          if (!review) {
+            return true;
+          }
+
+          return review.status === 'Pending' || review.status === 'Running';
+        }, true),
+      )
+      .subscribe({
+        next: (review) => {
+          if (!review) {
+            return;
+          }
+
+          if (review.status === 'Pending' || review.status === 'Running') {
+            return;
+          }
+
+          if (review.status === 'Ready' && review.description?.trim()) {
+            this.walkthroughSubmission = {
+              ...payload,
+              submittedSolution: truncateForWalkthrough(
+                review.description.trim(),
+                WALKTHROUGH_SOLUTION_MAX_CHARS,
+              ),
+              awaitVisionReview: false,
+            };
+          } else {
+            this.walkthroughSubmission = {
+              ...payload,
+              awaitVisionReview: false,
+            };
+          }
+
+          // Leave reviewing before unsubscribe so complete does not double-start.
+          this.voicePhase.set('paused');
+          this.stopVisionReviewPoll();
+          void this.startWalkthrough();
+        },
+        complete: () => {
+          // Timed out still in-flight — continue without description.
+          if (this.voicePhase() !== 'reviewing') {
+            return;
+          }
+
+          this.walkthroughSubmission = {
+            ...payload,
+            awaitVisionReview: false,
+          };
+          this.voicePhase.set('paused');
+          void this.startWalkthrough();
+        },
+      });
+  }
+
+  private stopVisionReviewPoll(): void {
+    this.visionReviewSub?.unsubscribe();
+    this.visionReviewSub = null;
   }
 
   private async startWalkthrough(): Promise<void> {
     this.clearPauseTimers();
+    this.stopVisionReviewPoll();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
     this.error.set(null);
@@ -212,7 +311,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.interactiveTask.set(null);
     this.panelCollapsed.set(false);
     this.walkthroughSubmission = null;
-    this.pendingWalkthroughImageAttach = false;
 
     try {
       const signed = await firstValueFrom(
@@ -239,7 +337,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private async connectVoice(options: {
     purpose: VoiceAgentPurpose;
     firstMessage: string;
-    phase: Exclude<VoicePhase, 'idle' | 'paused'>;
+    phase: Exclude<VoicePhase, 'idle' | 'paused' | 'reviewing'>;
     extraDynamicVariables?: Record<string, string>;
   }): Promise<void> {
     if (!this.sessionId || !this.signedUrl || this.starting()) {
@@ -341,50 +439,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
           this.onVoiceDisconnected();
         },
       });
-
-      // Attach after the greeting finishes (see onVoiceModeChange) so we do not
-      // interrupt the overridden first message with a multimodal user turn.
-      this.pendingWalkthroughImageAttach =
-        options.purpose === 'walkthrough' && !!this.walkthroughSubmission?.submittedImage;
-      if (this.pendingWalkthroughImageAttach && this.mode() === 'listening') {
-        this.pendingWalkthroughImageAttach = false;
-        void this.attachWalkthroughImage();
-      }
     } catch {
       this.starting.set(false);
       this.error.set('Could not start the voice interview. Try again.');
-    }
-  }
-
-  /**
-   * Uploads a diagram/schema (or free-form image/PDF) into the live walkthrough
-   * conversation and sends it as a multimodal user message so the agent can see it.
-   */
-  private async attachWalkthroughImage(): Promise<void> {
-    const image = this.walkthroughSubmission?.submittedImage;
-    const conversation = this.conversation;
-    if (!image || !conversation) {
-      return;
-    }
-
-    // Clear so a reconnect / continue path does not re-upload a stale blob.
-    if (this.walkthroughSubmission) {
-      this.walkthroughSubmission = {
-        ...this.walkthroughSubmission,
-        submittedImage: null,
-      };
-    }
-
-    try {
-      const { fileId } = await conversation.uploadFile(image);
-      conversation.sendMultimodalMessage({
-        fileIds: [fileId],
-        text:
-          'I submitted this diagram or image as my interactive-task solution. ' +
-          'Please use it as visual context while I walk you through my approach.',
-      });
-    } catch (err) {
-      console.warn('Could not attach solution image to walkthrough agent', err);
     }
   }
 
@@ -426,16 +483,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private onVoiceModeChange(mode: Mode): void {
-    if (
-      this.pendingWalkthroughImageAttach &&
-      mode === 'listening' &&
-      this.activePurpose === 'walkthrough' &&
-      this.afterSpeechAction === 'none'
-    ) {
-      this.pendingWalkthroughImageAttach = false;
-      void this.attachWalkthroughImage();
-    }
-
     if (this.afterSpeechAction === 'none') {
       return;
     }

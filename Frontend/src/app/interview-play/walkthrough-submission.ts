@@ -2,17 +2,19 @@
 export const WALKTHROUGH_SOLUTION_MAX_CHARS = 10_000;
 export const WALKTHROUGH_TASK_PROMPT_MAX_CHARS = 8_000;
 
+/** Client safety ceiling while polling vision review (SF harness timeout is 180s). */
+export const VISION_REVIEW_POLL_MS = 2000;
+export const VISION_REVIEW_MAX_WAIT_MS = 210_000;
+
 export interface InteractiveSubmissionPayload {
   expectedInput: string;
   module: string;
   taskPrompt: string;
-  /** Code/text snapshot for dynamic var; null when only an image/file was submitted. */
+  taskId: string;
+  /** Code/text snapshot, or vision description once Ready. */
   submittedSolution: string | null;
-  /**
-   * Diagram/schema PNG (or other image/PDF) uploaded to the walkthrough conversation
-   * after connect via uploadFile + sendMultimodalMessage.
-   */
-  submittedImage: File | null;
+  /** True when API started AgentCore vision describe — poll before walkthrough. */
+  awaitVisionReview: boolean;
 }
 
 export function truncateForWalkthrough(text: string, maxChars: number): string {
@@ -37,19 +39,4 @@ export function formatMultiFileWalkthroughSource(
   return files
     .map((file) => `===== ${file.name} =====\n${file.content.replace(/\s+$/, '')}\n`)
     .join('\n');
-}
-
-/** Files ElevenLabs ConvAI conversation upload accepts for vision/context. */
-export function isWalkthroughAttachableFile(file: File): boolean {
-  const type = file.type.toLowerCase();
-  if (type.startsWith('image/')) {
-    return true;
-  }
-
-  if (type === 'application/pdf') {
-    return true;
-  }
-
-  // draw.io export may omit type in some browsers; trust the extension.
-  return /\.(png|jpe?g|gif|webp|pdf)$/i.test(file.name);
 }

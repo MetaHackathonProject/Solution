@@ -98,6 +98,44 @@ public sealed class DynamoDbPendingInterviewTaskStore(
             cancellationToken);
     }
 
+    public async Task SetVisionReviewAsync(
+        string sessionId,
+        string taskId,
+        string visionReviewStatus,
+        string? visionDescription,
+        CancellationToken cancellationToken)
+    {
+        var update = "SET vision_review_status = :vision_status";
+        var values = new Dictionary<string, AttributeValue>
+        {
+            [":vision_status"] = new(visionReviewStatus),
+        };
+
+        if (visionDescription is null)
+        {
+            update += " REMOVE vision_description";
+        }
+        else
+        {
+            update += ", vision_description = :vision_description";
+            values[":vision_description"] = new(visionDescription);
+        }
+
+        await dynamoDb.UpdateItemAsync(
+            new UpdateItemRequest
+            {
+                TableName = options.Value.TableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["session_id"] = new(sessionId),
+                    ["task_id"] = new(taskId),
+                },
+                UpdateExpression = update,
+                ExpressionAttributeValues = values,
+            },
+            cancellationToken);
+    }
+
     public async Task ResetAllToNotAskedAsync(
         string sessionId,
         CancellationToken cancellationToken)
@@ -105,15 +143,26 @@ public sealed class DynamoDbPendingInterviewTaskStore(
         var tasks = await ListBySessionAsync(sessionId, cancellationToken);
         foreach (var task in tasks)
         {
-            if (task.Status == InteractiveTaskStatus.NotAsked)
-            {
-                continue;
-            }
-
-            await UpdateStatusAsync(
-                sessionId,
-                task.TaskId,
-                InteractiveTaskStatus.NotAsked,
+            await dynamoDb.UpdateItemAsync(
+                new UpdateItemRequest
+                {
+                    TableName = options.Value.TableName,
+                    Key = new Dictionary<string, AttributeValue>
+                    {
+                        ["session_id"] = new(sessionId),
+                        ["task_id"] = new(task.TaskId),
+                    },
+                    UpdateExpression =
+                        "SET #status = :status REMOVE vision_review_status, vision_description",
+                    ExpressionAttributeNames = new Dictionary<string, string>
+                    {
+                        ["#status"] = "status",
+                    },
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                    {
+                        [":status"] = new(InteractiveTaskStatus.NotAsked),
+                    },
+                },
                 cancellationToken);
         }
     }
@@ -134,5 +183,7 @@ public sealed class DynamoDbPendingInterviewTaskStore(
             item.GetValueOrDefault("question_content")?.S ?? string.Empty,
             item.GetValueOrDefault("status")?.S ?? InteractiveTaskStatus.NotAsked,
             item.GetValueOrDefault("expected_input")?.S ?? string.Empty,
-            item.GetValueOrDefault("assessment_goal")?.S);
+            item.GetValueOrDefault("assessment_goal")?.S,
+            item.GetValueOrDefault("vision_review_status")?.S,
+            item.GetValueOrDefault("vision_description")?.S);
 }

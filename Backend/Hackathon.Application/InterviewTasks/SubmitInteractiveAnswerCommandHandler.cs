@@ -9,10 +9,11 @@ public sealed class SubmitInteractiveAnswerCommandHandler(
     IUserContext userContext,
     IInterviewSessionStore sessionStore,
     IPendingInterviewTaskStore pendingTasks,
-    IInteractiveAnswerStore answerStore)
-    : IRequestHandler<SubmitInteractiveAnswerCommand, bool>
+    IInteractiveAnswerStore answerStore,
+    ISolutionVisionReviewStarter visionReviewStarter)
+    : IRequestHandler<SubmitInteractiveAnswerCommand, SubmitInteractiveAnswerResult?>
 {
-    public async Task<bool> Handle(
+    public async Task<SubmitInteractiveAnswerResult?> Handle(
         SubmitInteractiveAnswerCommand request,
         CancellationToken cancellationToken)
     {
@@ -26,7 +27,7 @@ public sealed class SubmitInteractiveAnswerCommandHandler(
 
         if (session is null)
         {
-            return false;
+            return null;
         }
 
         var task = await pendingTasks.GetAsync(
@@ -36,7 +37,7 @@ public sealed class SubmitInteractiveAnswerCommandHandler(
 
         if (task is null)
         {
-            return false;
+            return null;
         }
 
         if (task.Status == InteractiveTaskStatus.Answered)
@@ -59,6 +60,41 @@ public sealed class SubmitInteractiveAnswerCommandHandler(
             InteractiveTaskStatus.Answered,
             cancellationToken);
 
-        return true;
+        if (!VisionReviewNeeds.RequiresVisionReview(
+                task.ExpectedInput,
+                request.ContentType,
+                request.FileExtension))
+        {
+            await pendingTasks.SetVisionReviewAsync(
+                request.SessionId,
+                request.TaskId,
+                VisionReviewStatus.Skipped,
+                null,
+                cancellationToken);
+
+            return new SubmitInteractiveAnswerResult(VisionReviewStatus.Skipped);
+        }
+
+        var answerKey = VisionReviewNeeds.BuildAnswerKey(
+            userContext.UserId,
+            request.SessionId,
+            request.TaskId,
+            request.FileExtension);
+
+        await pendingTasks.SetVisionReviewAsync(
+            request.SessionId,
+            request.TaskId,
+            VisionReviewStatus.Pending,
+            null,
+            cancellationToken);
+
+        await visionReviewStarter.StartAsync(
+            userContext.UserId,
+            request.SessionId,
+            request.TaskId,
+            answerKey,
+            cancellationToken);
+
+        return new SubmitInteractiveAnswerResult(VisionReviewStatus.Pending);
     }
 }

@@ -22,6 +22,7 @@ locals {
     "InterviewProgress/BucketName"           = aws_s3_bucket.interview_sessions.bucket
     "PendingInterviewTasks/TableName"        = aws_dynamodb_table.pending_interview_tasks.name
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
+    "SolutionVisionReview/StateMachineArn"   = aws_sfn_state_machine.solution_vision_review.arn
     "ElevenLabs/ApiUrl"                      = var.eleven_labs_api_url
     "ElevenLabs/AgentId"                     = var.eleven_labs_agent_id
     "ElevenLabs/WalkthroughAgentId"          = var.eleven_labs_walkthrough_agent_id
@@ -51,6 +52,7 @@ module "api" {
     APP_InterviewProgress__BucketName          = aws_s3_bucket.interview_sessions.bucket
     APP_PendingInterviewTasks__TableName       = aws_dynamodb_table.pending_interview_tasks.name
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
+    APP_SolutionVisionReview__StateMachineArn  = aws_sfn_state_machine.solution_vision_review.arn
     APP_ElevenLabs__ApiUrl                     = var.eleven_labs_api_url
     APP_ElevenLabs__AgentId                    = var.eleven_labs_agent_id
     APP_ElevenLabs__WalkthroughAgentId         = var.eleven_labs_walkthrough_agent_id
@@ -121,9 +123,12 @@ data "aws_iam_policy_document" "api" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = ["states:StartExecution"]
-    resources = [aws_sfn_state_machine.interview_planner.arn]
+    effect  = "Allow"
+    actions = ["states:StartExecution"]
+    resources = [
+      aws_sfn_state_machine.interview_planner.arn,
+      aws_sfn_state_machine.solution_vision_review.arn,
+    ]
   }
 }
 

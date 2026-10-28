@@ -1,0 +1,9 @@
+name: solution_vision_describe
+timeout_seconds: 180
+max_iterations: 8
+model:
+  provider: litellm
+  model_id: openai/muse-spark-1.3
+  api_base: https://api.meta.ai/v1
+  api_key_arn: arn:aws:bedrock-agentcore:eu-central-1:753350217363:token-vault/default/apikeycredentialprovider/resource-provider-api-key-6uzvg
+tools: []

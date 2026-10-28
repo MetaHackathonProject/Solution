@@ -23,6 +23,7 @@ public static class RegisterInDI
     {
         services.Configure<InterviewSessionsOptions>(configuration.GetSection(InterviewSessionsOptions.SectionName));
         services.Configure<InterviewPlannerOptions>(configuration.GetSection(InterviewPlannerOptions.SectionName));
+        services.Configure<SolutionVisionReviewOptions>(configuration.GetSection(SolutionVisionReviewOptions.SectionName));
         services.Configure<InterviewProgressOptions>(configuration.GetSection(InterviewProgressOptions.SectionName));
         services.Configure<PendingInterviewTasksOptions>(configuration.GetSection(PendingInterviewTasksOptions.SectionName));
         services.Configure<ElevenLabsOptions>(configuration.GetSection(ElevenLabsOptions.SectionName));
@@ -33,6 +34,7 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewSessionStore, DynamoDbInterviewSessionStore>();
         services.AddSingleton<IInterviewSessionArtifactStore, InterviewSessionArtifactStore>();
         services.AddSingleton<IInterviewPreparationStarter, StepFunctionsInterviewPreparationStarter>();
+        services.AddSingleton<ISolutionVisionReviewStarter, StepFunctionsSolutionVisionReviewStarter>();
         services.AddSingleton<IInterviewPlanReader, S3InterviewPlanReader>();
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
         services.AddSingleton<IPendingInterviewTaskStore, DynamoDbPendingInterviewTaskStore>();

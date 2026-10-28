@@ -8,4 +8,6 @@ public sealed record PendingInterviewTask(
     string QuestionContent,
     string Status,
     string ExpectedInput,
-    string? AssessmentGoal);
+    string? AssessmentGoal,
+    string? VisionReviewStatus = null,
+    string? VisionDescription = null);
