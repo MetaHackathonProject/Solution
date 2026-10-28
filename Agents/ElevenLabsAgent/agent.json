@@ -2078,7 +2078,9 @@
         "enable_reasoning_summary": false,
         "temperature": 0.5,
         "max_tokens": -1,
-        "tool_ids": [],
+        "tool_ids": [
+          "tool_2001m5zg9mc3e14scg5qhban789a"
+        ],
         "tool_ids_strict": false,
         "built_in_tools": {
           "transfer_to_agent": null,
@@ -2155,6 +2157,47 @@
         "cascade_timeout_seconds": 4,
         "tools": [
           {
+            "type": "client",
+            "name": "start_interactive_task",
+            "description": "notify the UI to open the interactive panel; call before asking an interactive question; don’t mention the call to the candidate",
+            "response_timeout_secs": 1,
+            "disable_interruptions": false,
+            "interruption_mode": "allow",
+            "force_pre_tool_speech": false,
+            "pre_tool_speech": "auto",
+            "assignments": [],
+            "tool_call_sound": null,
+            "tool_call_sound_behavior": "auto",
+            "tool_error_handling_mode": "auto",
+            "parameters": {
+              "description": "",
+              "dynamic_variable": "",
+              "is_omitted": false,
+              "type": "object",
+              "required": [
+                "taskId"
+              ],
+              "properties": {
+                "taskId": {
+                  "type": "string",
+                  "description": "The interactive task id from get_next_question",
+                  "enum": null,
+                  "is_system_provided": false,
+                  "dynamic_variable": "",
+                  "allowed_values": null,
+                  "allowed_values_dynamic_variable": "",
+                  "constant_value": "",
+                  "is_omitted": false
+                }
+              }
+            },
+            "expects_response": true,
+            "dynamic_variables": {
+              "dynamic_variable_placeholders": {}
+            },
+            "execution_mode": "immediate"
+          },
+          {
             "type": "system",
             "name": "end_call",
             "description": "Use this to end the interview session **only after all interview questions have been asked, the candidate has answered them, and the interview has been formally concluded**. Once the interview is concluded, end the session and do not ask any additional questions.",
@@ -2170,24 +2213,6 @@
             "params": {
               "system_tool_type": "end_call"
             }
-          },
-          {
-            "type": "client",
-            "name": "start_interactive_task",
-            "description": "Notify the interview UI to open the interactive exercise panel for the given taskId. Call silently before asking an interactive question aloud. Never mention this call to the candidate.",
-            "expects_response": true,
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "taskId": {
-                  "type": "string",
-                  "description": "The interactive task id from get_next_question"
-                }
-              },
-              "required": [
-                "taskId"
-              ]
-            }
           }
         ]
       }
@@ -2195,7 +2220,7 @@
   },
   "metadata": {
     "created_at_unix_secs": 1793043200,
-    "updated_at_unix_secs": 1793127000
+    "updated_at_unix_secs": 1793170033
   },
   "platform_settings": {
     "evaluation": {
@@ -2419,7 +2444,7 @@
           "max_duration_seconds": false
         },
         "agent": {
-          "first_message": false,
+          "first_message": true,
           "language": true,
           "max_conversation_duration_message": false,
           "silence_end_call_message": false,
@@ -2675,7 +2700,7 @@
     "resource_manage_access"
   ],
   "tags": [],
-  "version_id": "agtvrsn_7801m5zb5ca5f1kskzf1mc884t2z",
+  "version_id": "agtvrsn_9501m60m6k5texqafgv0s77g1a80",
   "branch_id": "agtbrch_0401m5wv7ythe8qt2d59b6v2b5k3",
   "main_branch_id": "agtbrch_0401m5wv7ythe8qt2d59b6v2b5k3",
   "procedures": {},

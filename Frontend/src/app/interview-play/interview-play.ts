@@ -15,6 +15,7 @@ import {
   InteractiveTaskResponse,
   InteractiveTaskService,
 } from '../interactive-task.service';
+import { resumeInterviewFirstMessage } from '../resume-interview-first-message';
 import {
   VoiceAgentContextResponse,
   VoiceAgentService,
@@ -44,6 +45,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected sessionId = '';
   private signedUrl: string | null = null;
   private conversationId: string | null = null;
+  private isResume = false;
   private agentContext: VoiceAgentContextResponse | null = null;
   private conversation: VoiceConversation | TextConversation | null = null;
   private ending = false;
@@ -71,6 +73,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
       next: ({ signed, context, interactive }) => {
         this.signedUrl = signed.signedUrl;
         this.conversationId = signed.conversationId;
+        this.isResume = signed.isResume;
         this.agentContext = context;
         if (interactive) {
           this.interactiveTask.set(interactive);
@@ -106,6 +109,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     const dynamicVariables: Record<string, string> = {
       sessionId: this.sessionId,
+      is_resume: this.isResume ? 'true' : 'false',
     };
 
     if (this.agentContext?.jobTitle) {
@@ -120,15 +124,25 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     const language = toElevenLabsLanguage(this.agentContext?.language);
 
+    const agentOverrides: {
+      language?: typeof language;
+      firstMessage?: string;
+    } = {};
+    if (language) {
+      agentOverrides.language = language;
+    }
+    if (this.isResume) {
+      agentOverrides.firstMessage = resumeInterviewFirstMessage(language);
+    }
+
     try {
       this.conversation = await Conversation.startSession({
         signedUrl: this.signedUrl,
         dynamicVariables,
-        overrides: language
-          ? {
-              agent: { language },
-            }
-          : undefined,
+        overrides:
+          Object.keys(agentOverrides).length > 0
+            ? { agent: agentOverrides }
+            : undefined,
         clientTools: {
           start_interactive_task: async (parameters: { taskId?: string }) => {
             const taskId = parameters?.taskId?.trim();

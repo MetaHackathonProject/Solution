@@ -26,7 +26,10 @@ public sealed class VoiceAgentController(IMediator mediator) : ControllerBase
                 return NotFound();
             }
 
-            return Ok(new VoiceAgentSignedUrlResponse(result.SignedUrl, result.ConversationId));
+            return Ok(new VoiceAgentSignedUrlResponse(
+                result.SignedUrl,
+                result.ConversationId,
+                result.IsResume));
         }
         catch (InvalidOperationException ex)
         {
@@ -47,7 +50,10 @@ public sealed class VoiceAgentController(IMediator mediator) : ControllerBase
     }
 }
 
-public sealed record VoiceAgentSignedUrlResponse(string SignedUrl, string ConversationId);
+public sealed record VoiceAgentSignedUrlResponse(
+    string SignedUrl,
+    string ConversationId,
+    bool IsResume);
 
 public sealed class EndVoiceConversationRequest
 {

@@ -6,6 +6,7 @@ import { environment } from '../environments/environment';
 export interface VoiceAgentSignedUrlResponse {
   signedUrl: string;
   conversationId: string;
+  isResume: boolean;
 }
 
 export interface VoiceAgentContextResponse {

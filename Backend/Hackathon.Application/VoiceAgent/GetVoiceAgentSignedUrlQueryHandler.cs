@@ -33,6 +33,8 @@ public sealed class GetVoiceAgentSignedUrlQueryHandler(
                 $"Session {request.SessionId} is not ready for a live interview.");
         }
 
+        var isResume = session.Status == InterviewSessionStatus.InProgress;
+
         var signed = await elevenLabs.GetSignedUrlAsync(cancellationToken);
 
         await sessionStore.UpdateStatusAsync(
@@ -41,6 +43,6 @@ public sealed class GetVoiceAgentSignedUrlQueryHandler(
             InterviewSessionStatus.InProgress,
             cancellationToken);
 
-        return new VoiceAgentSignedUrlResult(signed.SignedUrl, signed.ConversationId);
+        return new VoiceAgentSignedUrlResult(signed.SignedUrl, signed.ConversationId, isResume);
     }
 }
