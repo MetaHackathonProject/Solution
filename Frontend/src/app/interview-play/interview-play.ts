@@ -28,6 +28,11 @@ import { InteractiveSubmissionPayload } from './walkthrough-submission';
 
 type VoicePhase = 'idle' | 'interview' | 'paused' | 'walkthrough';
 type DisconnectIntent = 'none' | 'pause' | 'walkthrough_done' | 'user_end';
+/** After current TTS finishes, disconnect for pause or full interview end. */
+type AfterSpeechAction = 'none' | 'pause' | 'complete';
+
+const AGENT_GOODBYE_RE =
+  /\b(goodbye|good\s*bye|bye[\s-]*bye|farewell|take care|best of luck|wish you (the )?best|do widzenia|żegnaj|do zobaczenia|auf wiedersehen|au revoir|adios|adiós|arrivederci|tchau|do widzenia)\b/i;
 
 @Component({
   selector: 'app-interview-play',
@@ -61,8 +66,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private disconnectIntent: DisconnectIntent = 'none';
   /** True after interactive open; pause when agent calls pause_for_interactive_task (or fallback). */
   private interactivePauseArmed = false;
-  /** True after pause_for_interactive_task; wait for current TTS to finish if needed. */
-  private pauseWhenListening = false;
+  private afterSpeechAction: AfterSpeechAction = 'none';
   private pauseFallbackTimer: ReturnType<typeof setTimeout> | null = null;
   private pauseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePurpose: VoiceAgentPurpose = 'interview';
@@ -136,7 +140,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected async stopConversation(): Promise<void> {
     this.clearPauseTimers();
     this.interactivePauseArmed = false;
-    this.pauseWhenListening = false;
+    this.afterSpeechAction = 'none';
     this.disconnectIntent = 'user_end';
     if (!this.conversation) {
       void this.completeAndLeave();
@@ -163,7 +167,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private async startWalkthrough(): Promise<void> {
     this.clearPauseTimers();
     this.interactivePauseArmed = false;
-    this.pauseWhenListening = false;
+    this.afterSpeechAction = 'none';
     this.error.set(null);
 
     try {
@@ -294,8 +298,13 @@ export class InterviewPlay implements OnInit, OnDestroy {
             );
           },
           pause_for_interactive_task: async () => {
-            this.requestPauseAfterAgentSpeech();
+            this.requestActionAfterAgentSpeech('pause');
             return 'Pausing the voice call for the interactive exercise';
+          },
+          finish_interview: async () => {
+            // Client-side hangup — do not wait for the candidate to answer the goodbye.
+            this.requestActionAfterAgentSpeech('complete');
+            return 'Interview closed';
           },
           finish_solution_walkthrough: async () => {
             this.disconnectIntent = 'walkthrough_done';
@@ -311,6 +320,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
         onModeChange: ({ mode }) => {
           this.mode.set(mode);
           this.onVoiceModeChange(mode);
+        },
+        onMessage: (payload) => {
+          this.onAgentMessage(payload);
         },
         onError: () => {
           this.error.set('The voice interview connection failed. Try again.');
@@ -335,39 +347,41 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private armInteractivePauseFallback(): void {
     this.clearPauseTimers();
     this.interactivePauseArmed = true;
-    this.pauseWhenListening = false;
+    this.afterSpeechAction = 'none';
 
     // Safety net if the agent never calls pause_for_interactive_task.
     this.pauseFallbackTimer = setTimeout(() => {
       if (this.interactivePauseArmed && this.conversation) {
-        void this.pauseInterviewLocally();
+        void this.disconnectAfterSpeech('pause');
       }
     }, 90_000);
   }
 
-  /** Called by pause_for_interactive_task after the spoken intro. */
-  private requestPauseAfterAgentSpeech(): void {
-    if (!this.interactivePauseArmed && !this.conversation) {
+  /** Wait for current TTS (if any), then pause or fully end the interview. */
+  private requestActionAfterAgentSpeech(action: Exclude<AfterSpeechAction, 'none'>): void {
+    if (!this.conversation && action === 'pause' && !this.interactivePauseArmed) {
       return;
     }
 
-    this.interactivePauseArmed = true;
+    if (action === 'pause') {
+      this.interactivePauseArmed = true;
+    }
+
     this.clearPauseFallbackTimer();
+    this.afterSpeechAction = action;
 
     if (this.mode() === 'speaking') {
-      // Let current TTS finish, then disconnect.
-      this.pauseWhenListening = true;
       return;
     }
 
     this.clearPauseDebounceTimer();
     this.pauseDebounceTimer = setTimeout(() => {
-      void this.pauseInterviewLocally();
-    }, 500);
+      void this.disconnectAfterSpeech(action);
+    }, 400);
   }
 
   private onVoiceModeChange(mode: Mode): void {
-    if (!this.pauseWhenListening) {
+    if (this.afterSpeechAction === 'none') {
       return;
     }
 
@@ -377,27 +391,59 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     if (mode === 'listening') {
+      const action = this.afterSpeechAction;
       this.clearPauseDebounceTimer();
       this.pauseDebounceTimer = setTimeout(() => {
-        if (this.pauseWhenListening && this.mode() === 'listening') {
-          void this.pauseInterviewLocally();
+        if (this.afterSpeechAction === action && this.mode() === 'listening') {
+          void this.disconnectAfterSpeech(action);
         }
-      }, 600);
+      }, 500);
     }
   }
 
-  private async pauseInterviewLocally(): Promise<void> {
-    if (!this.conversation && this.voicePhase() === 'paused') {
+  /** Backup: agent said goodbye but never called finish_interview / end_call. */
+  private onAgentMessage(payload: { message?: string; source?: string; role?: string }): void {
+    if (this.activePurpose !== 'interview' || this.voicePhase() === 'paused') {
+      return;
+    }
+
+    if (this.afterSpeechAction !== 'none') {
+      return;
+    }
+
+    const source = payload.source ?? payload.role;
+    if (source && source !== 'ai' && source !== 'agent') {
+      return;
+    }
+
+    const text = payload.message?.trim() ?? '';
+    if (!text || !AGENT_GOODBYE_RE.test(text)) {
+      return;
+    }
+
+    this.requestActionAfterAgentSpeech('complete');
+  }
+
+  private async disconnectAfterSpeech(action: Exclude<AfterSpeechAction, 'none'>): Promise<void> {
+    if (!this.conversation && this.voicePhase() === 'paused' && action === 'pause') {
       return;
     }
 
     this.interactivePauseArmed = false;
-    this.pauseWhenListening = false;
+    this.afterSpeechAction = 'none';
     this.clearPauseTimers();
-    this.disconnectIntent = 'pause';
-    this.voicePhase.set('paused');
+
+    if (action === 'pause') {
+      this.disconnectIntent = 'pause';
+      this.voicePhase.set('paused');
+    } else {
+      this.disconnectIntent = 'user_end';
+    }
 
     if (!this.conversation) {
+      if (action === 'complete') {
+        void this.completeAndLeave();
+      }
       return;
     }
 

@@ -1,7 +1,7 @@
 {
   "type": "system",
   "name": "end_call",
-  "description": "Call in the same turn as your short goodbye, immediately after saying it—do not wait for the candidate to answer the goodbye. Only after planned questions are finished and they have no more questions (or declined). Do not call during planned questions or while they still have questions.",
+  "description": "Prefer finish_interview instead. If you use end_call, call it in the same turn as your short goodbye—do not wait for the candidate to answer. Only after planned questions are finished and they have no more questions (or declined).",
   "params": {
     "system_tool_type": "end_call"
   }

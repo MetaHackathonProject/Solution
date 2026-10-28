@@ -1,0 +1,11 @@
+{
+  "type": "client",
+  "name": "finish_interview",
+  "description": "Call in the same turn as your short goodbye, immediately after saying it—or call it so the goodbye is spoken as pre-tool speech. Closes the interview on the client without waiting for the candidate to answer. Only after planned questions are finished and they have no more questions (or declined). Never mention this call.",
+  "expects_response": true,
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}
