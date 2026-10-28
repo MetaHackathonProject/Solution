@@ -108,16 +108,16 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     const language = toElevenLabsLanguage(this.agentContext?.language);
+    const openingMessage = interviewOpeningMessage({
+      isResume: this.isResume,
+      language,
+      jobTitle: this.agentContext?.jobTitle,
+      company: this.agentContext?.company,
+    });
 
     const dynamicVariables: Record<string, string> = {
       sessionId: this.sessionId,
       is_resume: this.isResume ? 'true' : 'false',
-      opening_message: interviewOpeningMessage({
-        isResume: this.isResume,
-        language,
-        jobTitle: this.agentContext?.jobTitle,
-        company: this.agentContext?.company,
-      }),
     };
 
     if (this.agentContext?.jobTitle) {
@@ -134,11 +134,13 @@ export class InterviewPlay implements OnInit, OnDestroy {
       this.conversation = await Conversation.startSession({
         signedUrl: this.signedUrl,
         dynamicVariables,
-        overrides: language
-          ? {
-              agent: { language },
-            }
-          : undefined,
+        overrides: {
+          agent: {
+            ...(language ? { language } : {}),
+            // Always override: language presets would otherwise force the stock intro.
+            firstMessage: openingMessage,
+          },
+        },
         clientTools: {
           start_interactive_task: async (parameters: { taskId?: string }) => {
             const taskId = parameters?.taskId?.trim();
