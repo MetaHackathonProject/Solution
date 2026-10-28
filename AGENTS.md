@@ -62,7 +62,7 @@ Live interview (API + frontend, not AgentCore):
 
 1. `GET /api/voice-agent/signed-url?sessionId=` — ElevenLabs ConvAI signed URL; sets status `IN_PROGRESS` when session is `SUCCESS` or `IN_PROGRESS`.
 2. `GET /api/interview-sessions/{sessionId}/voice-context` — job title/company/overview/language for ConvAI dynamic variables.
-3. Frontend `/interviews/:sessionId/play` starts `@elevenlabs/client` with `sessionId`, `job_title`, `company`, `job_overview`, and `is_resume` (`true` when session was already `IN_PROGRESS`). On resume, overrides the first message to continue where left off (no re-intro).
+3. Frontend `/interviews/:sessionId/play` starts `@elevenlabs/client` with `sessionId`, `job_title`, `company`, `job_overview`, `is_resume`, and `opening_message` (`true` resume when session was already `IN_PROGRESS`). Agent first message is `{{opening_message}}` so resume skips re-intro even when a language preset is applied.
 4. `POST /api/voice-agent/end-conversation` — if the progress table has no remaining rows **and** no pending interactive tasks are `NotAsked`/`InProgress`, sets `COMPLETED`; otherwise leaves status alone (no transcription/orders).
 5. Interactive tasks: `GET /api/interview-sessions/{sessionId}/interactive-task` (active / resume), `GET .../interactive-task/{taskId}`, `POST .../answer` (multipart `text` or `file` → S3 `{user_id}/{session_id}/interactive-tasks/{task_id}/answer.*`). Voice agent client tool `start_interactive_task(taskId)` opens the play UI panel.
 

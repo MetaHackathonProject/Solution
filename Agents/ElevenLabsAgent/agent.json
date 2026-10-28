@@ -328,7 +328,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hallo, my naam is John en ek sal vandag se onderhoud vir die {{job_title}}-rol by {{company}} lei. Gereed om te begin?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -337,7 +337,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hallo, my naam is John en ek sal vandag se onderhoud vir die {{job_title}}-rol by {{company}} lei. Gereed om te begin?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -349,7 +349,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "مرحبًا، اسمي جون وسأجري مقابلة اليوم لشغل وظيفة {{job_title}} في {{company}}. هل أنت مستعد للبدء؟",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -358,7 +358,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "مرحبًا، اسمي جون وسأجري مقابلة اليوم لشغل وظيفة {{job_title}} في {{company}}. هل أنت مستعد للبدء؟"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -370,7 +370,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "নমস্কাৰ, মোৰ নাম জন আৰু {{company}}-ত {{job_title}} পদৰ বাবে আজিৰ সাক্ষাৎকাৰটো মই পৰিচালনা কৰিম। আৰম্ভ কৰিবলৈ সাজু নে?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -379,7 +379,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "নমস্কাৰ, মোৰ নাম জন আৰু {{company}}-ত {{job_title}} পদৰ বাবে আজিৰ সাক্ষাৎকাৰটো মই পৰিচালনা কৰিম। আৰম্ভ কৰিবলৈ সাজু নে?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -391,7 +391,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hola, llamo John y voi dirixir l’entrevista d’anguaño pal puestu de {{job_title}} en {{company}}. ¿Tas preparáu pa entamar?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -400,7 +400,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hola, llamo John y voi dirixir l’entrevista d’anguaño pal puestu de {{job_title}} en {{company}}. ¿Tas preparáu pa entamar?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -412,7 +412,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Salam, mənim adım Condur və bu gün {{company}} şirkətində {{job_title}} vəzifəsi üçün müsahibəyə mən rəhbərlik edəcəyəm. Başlamağa hazırsınız?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -421,7 +421,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Salam, mənim adım Condur və bu gün {{company}} şirkətində {{job_title}} vəzifəsi üçün müsahibəyə mən rəhbərlik edəcəyəm. Başlamağa hazırsınız?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -433,7 +433,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Прывітанне! Мяне завуць Джон, і сёння я правяду сумоўе на пасаду {{job_title}} у кампаніі {{company}}. Гатовы пачаць?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -442,7 +442,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Прывітанне! Мяне завуць Джон, і сёння я правяду сумоўе на пасаду {{job_title}} у кампаніі {{company}}. Гатовы пачаць?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -454,7 +454,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Здравейте, казвам се Джон и ще проведа днешното интервю за позицията {{job_title}} в {{company}}. Готови ли сте да започнем?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -463,7 +463,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Здравейте, казвам се Джон и ще проведа днешното интервю за позицията {{job_title}} в {{company}}. Готови ли сте да започнем?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -475,7 +475,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "হাই, আমার নাম জন এবং {{company}}-এ {{job_title}} পদের জন্য আজকের সাক্ষাৎকারটি আমি পরিচালনা করব। শুরু করার জন্য প্রস্তুত?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -484,7 +484,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "হাই, আমার নাম জন এবং {{company}}-এ {{job_title}} পদের জন্য আজকের সাক্ষাৎকারটি আমি পরিচালনা করব। শুরু করার জন্য প্রস্তুত?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -496,7 +496,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Zdravo, moje ime je John i ja ću voditi današnji razgovor za poziciju {{job_title}} u kompaniji {{company}}. Spremni za početak?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -505,7 +505,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Zdravo, moje ime je John i ja ću voditi današnji razgovor za poziciju {{job_title}} u kompaniji {{company}}. Spremni za početak?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -517,7 +517,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hola, em dic John i dirigiré l’entrevista d’avui per al lloc de {{job_title}} a {{company}}. Comencem?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -526,7 +526,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hola, em dic John i dirigiré l’entrevista d’avui per al lloc de {{job_title}} a {{company}}. Comencem?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -538,7 +538,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Ahoj, jmenuji se John a dnes povedu pohovor na pozici {{job_title}} ve společnosti {{company}}. Jste připraveni začít?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -547,7 +547,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Ahoj, jmenuji se John a dnes povedu pohovor na pozici {{job_title}} ve společnosti {{company}}. Jste připraveni začít?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -559,7 +559,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Helo, John yw fy enw i a fi fydd yn arwain cyfweliad heddiw ar gyfer rôl {{job_title}} yn {{company}}. Yn barod i ddechrau?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -568,7 +568,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Helo, John yw fy enw i a fi fydd yn arwain cyfweliad heddiw ar gyfer rôl {{job_title}} yn {{company}}. Yn barod i ddechrau?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -580,7 +580,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hej, jeg hedder John, og jeg vil lede dagens interview til stillingen som {{job_title}} hos {{company}}. Er du klar til at begynde?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -589,7 +589,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hej, jeg hedder John, og jeg vil lede dagens interview til stillingen som {{job_title}} hos {{company}}. Er du klar til at begynde?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -601,7 +601,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hallo, mein Name ist John und ich werde das heutige Vorstellungsgespräch für die Position {{job_title}} bei {{company}} führen. Bereit, anzufangen?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -610,7 +610,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hallo, mein Name ist John und ich werde das heutige Vorstellungsgespräch für die Position {{job_title}} bei {{company}} führen. Bereit, anzufangen?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -622,7 +622,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Γεια σας, ονομάζομαι Τζον και θα διευθύνω τη σημερινή συνέντευξη για τη θέση {{job_title}} στην {{company}}. Είστε έτοιμος/η να ξεκινήσουμε;",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -631,7 +631,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Γεια σας, ονομάζομαι Τζον και θα διευθύνω τη σημερινή συνέντευξη για τη θέση {{job_title}} στην {{company}}. Είστε έτοιμος/η να ξεκινήσουμε;"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -643,7 +643,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hola, me llamo John y dirigiré la entrevista de hoy para el puesto de {{job_title}} en {{company}}. ¿Listo para comenzar?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -652,7 +652,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hola, me llamo John y dirigiré la entrevista de hoy para el puesto de {{job_title}} en {{company}}. ¿Listo para comenzar?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -664,7 +664,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Tere! Minu nimi on John ja ma viin täna läbi intervjuu {{job_title}} ametikohale ettevõttes {{company}}. Kas oled valmis alustama?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -673,7 +673,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Tere! Minu nimi on John ja ma viin täna läbi intervjuu {{job_title}} ametikohale ettevõttes {{company}}. Kas oled valmis alustama?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -685,7 +685,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "سلام، نام من جان است و مصاحبهٔ امروز برای موقعیت شغلی {{job_title}} در {{company}} را هدایت خواهم کرد. آماده‌اید شروع کنیم؟",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -694,7 +694,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "سلام، نام من جان است و مصاحبهٔ امروز برای موقعیت شغلی {{job_title}} در {{company}} را هدایت خواهم کرد. آماده‌اید شروع کنیم؟"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -706,7 +706,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hei, nimeni on John, ja johdan tänään {{company}}-yrityksen {{job_title}}-tehtävän haastattelua. Oletko valmis aloittamaan?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -715,7 +715,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hei, nimeni on John, ja johdan tänään {{company}}-yrityksen {{job_title}}-tehtävän haastattelua. Oletko valmis aloittamaan?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -727,7 +727,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Kumusta, ang pangalan ko ay John at ako ang mangunguna sa panayam ngayong araw para sa posisyong {{job_title}} sa {{company}}. Handa ka na bang magsimula?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -736,7 +736,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Kumusta, ang pangalan ko ay John at ako ang mangunguna sa panayam ngayong araw para sa posisyong {{job_title}} sa {{company}}. Handa ka na bang magsimula?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -748,7 +748,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Bonjour, je m’appelle John et je dirigerai l’entretien d’aujourd’hui pour le poste de {{job_title}} chez {{company}}. Prêt(e) à commencer ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -757,7 +757,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Bonjour, je m’appelle John et je dirigerai l’entretien d’aujourd’hui pour le poste de {{job_title}} chez {{company}}. Prêt(e) à commencer ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -769,7 +769,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Dia dhuit, John atá orm agus is mise a stiúrfaidh agallamh an lae inniu don ról {{job_title}} ag {{company}}. An bhfuil tú réidh le tosú?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -778,7 +778,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Dia dhuit, John atá orm agus is mise a stiúrfaidh agallamh an lae inniu don ról {{job_title}} ag {{company}}. An bhfuil tú réidh le tosú?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -790,7 +790,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Ola, chámome John e eu conducirei a entrevista de hoxe para o posto de {{job_title}} en {{company}}. Comezamos?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -799,7 +799,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Ola, chámome John e eu conducirei a entrevista de hoxe para o posto de {{job_title}} en {{company}}. Comezamos?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -811,7 +811,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "નમસ્તે, મારું નામ John છે અને હું {{company}} ખાતે {{job_title}} પદ માટે આજના ઇન્ટરવ્યૂનું નેતૃત્વ કરીશ. શરૂ કરવા માટે તૈયાર છો?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -820,7 +820,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "નમસ્તે, મારું નામ John છે અને હું {{company}} ખાતે {{job_title}} પદ માટે આજના ઇન્ટરવ્યૂનું નેતૃત્વ કરીશ. શરૂ કરવા માટે તૈયાર છો?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -832,7 +832,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Sannu, sunana John kuma zan jagoranci hirar yau don matsayin {{job_title}} a {{company}}. Ka shirya mu fara?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -841,7 +841,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Sannu, sunana John kuma zan jagoranci hirar yau don matsayin {{job_title}} a {{company}}. Ka shirya mu fara?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -853,7 +853,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "היי, שמי ג׳ון ואני אנהל את הראיון של היום לתפקיד {{job_title}} ב־{{company}}. מוכנים להתחיל?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -862,7 +862,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "היי, שמי ג׳ון ואני אנהל את הראיון של היום לתפקיד {{job_title}} ב־{{company}}. מוכנים להתחיל?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -874,7 +874,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "नमस्ते, मेरा नाम जॉन है और मैं {{company}} में {{job_title}} भूमिका के लिए आज के साक्षात्कार का नेतृत्व करूंगा। क्या आप शुरू करने के लिए तैयार हैं?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -883,7 +883,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "नमस्ते, मेरा नाम जॉन है और मैं {{company}} में {{job_title}} भूमिका के लिए आज के साक्षात्कार का नेतृत्व करूंगा। क्या आप शुरू करने के लिए तैयार हैं?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -895,7 +895,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Bok, moje ime je John i vodit ću današnji razgovor za posao za radno mjesto {{job_title}} u tvrtki {{company}}. Jeste li spremni započeti?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -904,7 +904,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Bok, moje ime je John i vodit ću današnji razgovor za posao za radno mjesto {{job_title}} u tvrtki {{company}}. Jeste li spremni započeti?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -916,7 +916,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Üdvözlöm! John vagyok, és én vezetem a mai interjút a(z) {{company}} vállalatnál meghirdetett {{job_title}} pozícióra. Készen áll a kezdésre?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -925,7 +925,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Üdvözlöm! John vagyok, és én vezetem a mai interjút a(z) {{company}} vállalatnál meghirdetett {{job_title}} pozícióra. Készen áll a kezdésre?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -937,7 +937,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Բարև, իմ անունը Ջոն է, և ես կվարեմ {{company}} ընկերությունում {{job_title}} պաշտոնի համար այսօրվա հարցազրույցը։ Պատրա՞ստ եք սկսել։",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -946,7 +946,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Բարև, իմ անունը Ջոն է, և ես կվարեմ {{company}} ընկերությունում {{job_title}} պաշտոնի համար այսօրվա հարցազրույցը։ Պատրա՞ստ եք սկսել։"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -958,7 +958,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hai, nama saya John dan saya akan memimpin wawancara hari ini untuk posisi {{job_title}} di {{company}}. Siap memulai?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -967,7 +967,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hai, nama saya John dan saya akan memimpin wawancara hari ini untuk posisi {{job_title}} di {{company}}. Siap memulai?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -979,7 +979,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hæ, ég heiti John og ég mun stjórna viðtalinu í dag fyrir stöðuna {{job_title}} hjá {{company}}. Ertu tilbúin(n) að byrja?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -988,7 +988,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hæ, ég heiti John og ég mun stjórna viðtalinu í dag fyrir stöðuna {{job_title}} hjá {{company}}. Ertu tilbúin(n) að byrja?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1000,7 +1000,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Ciao, mi chiamo John e condurrò il colloquio di oggi per il ruolo di {{job_title}} presso {{company}}. Pronto/a per iniziare?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1009,7 +1009,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Ciao, mi chiamo John e condurrò il colloquio di oggi per il ruolo di {{job_title}} presso {{company}}. Pronto/a per iniziare?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1021,7 +1021,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "こんにちは。ジョンと申します。本日は{{company}}の{{job_title}}職の面接を担当します。始めてもよろしいですか？",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1030,7 +1030,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "こんにちは。ジョンと申します。本日は{{company}}の{{job_title}}職の面接を担当します。始めてもよろしいですか？"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1042,7 +1042,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hai, Jenengku John lan aku bakal mimpin wawancara dina iki kanggo posisi {{job_title}} ing {{company}}. Wis siap miwiti?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1051,7 +1051,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hai, Jenengku John lan aku bakal mimpin wawancara dina iki kanggo posisi {{job_title}} ing {{company}}. Wis siap miwiti?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1063,7 +1063,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "გამარჯობა, მე ჯონი მქვია და დღეს {{company}}-ში {{job_title}} პოზიციაზე გასაუბრებას მე ჩავატარებ. მზად ხართ, დავიწყოთ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1072,7 +1072,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "გამარჯობა, მე ჯონი მქვია და დღეს {{company}}-ში {{job_title}} პოზიციაზე გასაუბრებას მე ჩავატარებ. მზად ხართ, დავიწყოთ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1084,7 +1084,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Сәлем, менің атым Джон, бүгін {{company}} компаниясындағы {{job_title}} лауазымына арналған сұхбатты мен жүргіземін. Бастауға дайынсыз ба?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1093,7 +1093,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Сәлем, менің атым Джон, бүгін {{company}} компаниясындағы {{job_title}} лауазымына арналған сұхбатты мен жүргіземін. Бастауға дайынсыз ба?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1105,7 +1105,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "ನಮಸ್ಕಾರ, ನನ್ನ ಹೆಸರು ಜಾನ್ ಮತ್ತು {{company}} ಸಂಸ್ಥೆಯ {{job_title}} ಹುದ್ದೆಗಾಗಿ ಇಂದಿನ ಸಂದರ್ಶನವನ್ನು ನಾನು ನಡೆಸುತ್ತೇನೆ. ಪ್ರಾರಂಭಿಸಲು ಸಿದ್ಧವೇ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1114,7 +1114,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "ನಮಸ್ಕಾರ, ನನ್ನ ಹೆಸರು ಜಾನ್ ಮತ್ತು {{company}} ಸಂಸ್ಥೆಯ {{job_title}} ಹುದ್ದೆಗಾಗಿ ಇಂದಿನ ಸಂದರ್ಶನವನ್ನು ನಾನು ನಡೆಸುತ್ತೇನೆ. ಪ್ರಾರಂಭಿಸಲು ಸಿದ್ಧವೇ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1126,7 +1126,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "안녕하세요. 제 이름은 John이며, 오늘 {{company}}의 {{job_title}} 직무 면접을 진행하겠습니다. 시작할 준비가 되셨나요?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1135,7 +1135,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "안녕하세요. 제 이름은 John이며, 오늘 {{company}}의 {{job_title}} 직무 면접을 진행하겠습니다. 시작할 준비가 되셨나요?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1147,7 +1147,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Саламатсызбы, менин атым Жон, бүгүн {{company}} компаниясындагы {{job_title}} кызматына болгон маекти мен өткөрөм. Баштоого даярсызбы?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1156,7 +1156,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Саламатсызбы, менин атым Жон, бүгүн {{company}} компаниясындагы {{job_title}} кызматына болгон маекти мен өткөрөм. Баштоого даярсызбы?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1168,7 +1168,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Moien, mäin Numm ass John an ech wäert den Interview fir d'Positioun {{job_title}} bei {{company}} haut leeden. Sidd Dir prett, unzefänken?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1177,7 +1177,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Moien, mäin Numm ass John an ech wäert den Interview fir d'Positioun {{job_title}} bei {{company}} haut leeden. Sidd Dir prett, unzefänken?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1189,7 +1189,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Sveiki, mano vardas Džonas, ir šiandien vesiu pokalbį dėl {{company}} įmonėje siūlomos {{job_title}} pozicijos. Ar pasiruošę pradėti?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1198,7 +1198,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Sveiki, mano vardas Džonas, ir šiandien vesiu pokalbį dėl {{company}} įmonėje siūlomos {{job_title}} pozicijos. Ar pasiruošę pradėti?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1210,7 +1210,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Sveiki! Mani sauc Džons, un es vadīšu šodienas interviju uz {{job_title}} amatu uzņēmumā {{company}}. Vai esat gatavs sākt?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1219,7 +1219,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Sveiki! Mani sauc Džons, un es vadīšu šodienas interviju uz {{job_title}} amatu uzņēmumā {{company}}. Vai esat gatavs sākt?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1231,7 +1231,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Kia ora, ko John tōku ingoa, ā, māku tēnei uiuitanga mō te tūranga {{job_title}} i {{company}} e whakahaere i tēnei rā. Kua rite koe ki te tīmata?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1240,7 +1240,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Kia ora, ko John tōku ingoa, ā, māku tēnei uiuitanga mō te tūranga {{job_title}} i {{company}} e whakahaere i tēnei rā. Kua rite koe ki te tīmata?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1252,7 +1252,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Здраво, јас сум Џон и ќе го водам денешното интервју за позицијата {{job_title}} во {{company}}. Подготвени ли сте да започнеме?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1261,7 +1261,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Здраво, јас сум Џон и ќе го водам денешното интервју за позицијата {{job_title}} во {{company}}. Подготвени ли сте да започнеме?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1273,7 +1273,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "ഹായ്, എന്റെ പേര് ജോൺ, {{company}}-ലെ {{job_title}} സ്ഥാനത്തേക്കുള്ള ഇന്നത്തെ അഭിമുഖത്തിന് ഞാൻ നേതൃത്വം നൽകും. ആരംഭിക്കാൻ തയ്യാറാണോ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1282,7 +1282,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "ഹായ്, എന്റെ പേര് ജോൺ, {{company}}-ലെ {{job_title}} സ്ഥാനത്തേക്കുള്ള ഇന്നത്തെ അഭിമുഖത്തിന് ഞാൻ നേതൃത്വം നൽകും. ആരംഭിക്കാൻ തയ്യാറാണോ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1294,7 +1294,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Сайн байна уу, намайг Жон гэдэг. Би өнөөдөр {{company}} компанийн {{job_title}} албан тушаалын ярилцлагыг удирдан явуулна. Эхлэхэд бэлэн үү?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1303,7 +1303,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Сайн байна уу, намайг Жон гэдэг. Би өнөөдөр {{company}} компанийн {{job_title}} албан тушаалын ярилцлагыг удирдан явуулна. Эхлэхэд бэлэн үү?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1315,7 +1315,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "नमस्कार, माझे नाव जॉन आहे आणि {{company}} मधील {{job_title}} पदासाठी आजची मुलाखत मी घेणार आहे. सुरू करण्यासाठी तयार आहात का?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1324,7 +1324,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "नमस्कार, माझे नाव जॉन आहे आणि {{company}} मधील {{job_title}} पदासाठी आजची मुलाखत मी घेणार आहे. सुरू करण्यासाठी तयार आहात का?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1336,7 +1336,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hai, nama saya John dan saya akan mengetuai temu duga hari ini untuk jawatan {{job_title}} di {{company}}. Sedia untuk bermula?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1345,7 +1345,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hai, nama saya John dan saya akan mengetuai temu duga hari ini untuk jawatan {{job_title}} di {{company}}. Sedia untuk bermula?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1357,7 +1357,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Bongu, Jisimni John u jien se nmexxi l-intervista tal-lum għar-rwol ta’ {{job_title}} għand {{company}}. Lest/a nibdew?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1366,7 +1366,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Bongu, Jisimni John u jien se nmexxi l-intervista tal-lum għar-rwol ta’ {{job_title}} għand {{company}}. Lest/a nibdew?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1378,7 +1378,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "မင်္ဂလာပါ၊ ကျွန်ုပ်၏အမည်မှာ John ဖြစ်ပြီး {{company}} တွင် {{job_title}} ရာထူးအတွက် ယနေ့အင်တာဗျူးကို ဦးဆောင်မည်ဖြစ်ပါသည်။ စတင်ရန် အဆင်သင့်ဖြစ်ပြီလား?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1387,7 +1387,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "မင်္ဂလာပါ၊ ကျွန်ုပ်၏အမည်မှာ John ဖြစ်ပြီး {{company}} တွင် {{job_title}} ရာထူးအတွက် ယနေ့အင်တာဗျူးကို ဦးဆောင်မည်ဖြစ်ပါသည်။ စတင်ရန် အဆင်သင့်ဖြစ်ပြီလား?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1399,7 +1399,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "नमस्ते, मेरो नाम जोन हो र म {{company}} मा {{job_title}} पदका लागि आजको अन्तर्वार्ता सञ्चालन गर्नेछु। सुरु गर्न तयार हुनुहुन्छ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1408,7 +1408,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "नमस्ते, मेरो नाम जोन हो र म {{company}} मा {{job_title}} पदका लागि आजको अन्तर्वार्ता सञ्चालन गर्नेछु। सुरु गर्न तयार हुनुहुन्छ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1420,7 +1420,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hallo, mijn naam is John en ik zal het sollicitatiegesprek van vandaag leiden voor de functie {{job_title}} bij {{company}}. Klaar om te beginnen?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1429,7 +1429,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hallo, mijn naam is John en ik zal het sollicitatiegesprek van vandaag leiden voor de functie {{job_title}} bij {{company}}. Klaar om te beginnen?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1441,7 +1441,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hei, jeg heter John, og jeg skal lede dagens intervju for stillingen som {{job_title}} hos {{company}}. Klar til å begynne?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1450,7 +1450,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hei, jeg heter John, og jeg skal lede dagens intervju for stillingen som {{job_title}} hos {{company}}. Klar til å begynne?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1462,7 +1462,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Adieu, Me dison Joan e vau menar l’entrevista d’uèi pel pòst de {{job_title}} a {{company}}. Prèst·a per començar ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1471,7 +1471,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Adieu, Me dison Joan e vau menar l’entrevista d’uèi pel pòst de {{job_title}} a {{company}}. Prèst·a per començar ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1483,7 +1483,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "ନମସ୍କାର, ମୋର ନାମ ଜନ୍ ଏବଂ {{company}}ରେ {{job_title}} ପଦବୀ ପାଇଁ ଆଜିର ସାକ୍ଷାତ୍କାରଟି ମୁଁ ପରିଚାଳନା କରିବି। ଆରମ୍ଭ କରିବାକୁ ପ୍ରସ୍ତୁତ କି?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1492,7 +1492,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "ନମସ୍କାର, ମୋର ନାମ ଜନ୍ ଏବଂ {{company}}ରେ {{job_title}} ପଦବୀ ପାଇଁ ଆଜିର ସାକ୍ଷାତ୍କାରଟି ମୁଁ ପରିଚାଳନା କରିବି। ଆରମ୍ଭ କରିବାକୁ ପ୍ରସ୍ତୁତ କି?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1504,7 +1504,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਮੇਰਾ ਨਾਮ ਜੌਨ ਹੈ ਅਤੇ ਮੈਂ {{company}} ਵਿੱਚ {{job_title}} ਭੂਮਿਕਾ ਲਈ ਅੱਜ ਦੀ ਇੰਟਰਵਿਊ ਲਵਾਂਗਾ। ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤਿਆਰ ਹੋ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1513,7 +1513,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਮੇਰਾ ਨਾਮ ਜੌਨ ਹੈ ਅਤੇ ਮੈਂ {{company}} ਵਿੱਚ {{job_title}} ਭੂਮਿਕਾ ਲਈ ਅੱਜ ਦੀ ਇੰਟਰਵਿਊ ਲਵਾਂਗਾ। ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤਿਆਰ ਹੋ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1525,7 +1525,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Cześć, mam na imię John i poprowadzę dzisiejszą rozmowę kwalifikacyjną na stanowisko {{job_title}} w firmie {{company}}. Możemy zaczynać?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1534,7 +1534,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Cześć, mam na imię John i poprowadzę dzisiejszą rozmowę kwalifikacyjną na stanowisko {{job_title}} w firmie {{company}}. Możemy zaczynać?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1546,7 +1546,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "سلام، زما نوم جان دی او زه به نن د {{company}} په اداره کې د {{job_title}} د دندې لپاره مرکه پرمخ یوسم. د پیل لپاره چمتو یاست؟",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1555,7 +1555,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "سلام، زما نوم جان دی او زه به نن د {{company}} په اداره کې د {{job_title}} د دندې لپاره مرکه پرمخ یوسم. د پیل لپاره چمتو یاست؟"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1567,7 +1567,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Olá, meu nome é John e conduzirei a entrevista de hoje para a vaga de {{job_title}} na {{company}}. Pronto para começar?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1576,7 +1576,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Olá, meu nome é John e conduzirei a entrevista de hoje para a vaga de {{job_title}} na {{company}}. Pronto para começar?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1588,7 +1588,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Olá, meu nome é John e conduzirei a entrevista de hoje para a vaga de {{job_title}} na {{company}}. Pronto para começar?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1597,7 +1597,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Olá, meu nome é John e conduzirei a entrevista de hoje para a vaga de {{job_title}} na {{company}}. Pronto para começar?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1609,7 +1609,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Bună, mă numesc John și voi conduce interviul de astăzi pentru postul de {{job_title}} la {{company}}. Ești gata să începem?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1618,7 +1618,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Bună, mă numesc John și voi conduce interviul de astăzi pentru postul de {{job_title}} la {{company}}. Ești gata să începem?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1630,7 +1630,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Здравствуйте! Меня зовут Джон, и сегодня я проведу собеседование на должность {{job_title}} в компании {{company}}. Готовы начать?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1639,7 +1639,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Здравствуйте! Меня зовут Джон, и сегодня я проведу собеседование на должность {{job_title}} в компании {{company}}. Готовы начать?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1651,7 +1651,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "سلام، منهنجو نالو جان آهي ۽ مان {{company}} ۾ {{job_title}} جي عهدي لاءِ اڄوڪي انٽرويو جي اڳواڻي ڪندس. ڇا توهان شروع ڪرڻ لاءِ تيار آهيو؟",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1660,7 +1660,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "سلام، منهنجو نالو جان آهي ۽ مان {{company}} ۾ {{job_title}} جي عهدي لاءِ اڄوڪي انٽرويو جي اڳواڻي ڪندس. ڇا توهان شروع ڪرڻ لاءِ تيار آهيو؟"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1672,7 +1672,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Ahoj, volám sa John a dnes budem viesť pohovor na pozíciu {{job_title}} v spoločnosti {{company}}. Ste pripravení začať?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1681,7 +1681,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Ahoj, volám sa John a dnes budem viesť pohovor na pozíciu {{job_title}} v spoločnosti {{company}}. Ste pripravení začať?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1693,7 +1693,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Pozdravljeni, moje ime je John in danes bom vodil intervju za delovno mesto {{job_title}} v podjetju {{company}}. Ste pripravljeni začeti?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1702,7 +1702,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Pozdravljeni, moje ime je John in danes bom vodil intervju za delovno mesto {{job_title}} v podjetju {{company}}. Ste pripravljeni začeti?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1714,7 +1714,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Salaan, magacaygu waa John, waxaanan hoggaamin doonaa wareysiga maanta ee booska {{job_title}} ee {{company}}. Diyaar ma u tahay inaan bilowno?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1723,7 +1723,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Salaan, magacaygu waa John, waxaanan hoggaamin doonaa wareysiga maanta ee booska {{job_title}} ee {{company}}. Diyaar ma u tahay inaan bilowno?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1735,7 +1735,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Zdravo, zovem se Džon i vodiću današnji intervju za poziciju {{job_title}} u kompaniji {{company}}. Spremni za početak?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1744,7 +1744,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Zdravo, zovem se Džon i vodiću današnji intervju za poziciju {{job_title}} u kompaniji {{company}}. Spremni za početak?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1756,7 +1756,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Hej, jag heter John och jag kommer att leda dagens intervju för tjänsten {{job_title}} på {{company}}. Är du redo att börja?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1765,7 +1765,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Hej, jag heter John och jag kommer att leda dagens intervju för tjänsten {{job_title}} på {{company}}. Är du redo att börja?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1777,7 +1777,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Habari, Jina langu ni John na nitaongoza mahojiano ya leo kwa nafasi ya {{job_title}} katika {{company}}. Uko tayari kuanza?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1786,7 +1786,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Habari, Jina langu ni John na nitaongoza mahojiano ya leo kwa nafasi ya {{job_title}} katika {{company}}. Uko tayari kuanza?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1798,7 +1798,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "வணக்கம், என் பெயர் ஜான், மேலும் {{company}} நிறுவனத்தில் {{job_title}} பதவிக்கான இன்றைய நேர்காணலை நான் நடத்தப் போகிறேன். தொடங்கத் தயாரா?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1807,7 +1807,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "வணக்கம், என் பெயர் ஜான், மேலும் {{company}} நிறுவனத்தில் {{job_title}} பதவிக்கான இன்றைய நேர்காணலை நான் நடத்தப் போகிறேன். தொடங்கத் தயாரா?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1819,7 +1819,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "హాయ్, నా పేరు జాన్. {{company}}లోని {{job_title}} పాత్రకు సంబంధించిన నేటి ఇంటర్వ్యూను నేను నిర్వహిస్తాను. ప్రారంభించడానికి సిద్ధంగా ఉన్నారా?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1828,7 +1828,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "హాయ్, నా పేరు జాన్. {{company}}లోని {{job_title}} పాత్రకు సంబంధించిన నేటి ఇంటర్వ్యూను నేను నిర్వహిస్తాను. ప్రారంభించడానికి సిద్ధంగా ఉన్నారా?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1840,7 +1840,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Салом, номи ман Ҷон аст ва ман мусоҳибаи имрӯзаро барои вазифаи {{job_title}} дар {{company}} роҳбарӣ мекунам. Барои оғоз омодаед?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1849,7 +1849,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Салом, номи ман Ҷон аст ва ман мусоҳибаи имрӯзаро барои вазифаи {{job_title}} дар {{company}} роҳбарӣ мекунам. Барои оғоз омодаед?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1861,7 +1861,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "สวัสดีครับ/ค่ะ ผม/ฉันชื่อจอห์น และจะเป็นผู้นำการสัมภาษณ์สำหรับตำแหน่ง {{job_title}} ที่ {{company}} ในวันนี้ พร้อมที่จะเริ่มหรือยังครับ/คะ?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1870,7 +1870,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "สวัสดีครับ/ค่ะ ผม/ฉันชื่อจอห์น และจะเป็นผู้นำการสัมภาษณ์สำหรับตำแหน่ง {{job_title}} ที่ {{company}} ในวันนี้ พร้อมที่จะเริ่มหรือยังครับ/คะ?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1882,7 +1882,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Merhaba, benim adım John ve bugün {{company}} şirketindeki {{job_title}} pozisyonu için yapılacak mülakatı ben yöneteceğim. Başlamaya hazır mısınız?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1891,7 +1891,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Merhaba, benim adım John ve bugün {{company}} şirketindeki {{job_title}} pozisyonu için yapılacak mülakatı ben yöneteceğim. Başlamaya hazır mısınız?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1903,7 +1903,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Привіт! Мене звати Джон, і сьогодні я проведу співбесіду на посаду {{job_title}} у компанії {{company}}. Готові розпочати?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1912,7 +1912,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Привіт! Мене звати Джон, і сьогодні я проведу співбесіду на посаду {{job_title}} у компанії {{company}}. Готові розпочати?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1924,7 +1924,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "ہیلو، میرا نام جان ہے اور میں {{company}} میں {{job_title}} کے عہدے کے لیے آج کے انٹرویو کی قیادت کروں گا۔ شروع کرنے کے لیے تیار ہیں؟",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1933,7 +1933,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "ہیلو، میرا نام جان ہے اور میں {{company}} میں {{job_title}} کے عہدے کے لیے آج کے انٹرویو کی قیادت کروں گا۔ شروع کرنے کے لیے تیار ہیں؟"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1945,7 +1945,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Salom, mening ismim John va bugungi {{company}} kompaniyasidagi {{job_title}} lavozimi uchun suhbatni men olib boraman. Boshlashga tayyormisiz?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1954,7 +1954,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Salom, mening ismim John va bugungi {{company}} kompaniyasidagi {{job_title}} lavozimi uchun suhbatni men olib boraman. Boshlashga tayyormisiz?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1966,7 +1966,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Xin chào, tôi tên là John và tôi sẽ chủ trì buổi phỏng vấn hôm nay cho vị trí {{job_title}} tại {{company}}. Bạn đã sẵn sàng bắt đầu chưa?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1975,7 +1975,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Xin chào, tôi tên là John và tôi sẽ chủ trì buổi phỏng vấn hôm nay cho vị trí {{job_title}} tại {{company}}. Bạn đã sẵn sàng bắt đầu chưa?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -1987,7 +1987,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "Pẹ̀lẹ́ o, orúkọ mi ni John, èmi sì ni màá ṣe ìfọ̀rọ̀wánilẹ́nuwò òní fún ipò {{job_title}} ní {{company}}. Ṣé o ti ṣetán láti bẹ̀rẹ̀?",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -1996,7 +1996,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "Pẹ̀lẹ́ o, orúkọ mi ni John, èmi sì ni màá ṣe ìfọ̀rọ̀wánilẹ́nuwò òní fún ipò {{job_title}} ní {{company}}. Ṣé o ti ṣetán láti bẹ̀rẹ̀?"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -2008,7 +2008,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "你好，我叫 John，今日會由我主持 {{company}} 嘅 {{job_title}} 職位面試。準備好開始未？",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -2017,7 +2017,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "你好，我叫 John，今日會由我主持 {{company}} 嘅 {{job_title}} 職位面試。準備好開始未？"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -2029,7 +2029,7 @@
           "tts": null,
           "conversation": null,
           "agent": {
-            "first_message": "你好，我叫约翰，今天将由我主持针对 {{company}} 的 {{job_title}} 职位的面试。准备好开始了吗？",
+            "first_message": "{{opening_message}}",
             "language": null,
             "max_conversation_duration_message": null,
             "silence_end_call_message": null,
@@ -2038,7 +2038,7 @@
         },
         "first_message_translation": {
           "source_hash": "{\"firstMessage\":\"Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?\",\"language\":\"en\"}",
-          "text": "你好，我叫约翰，今天将由我主持针对 {{company}} 的 {{job_title}} 职位的面试。准备好开始了吗？"
+          "text": "{{opening_message}}"
         },
         "soft_timeout_translation": null,
         "noisy_environment_message_translation": null
@@ -2049,7 +2049,7 @@
     },
     "realtime_model": null,
     "agent": {
-      "first_message": "Hi, My name is John and I will lead today's interview for {{job_title}} role at {{company}}. Ready to begin?",
+      "first_message": "{{opening_message}}",
       "language": "en",
       "hinglish_mode": false,
       "dynamic_variables": {
@@ -2057,7 +2057,9 @@
           "job_overview": "Senior Developer",
           "job_title": "Senior Developer",
           "company": "Withsecure",
-          "sessionId": "cb42ba5c-f8a7-4734-b030-6eafc54ca47a"
+          "sessionId": "cb42ba5c-f8a7-4734-b030-6eafc54ca47a",
+          "opening_message": "Hi, my name is John and I will lead today's interview. Ready to begin?",
+          "is_resume": "false"
         }
       },
       "disable_first_message_interruptions": false,

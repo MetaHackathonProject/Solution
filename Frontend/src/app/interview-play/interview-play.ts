@@ -15,7 +15,7 @@ import {
   InteractiveTaskResponse,
   InteractiveTaskService,
 } from '../interactive-task.service';
-import { resumeInterviewFirstMessage } from '../resume-interview-first-message';
+import { interviewOpeningMessage } from '../interview-opening-message';
 import {
   VoiceAgentContextResponse,
   VoiceAgentService,
@@ -107,9 +107,17 @@ export class InterviewPlay implements OnInit, OnDestroy {
       return;
     }
 
+    const language = toElevenLabsLanguage(this.agentContext?.language);
+
     const dynamicVariables: Record<string, string> = {
       sessionId: this.sessionId,
       is_resume: this.isResume ? 'true' : 'false',
+      opening_message: interviewOpeningMessage({
+        isResume: this.isResume,
+        language,
+        jobTitle: this.agentContext?.jobTitle,
+        company: this.agentContext?.company,
+      }),
     };
 
     if (this.agentContext?.jobTitle) {
@@ -122,27 +130,15 @@ export class InterviewPlay implements OnInit, OnDestroy {
       dynamicVariables['job_overview'] = this.agentContext.jobOverview;
     }
 
-    const language = toElevenLabsLanguage(this.agentContext?.language);
-
-    const agentOverrides: {
-      language?: typeof language;
-      firstMessage?: string;
-    } = {};
-    if (language) {
-      agentOverrides.language = language;
-    }
-    if (this.isResume) {
-      agentOverrides.firstMessage = resumeInterviewFirstMessage(language);
-    }
-
     try {
       this.conversation = await Conversation.startSession({
         signedUrl: this.signedUrl,
         dynamicVariables,
-        overrides:
-          Object.keys(agentOverrides).length > 0
-            ? { agent: agentOverrides }
-            : undefined,
+        overrides: language
+          ? {
+              agent: { language },
+            }
+          : undefined,
         clientTools: {
           start_interactive_task: async (parameters: { taskId?: string }) => {
             const taskId = parameters?.taskId?.trim();
