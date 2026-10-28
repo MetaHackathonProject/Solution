@@ -70,17 +70,6 @@
   }
 }
 
-.nav-v2__email {
-  max-width: 16rem;
-  overflow: hidden;
-  color: #111;
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .nav-v2__login {
   display: inline-flex;
   align-items: center;
@@ -111,16 +100,6 @@
   .nav-v2__inner {
     gap: 0.75rem;
     padding-inline: 1.25rem;
-  }
-
-  .nav-v2__email {
-    max-width: 8rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .nav-v2__email {
-    display: none;
   }
 }
 

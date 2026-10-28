@@ -9,10 +9,7 @@
       @if (auth.isAuthenticated()) {
         <a class="nav-v2__link" routerLink="/interviews">Interviews</a>
         <a class="nav-v2__link" routerLink="/">New</a>
-        @if (auth.email()) {
-          <span class="nav-v2__email">{{ auth.email() }}</span>
-        }
-        <button type="button" class="nav-v2__login" (click)="auth.signOut()">Sign out</button>
+        <app-profile-menu />
       } @else {
         <button type="button" class="nav-v2__login" (click)="auth.signIn()">Sign in</button>
       }

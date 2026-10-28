@@ -1,0 +1,36 @@
+<div class="profile" [class.profile--open]="open()">
+  <button
+    type="button"
+    class="profile__trigger"
+    [attr.aria-expanded]="open()"
+    aria-haspopup="menu"
+    aria-label="Account menu"
+    (click)="toggle($event)"
+  >
+    <svg class="profile__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.25" stroke="currentColor" stroke-width="1.75" />
+      <path
+        d="M5.5 18.25c1.6-2.7 3.8-4 6.5-4s4.9 1.3 6.5 4"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+      />
+    </svg>
+  </button>
+
+  @if (open()) {
+    <div class="profile__panel" role="menu" aria-label="Account">
+      @if (auth.email()) {
+        <p class="profile__email" role="none">{{ auth.email() }}</p>
+      }
+      <button
+        type="button"
+        class="profile__item"
+        role="menuitem"
+        (click)="signOut($event)"
+      >
+        Sign out
+      </button>
+    </div>
+  }
+</div>
