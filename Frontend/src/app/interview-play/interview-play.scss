@@ -9,7 +9,7 @@
 }
 
 .page__inner {
-  max-width: 42rem;
+  max-width: min(92rem, 98vw);
   margin: 0 auto;
   padding: 2.5rem 1.5rem 4rem;
 }

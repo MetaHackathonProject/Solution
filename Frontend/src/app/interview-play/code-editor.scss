@@ -1,0 +1,236 @@
+.code-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.code-editor__toolbar,
+.code-editor__new-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+}
+
+.code-editor__toolbar {
+  justify-content: space-between;
+}
+
+.code-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 10rem;
+}
+
+.code-editor__field--grow {
+  flex: 1 1 14rem;
+  min-width: 12rem;
+}
+
+.code-editor__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.code-editor__select,
+.code-editor__input {
+  min-height: 2.4rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--color-border-strong, #d0d5dd);
+  border-radius: 8px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #111);
+  font: inherit;
+}
+
+.code-editor__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.code-editor__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.95rem;
+  border: 1px solid var(--color-border-strong, #d0d5dd);
+  border-radius: 8px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #111);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-surface-muted, #f4f5f7);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent, #1b64f2);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.code-editor__btn--primary {
+  border-color: var(--color-accent, #1b64f2);
+  background: var(--color-accent, #1b64f2);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-hover, #1554cc);
+  }
+}
+
+/* Projected submit / extra actions share the same control look. */
+:host ::ng-deep [editorActions].code-editor__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.95rem;
+  border: 1px solid var(--color-accent, #1b64f2);
+  border-radius: 8px;
+  background: var(--color-accent, #1b64f2);
+  color: #fff;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-hover, #1554cc);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent, #1b64f2);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.code-editor__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  border: 1px solid #e5ebf3;
+  border-radius: 10px;
+  background: #f3f6fa;
+}
+
+.code-editor__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.code-editor__tab.is-active {
+  border-color: #cfd8e3;
+  background: #fff;
+}
+
+.code-editor__tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-editor__tab-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.code-editor__tab-close:hover {
+  background: #e8eef5;
+  color: var(--color-text);
+}
+
+.code-editor__host {
+  width: 100%;
+  height: min(40rem, 70vh);
+  min-height: 24rem;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  opacity: 0;
+}
+
+.code-editor__host.is-ready {
+  opacity: 1;
+}
+
+.code-editor__loading,
+.code-editor__error {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.code-editor__error {
+  color: #b42318;
+}
+
+.code-editor__loading {
+  color: var(--color-muted);
+}
+
+@media (max-width: 640px) {
+  .code-editor__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .code-editor__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .code-editor__actions > .code-editor__btn,
+  :host ::ng-deep .code-editor__actions > [editorActions].code-editor__btn {
+    flex: 1 1 auto;
+  }
+}

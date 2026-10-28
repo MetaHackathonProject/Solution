@@ -8,12 +8,30 @@
   </header>
 
   <article class="panel__prompt">
-    <pre class="panel__md">{{ task().questionContentFormatted }}</pre>
+    <div class="panel__md" [innerHTML]="promptHtml()"></div>
   </article>
 
   @if (submittedOk() || task().status === 'Answered') {
     <p class="panel__done" role="status">Answer submitted. You can continue with the interviewer.</p>
-  } @else if (isCodeLike()) {
+  } @else if (isCodeTask()) {
+    <div class="panel__editor">
+      <app-code-editor
+        [preferredLanguage]="preferredLanguage()"
+        [readOnly]="submitting()"
+        (valueChange)="onCodeChange($event)"
+      >
+        <button
+          editorActions
+          type="button"
+          class="code-editor__btn code-editor__btn--primary"
+          [disabled]="submitting() || !answerText().trim()"
+          (click)="submitCode()"
+        >
+          {{ submitting() ? 'Submitting…' : 'Submit solution' }}
+        </button>
+      </app-code-editor>
+    </div>
+  } @else if (isTextLike()) {
     <label class="field">
       <span class="field__label">Your answer</span>
       <textarea
@@ -21,11 +39,7 @@
         rows="12"
         [value]="answerText()"
         (input)="onTextInput($event)"
-        [attr.placeholder]="
-          task().expectedInput === 'code'
-            ? 'Paste or write your code here…'
-            : 'Write your answer here…'
-        "
+        placeholder="Write your answer here…"
       ></textarea>
     </label>
     <div class="panel__actions">

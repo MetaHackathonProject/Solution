@@ -11,13 +11,19 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { marked } from 'marked';
 import {
   InteractiveTaskResponse,
   InteractiveTaskService,
 } from '../interactive-task.service';
+import { CodeEditor } from './code-editor';
+import { detectCodeLanguage } from './detect-code-language';
+
+marked.setOptions({ gfm: true, breaks: true });
 
 @Component({
   selector: 'app-interactive-panel',
+  imports: [CodeEditor],
   templateUrl: './interactive-panel.html',
   styleUrl: './interactive-panel.scss',
 })
@@ -30,20 +36,33 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   readonly submitted = output<void>();
 
   @ViewChild('canvas') private canvasRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild(CodeEditor) private codeEditor?: CodeEditor;
 
   protected readonly answerText = signal('');
   protected readonly submitting = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly submittedOk = signal(false);
 
-  protected readonly isCodeLike = computed(() => {
+  protected readonly isCodeTask = computed(() => this.task().expectedInput === 'code');
+  protected readonly isTextLike = computed(() => {
     const expected = this.task().expectedInput;
-    return expected === 'code' || expected === 'text' || expected === 'free_string';
+    return expected === 'text' || expected === 'free_string';
   });
-
   protected readonly isDrawLike = computed(() => {
     const expected = this.task().expectedInput;
     return expected === 'diagram' || expected === 'schema';
+  });
+  protected readonly preferredLanguage = computed(() =>
+    detectCodeLanguage(this.task().questionContentFormatted),
+  );
+  /** Angular sanitizes [innerHTML] bindings; no bypass. */
+  protected readonly promptHtml = computed(() => {
+    const source = this.task().questionContentFormatted?.trim() ?? '';
+    if (!source) {
+      return '';
+    }
+
+    return marked.parse(source, { async: false }) as string;
   });
 
   private drawing = false;
@@ -61,6 +80,10 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   protected onTextInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement;
     this.answerText.set(target.value);
+  }
+
+  protected onCodeChange(value: string): void {
+    this.answerText.set(value);
   }
 
   protected onFileSelected(event: Event): void {
@@ -115,21 +138,23 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
     this.canvasRef?.nativeElement.releasePointerCapture(event.pointerId);
   }
 
+  protected submitCode(): void {
+    const text = (this.codeEditor?.getValue() ?? this.answerText()).trim();
+    if (!text || this.submitting()) {
+      return;
+    }
+
+    this.answerText.set(text);
+    this.submitTextValue(text);
+  }
+
   protected submitText(): void {
     const text = this.answerText().trim();
     if (!text || this.submitting()) {
       return;
     }
 
-    this.submitting.set(true);
-    this.error.set(null);
-    this.tasksApi.submitText(this.sessionId(), this.task().taskId, text).subscribe({
-      next: () => this.markSubmitted(),
-      error: (err: unknown) => {
-        this.submitting.set(false);
-        this.error.set(this.describeError(err));
-      },
-    });
+    this.submitTextValue(text);
   }
 
   protected submitDrawing(): void {
@@ -151,6 +176,18 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
 
   protected dismiss(): void {
     this.closed.emit();
+  }
+
+  private submitTextValue(text: string): void {
+    this.submitting.set(true);
+    this.error.set(null);
+    this.tasksApi.submitText(this.sessionId(), this.task().taskId, text).subscribe({
+      next: () => this.markSubmitted(),
+      error: (err: unknown) => {
+        this.submitting.set(false);
+        this.error.set(this.describeError(err));
+      },
+    });
   }
 
   private submitFile(file: File): void {
