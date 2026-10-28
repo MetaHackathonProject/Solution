@@ -52,4 +52,11 @@ export class InterviewSessionsService {
   delete(sessionId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${sessionId}`);
   }
+
+  retake(sessionId: string): Observable<{ sessionId: string; questionsSeeded: number }> {
+    return this.http.post<{ sessionId: string; questionsSeeded: number }>(
+      `${this.baseUrl}/${sessionId}/retake`,
+      {},
+    );
+  }
 }

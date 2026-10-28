@@ -33,6 +33,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly session = signal<InterviewSession | null>(null);
   protected readonly lastPreparingStatus = signal('STARTED');
   protected readonly starting = signal(false);
+  protected readonly retaking = signal(false);
   protected readonly deleting = signal(false);
 
   protected readonly status = computed(() => this.session()?.status ?? 'STARTED');
@@ -105,6 +106,24 @@ export class InterviewDetail implements OnInit, OnDestroy {
 
     this.starting.set(true);
     void this.router.navigate(['/interviews', this.sessionId, 'play']);
+  }
+
+  protected retakeInterview(): void {
+    if (!this.sessionId || this.retaking() || this.deleting()) {
+      return;
+    }
+
+    this.retaking.set(true);
+    this.error.set(null);
+    this.sessionsApi.retake(this.sessionId).subscribe({
+      next: () => {
+        void this.router.navigate(['/interviews', this.sessionId, 'play']);
+      },
+      error: (err: unknown) => {
+        this.retaking.set(false);
+        this.error.set(this.describeError(err));
+      },
+    });
   }
 
   protected deleteSession(): void {

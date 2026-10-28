@@ -17,5 +17,7 @@ public interface IPendingInterviewTaskStore
         string status,
         CancellationToken cancellationToken);
 
+    Task ResetAllToNotAskedAsync(string sessionId, CancellationToken cancellationToken);
+
     Task<bool> HasOpenAsync(string sessionId, CancellationToken cancellationToken);
 }

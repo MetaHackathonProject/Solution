@@ -63,6 +63,32 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         return deleted ? NoContent() : NotFound();
     }
 
+    [HttpPost("{sessionId}/retake")]
+    public async Task<ActionResult<RetakeInterviewSessionResponse>> Retake(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await mediator.Send(
+                new RetakeInterviewSessionCommand(sessionId),
+                cancellationToken);
+
+            if (result is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new RetakeInterviewSessionResponse(
+                result.SessionId,
+                result.QuestionsSeeded));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
+    }
+
     [HttpGet("{sessionId}/voice-context")]
     public async Task<ActionResult<VoiceAgentContextResponse>> GetVoiceContext(
         string sessionId,
@@ -258,3 +284,7 @@ public sealed record InteractiveTaskResponse(
     string QuestionContent,
     string Status,
     string ExpectedInput);
+
+public sealed record RetakeInterviewSessionResponse(
+    string SessionId,
+    int QuestionsSeeded);

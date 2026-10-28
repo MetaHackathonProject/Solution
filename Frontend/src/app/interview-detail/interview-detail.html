@@ -125,6 +125,14 @@
               }}
             </button>
           } @else if (completed()) {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="retaking() || deleting()"
+              (click)="retakeInterview()"
+            >
+              {{ retaking() ? 'Preparing retake…' : 'Retake interview' }}
+            </button>
             <a class="btn btn--secondary" routerLink="/">Create another session</a>
           } @else if (failed()) {
             <a class="btn btn--primary" routerLink="/">Create another session</a>

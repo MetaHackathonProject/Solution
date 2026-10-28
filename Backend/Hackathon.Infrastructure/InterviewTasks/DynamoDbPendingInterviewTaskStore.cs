@@ -98,6 +98,26 @@ public sealed class DynamoDbPendingInterviewTaskStore(
             cancellationToken);
     }
 
+    public async Task ResetAllToNotAskedAsync(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var tasks = await ListBySessionAsync(sessionId, cancellationToken);
+        foreach (var task in tasks)
+        {
+            if (task.Status == InteractiveTaskStatus.NotAsked)
+            {
+                continue;
+            }
+
+            await UpdateStatusAsync(
+                sessionId,
+                task.TaskId,
+                InteractiveTaskStatus.NotAsked,
+                cancellationToken);
+        }
+    }
+
     public async Task<bool> HasOpenAsync(string sessionId, CancellationToken cancellationToken)
     {
         var tasks = await ListBySessionAsync(sessionId, cancellationToken);
