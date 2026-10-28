@@ -17,27 +17,46 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SessionId);
 
-        var ordered = await progressStore.ListOrderedAsync(request.SessionId, cancellationToken);
-        if (ordered.Count == 0)
+        var remaining = await progressStore.ListOrderedAsync(request.SessionId, cancellationToken);
+
+        var inProgress = (await pendingTasks.ListBySessionAsync(request.SessionId, cancellationToken))
+            .FirstOrDefault(task => task.Status == InteractiveTaskStatus.InProgress);
+
+        if (inProgress is not null)
+        {
+            return new PopNextInterviewQuestionsResult(
+                [
+                    new InterviewQuestionResultItem(
+                        inProgress.QuestionContent,
+                        inProgress.AssessmentGoal ?? string.Empty,
+                        string.Empty,
+                        inProgress.Module,
+                        "interactive",
+                        inProgress.TaskId),
+                ],
+                remaining.Count);
+        }
+
+        if (remaining.Count == 0)
         {
             return new PopNextInterviewQuestionsResult([], 0);
         }
 
-        var first = ordered[0];
-        IReadOnlyList<InterviewProgressItem> selected;
+        var first = remaining[0];
+        var countToPop = first.IsInteractive
+            ? 1
+            : Math.Min(QuestionsToPop, remaining.Count);
 
-        if (first.IsInteractive)
+        // Never pop past an interactive item in the same batch: if the second item
+        // would be interactive, only return the spoken first and leave interactive queued.
+        if (!first.IsInteractive && countToPop > 1 && remaining[1].IsInteractive)
         {
-            selected = [first];
-        }
-        else
-        {
-            selected = ordered.Take(QuestionsToPop).ToList();
+            countToPop = 1;
         }
 
         var popped = await progressStore.PopNextAsync(
             request.SessionId,
-            selected.Count,
+            countToPop,
             cancellationToken);
 
         foreach (var item in popped.Questions.Where(question => question.IsInteractive))
