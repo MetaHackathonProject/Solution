@@ -6,8 +6,13 @@ export interface InteractiveSubmissionPayload {
   expectedInput: string;
   module: string;
   taskPrompt: string;
-  /** Null for diagram/schema/file-only answers (not passed to the walkthrough agent yet). */
+  /** Code/text snapshot for dynamic var; null when only an image/file was submitted. */
   submittedSolution: string | null;
+  /**
+   * Diagram/schema PNG (or other image/PDF) uploaded to the walkthrough conversation
+   * after connect via uploadFile + sendMultimodalMessage.
+   */
+  submittedImage: File | null;
 }
 
 export function truncateForWalkthrough(text: string, maxChars: number): string {
@@ -32,4 +37,19 @@ export function formatMultiFileWalkthroughSource(
   return files
     .map((file) => `===== ${file.name} =====\n${file.content.replace(/\s+$/, '')}\n`)
     .join('\n');
+}
+
+/** Files ElevenLabs ConvAI conversation upload accepts for vision/context. */
+export function isWalkthroughAttachableFile(file: File): boolean {
+  const type = file.type.toLowerCase();
+  if (type.startsWith('image/')) {
+    return true;
+  }
+
+  if (type === 'application/pdf') {
+    return true;
+  }
+
+  // draw.io export may omit type in some browsers; trust the extension.
+  return /\.(png|jpe?g|gif|webp|pdf)$/i.test(file.name);
 }

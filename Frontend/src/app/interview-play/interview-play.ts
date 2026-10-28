@@ -71,6 +71,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private pauseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePurpose: VoiceAgentPurpose = 'interview';
   private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
+  /** Wait for the walkthrough greeting to finish before attaching the diagram. */
+  private pendingWalkthroughImageAttach = false;
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -112,6 +114,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearPauseTimers();
+    this.pendingWalkthroughImageAttach = false;
     if (this.voicePhase() === 'paused') {
       this.conversation = null;
       return;
@@ -209,6 +212,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.interactiveTask.set(null);
     this.panelCollapsed.set(false);
     this.walkthroughSubmission = null;
+    this.pendingWalkthroughImageAttach = false;
 
     try {
       const signed = await firstValueFrom(
@@ -337,9 +341,50 @@ export class InterviewPlay implements OnInit, OnDestroy {
           this.onVoiceDisconnected();
         },
       });
+
+      // Attach after the greeting finishes (see onVoiceModeChange) so we do not
+      // interrupt the overridden first message with a multimodal user turn.
+      this.pendingWalkthroughImageAttach =
+        options.purpose === 'walkthrough' && !!this.walkthroughSubmission?.submittedImage;
+      if (this.pendingWalkthroughImageAttach && this.mode() === 'listening') {
+        this.pendingWalkthroughImageAttach = false;
+        void this.attachWalkthroughImage();
+      }
     } catch {
       this.starting.set(false);
       this.error.set('Could not start the voice interview. Try again.');
+    }
+  }
+
+  /**
+   * Uploads a diagram/schema (or free-form image/PDF) into the live walkthrough
+   * conversation and sends it as a multimodal user message so the agent can see it.
+   */
+  private async attachWalkthroughImage(): Promise<void> {
+    const image = this.walkthroughSubmission?.submittedImage;
+    const conversation = this.conversation;
+    if (!image || !conversation) {
+      return;
+    }
+
+    // Clear so a reconnect / continue path does not re-upload a stale blob.
+    if (this.walkthroughSubmission) {
+      this.walkthroughSubmission = {
+        ...this.walkthroughSubmission,
+        submittedImage: null,
+      };
+    }
+
+    try {
+      const { fileId } = await conversation.uploadFile(image);
+      conversation.sendMultimodalMessage({
+        fileIds: [fileId],
+        text:
+          'I submitted this diagram or image as my interactive-task solution. ' +
+          'Please use it as visual context while I walk you through my approach.',
+      });
+    } catch (err) {
+      console.warn('Could not attach solution image to walkthrough agent', err);
     }
   }
 
@@ -381,6 +426,16 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private onVoiceModeChange(mode: Mode): void {
+    if (
+      this.pendingWalkthroughImageAttach &&
+      mode === 'listening' &&
+      this.activePurpose === 'walkthrough' &&
+      this.afterSpeechAction === 'none'
+    ) {
+      this.pendingWalkthroughImageAttach = false;
+      void this.attachWalkthroughImage();
+    }
+
     if (this.afterSpeechAction === 'none') {
       return;
     }
