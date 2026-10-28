@@ -59,10 +59,11 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private conversation: VoiceConversation | TextConversation | null = null;
   private ending = false;
   private disconnectIntent: DisconnectIntent = 'none';
-  private pendingPauseAfterSpeech = false;
-  private sawSpeakingForPause = false;
-  private pauseGraceTimer: ReturnType<typeof setTimeout> | null = null;
-  private pauseSettleTimer: ReturnType<typeof setTimeout> | null = null;
+  /** True after interactive open; pause when agent calls pause_for_interactive_task (or fallback). */
+  private interactivePauseArmed = false;
+  /** True after pause_for_interactive_task; wait for current TTS to finish if needed. */
+  private pauseWhenListening = false;
+  private pauseFallbackTimer: ReturnType<typeof setTimeout> | null = null;
   private pauseDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePurpose: VoiceAgentPurpose = 'interview';
   private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
@@ -134,7 +135,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   protected async stopConversation(): Promise<void> {
     this.clearPauseTimers();
-    this.pendingPauseAfterSpeech = false;
+    this.interactivePauseArmed = false;
+    this.pauseWhenListening = false;
     this.disconnectIntent = 'user_end';
     if (!this.conversation) {
       void this.completeAndLeave();
@@ -160,7 +162,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   private async startWalkthrough(): Promise<void> {
     this.clearPauseTimers();
-    this.pendingPauseAfterSpeech = false;
+    this.interactivePauseArmed = false;
+    this.pauseWhenListening = false;
     this.error.set(null);
 
     try {
@@ -283,12 +286,16 @@ export class InterviewPlay implements OnInit, OnDestroy {
             }
 
             await this.openInteractiveTask(taskId);
-            this.armPauseAfterSpeech();
+            this.armInteractivePauseFallback();
             return (
-              'Interactive task opened on screen. Now speak the interactive question aloud, ' +
-              'briefly tell the candidate the full exercise is on screen, and that you will continue after they submit. ' +
-              'The voice call will pause only after you finish that spoken intro.'
+              'Interactive task opened on screen. Speak the interactive question aloud now, ' +
+              'briefly say the full exercise is on screen and you will continue after they submit. ' +
+              'When that spoken intro is fully finished, call pause_for_interactive_task.'
             );
+          },
+          pause_for_interactive_task: async () => {
+            this.requestPauseAfterAgentSpeech();
+            return 'Pausing the voice call for the interactive exercise';
           },
           finish_solution_walkthrough: async () => {
             this.disconnectIntent = 'walkthrough_done';
@@ -324,58 +331,68 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
   }
 
-  private armPauseAfterSpeech(): void {
+  /** Opens the exercise; agent must still speak, then call pause_for_interactive_task. */
+  private armInteractivePauseFallback(): void {
     this.clearPauseTimers();
-    this.pendingPauseAfterSpeech = true;
-    // Do not count speech that was already in progress during the tool call —
-    // that caused an immediate pause on the next listening blip before the intro.
-    this.sawSpeakingForPause = false;
+    this.interactivePauseArmed = true;
+    this.pauseWhenListening = false;
 
-    // If the agent keeps speaking through the tool into the intro, mark it after settle.
-    this.pauseSettleTimer = setTimeout(() => {
-      if (this.pendingPauseAfterSpeech && this.mode() === 'speaking') {
-        this.sawSpeakingForPause = true;
-        this.clearPauseGraceTimer();
-      }
-    }, 600);
-
-    // Fallback if the agent never starts the spoken intro.
-    this.pauseGraceTimer = setTimeout(() => {
-      if (this.pendingPauseAfterSpeech && !this.sawSpeakingForPause) {
+    // Safety net if the agent never calls pause_for_interactive_task.
+    this.pauseFallbackTimer = setTimeout(() => {
+      if (this.interactivePauseArmed && this.conversation) {
         void this.pauseInterviewLocally();
       }
-    }, 20_000);
+    }, 90_000);
+  }
+
+  /** Called by pause_for_interactive_task after the spoken intro. */
+  private requestPauseAfterAgentSpeech(): void {
+    if (!this.interactivePauseArmed && !this.conversation) {
+      return;
+    }
+
+    this.interactivePauseArmed = true;
+    this.clearPauseFallbackTimer();
+
+    if (this.mode() === 'speaking') {
+      // Let current TTS finish, then disconnect.
+      this.pauseWhenListening = true;
+      return;
+    }
+
+    this.clearPauseDebounceTimer();
+    this.pauseDebounceTimer = setTimeout(() => {
+      void this.pauseInterviewLocally();
+    }, 500);
   }
 
   private onVoiceModeChange(mode: Mode): void {
-    if (!this.pendingPauseAfterSpeech) {
+    if (!this.pauseWhenListening) {
       return;
     }
 
     if (mode === 'speaking') {
-      this.sawSpeakingForPause = true;
-      this.clearPauseGraceTimer();
       this.clearPauseDebounceTimer();
       return;
     }
 
-    if (mode === 'listening' && this.sawSpeakingForPause) {
-      // Debounce brief listening gaps mid-utterance.
+    if (mode === 'listening') {
       this.clearPauseDebounceTimer();
       this.pauseDebounceTimer = setTimeout(() => {
-        if (this.pendingPauseAfterSpeech && this.mode() === 'listening') {
+        if (this.pauseWhenListening && this.mode() === 'listening') {
           void this.pauseInterviewLocally();
         }
-      }, 700);
+      }, 600);
     }
   }
 
   private async pauseInterviewLocally(): Promise<void> {
-    if (!this.pendingPauseAfterSpeech) {
+    if (!this.conversation && this.voicePhase() === 'paused') {
       return;
     }
 
-    this.pendingPauseAfterSpeech = false;
+    this.interactivePauseArmed = false;
+    this.pauseWhenListening = false;
     this.clearPauseTimers();
     this.disconnectIntent = 'pause';
     this.voicePhase.set('paused');
@@ -471,10 +488,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
     });
   }
 
-  private clearPauseGraceTimer(): void {
-    if (this.pauseGraceTimer) {
-      clearTimeout(this.pauseGraceTimer);
-      this.pauseGraceTimer = null;
+  private clearPauseFallbackTimer(): void {
+    if (this.pauseFallbackTimer) {
+      clearTimeout(this.pauseFallbackTimer);
+      this.pauseFallbackTimer = null;
     }
   }
 
@@ -486,12 +503,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private clearPauseTimers(): void {
-    this.clearPauseGraceTimer();
+    this.clearPauseFallbackTimer();
     this.clearPauseDebounceTimer();
-    if (this.pauseSettleTimer) {
-      clearTimeout(this.pauseSettleTimer);
-      this.pauseSettleTimer = null;
-    }
   }
 
   private describeError(err: unknown): string {

@@ -1,7 +1,7 @@
 {
   "type": "client",
   "name": "start_interactive_task",
-  "description": "Notify the interview UI to open the interactive exercise panel for the given taskId. Call silently before asking an interactive question aloud. After you finish the spoken intro, the UI pauses the voice call. Never mention this call to the candidate.",
+  "description": "Notify the interview UI to open the interactive exercise panel for the given taskId. Call silently before asking an interactive question aloud. After you finish the spoken intro, call pause_for_interactive_task. Never mention this call to the candidate.",
   "expects_response": true,
   "parameters": {
     "type": "object",

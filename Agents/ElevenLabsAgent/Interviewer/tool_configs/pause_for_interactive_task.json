@@ -1,0 +1,11 @@
+{
+  "type": "client",
+  "name": "pause_for_interactive_task",
+  "description": "Call only after you have fully finished speaking the interactive question intro aloud. Notifies the UI to pause the voice call so the candidate can work without billing idle time. Never mention this call to the candidate.",
+  "expects_response": true,
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+}
