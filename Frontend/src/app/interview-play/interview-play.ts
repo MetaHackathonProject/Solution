@@ -24,6 +24,7 @@ import {
 } from '../voice-agent.service';
 import { walkthroughFirstMessage } from '../walkthrough-first-message';
 import { InteractivePanel } from './interactive-panel';
+import { InteractiveSubmissionPayload } from './walkthrough-submission';
 
 type VoicePhase = 'idle' | 'interview' | 'paused' | 'walkthrough';
 type DisconnectIntent = 'none' | 'pause' | 'walkthrough_done' | 'user_end';
@@ -62,6 +63,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private sawSpeakingForPause = false;
   private pauseGraceTimer: ReturnType<typeof setTimeout> | null = null;
   private activePurpose: VoiceAgentPurpose = 'interview';
+  private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -148,8 +150,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.panelCollapsed.set(false);
   }
 
-  protected onInteractiveSubmitted(): void {
+  protected onInteractiveSubmitted(payload: InteractiveSubmissionPayload): void {
     this.panelCollapsed.set(false);
+    this.walkthroughSubmission = payload;
     void this.startWalkthrough();
   }
 
@@ -165,12 +168,26 @@ export class InterviewPlay implements OnInit, OnDestroy {
       this.signedUrl = signed.signedUrl;
       this.conversationId = signed.conversationId;
 
+      const submission = this.walkthroughSubmission;
+      const extraDynamicVariables: Record<string, string> = {};
+      if (submission) {
+        extraDynamicVariables['expected_input'] = submission.expectedInput;
+        extraDynamicVariables['task_module'] = submission.module;
+        if (submission.taskPrompt) {
+          extraDynamicVariables['task_prompt'] = submission.taskPrompt;
+        }
+        if (submission.submittedSolution) {
+          extraDynamicVariables['submitted_solution'] = submission.submittedSolution;
+        }
+      }
+
       await this.connectVoice({
         purpose: 'walkthrough',
         firstMessage: walkthroughFirstMessage(
           toElevenLabsLanguage(this.agentContext?.language),
         ),
         phase: 'walkthrough',
+        extraDynamicVariables,
       });
     } catch (err: unknown) {
       this.voicePhase.set('paused');
@@ -182,6 +199,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.error.set(null);
     this.interactiveTask.set(null);
     this.panelCollapsed.set(false);
+    this.walkthroughSubmission = null;
 
     try {
       const signed = await firstValueFrom(
@@ -209,6 +227,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     purpose: VoiceAgentPurpose;
     firstMessage: string;
     phase: Exclude<VoicePhase, 'idle' | 'paused'>;
+    extraDynamicVariables?: Record<string, string>;
   }): Promise<void> {
     if (!this.sessionId || !this.signedUrl || this.starting()) {
       return;
@@ -231,6 +250,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     const dynamicVariables: Record<string, string> = {
       sessionId: this.sessionId,
       is_resume: this.isResume ? 'true' : 'false',
+      ...options.extraDynamicVariables,
     };
 
     if (this.agentContext?.jobTitle) {

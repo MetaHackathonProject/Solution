@@ -103,7 +103,7 @@
           [sessionId]="sessionId"
           [task]="task"
           (closed)="clearInteractiveTask()"
-          (submitted)="onInteractiveSubmitted()"
+          (submitted)="onInteractiveSubmitted($event)"
         />
       }
     }

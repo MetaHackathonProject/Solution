@@ -12,6 +12,7 @@ import {
 import loader from '@monaco-editor/loader';
 import JSZip from 'jszip';
 import type * as Monaco from 'monaco-editor';
+import { formatMultiFileWalkthroughSource } from './walkthrough-submission';
 
 export type CodeEditorLanguage =
   | 'javascript'
@@ -252,6 +253,16 @@ export class CodeEditor implements AfterViewInit, OnDestroy {
 
   hasContent(): boolean {
     return this.files().some((file) => file.model.getValue().trim().length > 0);
+  }
+
+  /** Plain / multi-file text for the walkthrough agent dynamic variable (not the zip). */
+  getWalkthroughSource(): string {
+    return formatMultiFileWalkthroughSource(
+      this.files().map((file) => ({
+        name: file.name,
+        content: file.model.getValue(),
+      })),
+    );
   }
 
   async buildSubmissionZip(): Promise<File | null> {

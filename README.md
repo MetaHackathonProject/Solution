@@ -57,7 +57,7 @@ During the call, ElevenLabs calls MCP `get_next_question` on `https://api.hackat
 | `Infrastructure/` | Terraform for AWS |
 | `Agents/AgentCore/` | AgentCore harness YAML + prompts. Terraform deploys every folder here |
 | `Agents/ElevenLabsAgent/` | Main voice interviewer export (not Terraform) |
-| `Agents/ElevenLabsWalkthroughAgent/` | Post-submit solution walkthrough agent (not Terraform) |
+| `Agents/ElevenLabsAgent/WalkthroughAgent/` | Post-submit solution walkthrough agent (not Terraform) |
 | `.github/workflows/` | Solution workflow: infra, then backend/frontend |
 
 ## AgentCore agents

@@ -18,6 +18,12 @@ import {
 } from '../interactive-task.service';
 import { CodeEditor } from './code-editor';
 import { detectCodeLanguage } from './detect-code-language';
+import {
+  InteractiveSubmissionPayload,
+  WALKTHROUGH_SOLUTION_MAX_CHARS,
+  WALKTHROUGH_TASK_PROMPT_MAX_CHARS,
+  truncateForWalkthrough,
+} from './walkthrough-submission';
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -33,7 +39,7 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   readonly sessionId = input.required<string>();
   readonly task = input.required<InteractiveTaskResponse>();
   readonly closed = output<void>();
-  readonly submitted = output<void>();
+  readonly submitted = output<InteractiveSubmissionPayload>();
 
   @ViewChild('canvas') private canvasRef?: ElementRef<HTMLCanvasElement>;
   @ViewChild(CodeEditor) private codeEditor?: CodeEditor;
@@ -68,6 +74,8 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   private drawing = false;
   private lastX = 0;
   private lastY = 0;
+  /** Text snapshot for walkthrough; null for diagram/schema until we support those. */
+  private pendingSolution: string | null = null;
 
   ngAfterViewInit(): void {
     this.resetCanvas();
@@ -93,6 +101,8 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Binary/file answers are not passed to the walkthrough agent yet.
+    this.pendingSolution = null;
     this.submitFile(file);
   }
 
@@ -143,12 +153,14 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const solutionText = this.codeEditor.getWalkthroughSource();
     void this.codeEditor.buildSubmissionZip().then((file) => {
       if (!file) {
         this.error.set('Add some code before submitting.');
         return;
       }
 
+      this.pendingSolution = solutionText;
       this.submitFile(file);
     });
   }
@@ -159,6 +171,7 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
       return;
     }
 
+    this.pendingSolution = text;
     this.submitTextValue(text);
   }
 
@@ -174,6 +187,7 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
         return;
       }
 
+      this.pendingSolution = null;
       const file = new File([blob], 'answer.png', { type: 'image/png' });
       this.submitFile(file);
     }, 'image/png');
@@ -210,7 +224,24 @@ export class InteractivePanel implements AfterViewInit, OnDestroy {
   private markSubmitted(): void {
     this.submitting.set(false);
     this.submittedOk.set(true);
-    this.submitted.emit();
+
+    const task = this.task();
+    const taskPrompt = (
+      task.questionContentFormatted?.trim() ||
+      task.questionContent?.trim() ||
+      ''
+    );
+    const solution = this.pendingSolution?.trim() || null;
+    this.pendingSolution = null;
+
+    this.submitted.emit({
+      expectedInput: task.expectedInput,
+      module: task.module,
+      taskPrompt: truncateForWalkthrough(taskPrompt, WALKTHROUGH_TASK_PROMPT_MAX_CHARS),
+      submittedSolution: solution
+        ? truncateForWalkthrough(solution, WALKTHROUGH_SOLUTION_MAX_CHARS)
+        : null,
+    });
   }
 
   private resetCanvas(): void {
