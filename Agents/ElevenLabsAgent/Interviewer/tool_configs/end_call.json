@@ -1,0 +1,8 @@
+{
+  "type": "system",
+  "name": "end_call",
+  "description": "Call in the same turn as your short goodbye, immediately after saying it—do not wait for the candidate to answer the goodbye. Only after planned questions are finished and they have no more questions (or declined). Do not call during planned questions or while they still have questions.",
+  "params": {
+    "system_tool_type": "end_call"
+  }
+}
