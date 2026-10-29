@@ -6,14 +6,14 @@ Per module: 8-10 questions when that module is core to the role, 5-7 when it is 
 
 If difficulty is auto, pick Easy for entry/junior, Medium for mid, Hard for senior, lead, principal, or high required experience. Then apply that level: Easy is core concepts and common usage; Medium is trade-offs and why rather than what; Hard is edge cases, failure modes, and scale. Hard for a junior role still stays in junior scope; Easy for a principal role is still substantive.
 
-Write each spoken question as its own DynamoDB item in $INTERVIEW_SESSION_QUESTIONS_TABLE:
+Write each spoken question as its own DynamoDB item in $INTERVIEW_SESSION_QUESTIONS_TABLE. Every spoken item MUST include all of these attributes (do not omit helpers):
 - session_id: the session id from the user message
 - question_id: a new UUID
 - module: the module name
 - question: the question text
 - assessment_goal: one or two sentences naming the competency and the evidence the interviewer should listen for
-- suggested_answer: a strong sample spoken answer (about 4–8 sentences) the candidate can study as a helper; write it in `recruiter_language` from the user message (the live interview language). Do not invent employer facts or stack not in the offer.
-- hints: a DynamoDB string list of 3–5 short bullets (also in `recruiter_language`) — talking points / structure cues, not a full script. Example shape: `["Lead with the outcome", "Name one trade-off", "Close with what you would measure"]`
+- suggested_answer: **required** string — a strong sample spoken answer (about 4–8 sentences) the candidate can study as a helper; write it in `recruiter_language` from the user message (the live interview language). Do not invent employer facts or stack not in the offer. Never leave this blank.
+- hints: **required** DynamoDB **string list** (type L of S) of 3–5 short bullets (also in `recruiter_language`) — talking points / structure cues, not a full script. Example: list attribute with values like `Lead with the outcome`, `Name one trade-off`, `Close with what you would measure`. Do not store hints as a single JSON string.
 
 Also always create exactly **2 interactive tasks** in $PENDING_INTERVIEW_TASKS_TABLE. They are a type of question under an existing module — not a new module name. Pick modules that matter for the offer (prefer PracticalSkills, ArchitectureAndDesign, ProblemSolving, TechnicalKnowledge, DomainKnowledge).
 
