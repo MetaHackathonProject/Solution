@@ -99,6 +99,8 @@ resource "aws_cognito_user_pool_domain" "auth" {
   domain          = local.domains.auth
   user_pool_id    = aws_cognito_user_pool.main.id
   certificate_arn = aws_acm_certificate_validation.auth.certificate_arn
+  # 1 = Hosted UI (classic), 2 = managed login (required for console branding styles).
+  managed_login_version = 2
 
   depends_on = [time_sleep.apex_dns]
 }
