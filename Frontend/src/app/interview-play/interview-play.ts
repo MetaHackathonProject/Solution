@@ -79,6 +79,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private conversation: VoiceConversation | TextConversation | null = null;
   private ending = false;
   private disconnectIntent: DisconnectIntent = 'none';
+  /** Bumped to invalidate callbacks from a session that was forcibly torn down. */
+  private connectionGen = 0;
   /** True after interactive open; pause when agent calls pause_for_interactive_task (or fallback). */
   private interactivePauseArmed = false;
   private afterSpeechAction: AfterSpeechAction = 'none';
@@ -87,6 +89,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private activePurpose: VoiceAgentPurpose = 'interview';
   private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
   private visionReviewSub: Subscription | null = null;
+  private transitionInFlight: Promise<void> | null = null;
 
   ngOnInit(): void {
     this.sessionId = this.route.snapshot.paramMap.get('sessionId') ?? '';
@@ -159,13 +162,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.stopVisionReviewPoll();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
-    this.disconnectIntent = 'user_end';
-    if (!this.conversation) {
-      void this.completeAndLeave();
-      return;
-    }
-
-    await this.conversation.endSession();
+    // Invalidate onDisconnect so a forced teardown does not also navigate/reconnect.
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
+    void this.completeAndLeave();
   }
 
   protected clearInteractiveTask(): void {
@@ -266,11 +266,32 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private async startWalkthrough(): Promise<void> {
+    if (this.transitionInFlight) {
+      await this.transitionInFlight;
+      return;
+    }
+
+    const run = this.runStartWalkthrough();
+    this.transitionInFlight = run.finally(() => {
+      if (this.transitionInFlight === run) {
+        this.transitionInFlight = null;
+      }
+    });
+    await this.transitionInFlight;
+  }
+
+  private async runStartWalkthrough(): Promise<void> {
     this.clearPauseTimers();
     this.stopVisionReviewPoll();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
     this.error.set(null);
+
+    // Kill a lingering interview agent before the walkthrough connects.
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
+    this.voicePhase.set('paused');
+    this.connectionStatus.set('idle');
 
     try {
       const signed = await firstValueFrom(
@@ -307,10 +328,33 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private async continueInterviewAfterWalkthrough(): Promise<void> {
+    if (this.transitionInFlight) {
+      await this.transitionInFlight;
+      return;
+    }
+
+    const run = this.runContinueInterviewAfterWalkthrough();
+    this.transitionInFlight = run.finally(() => {
+      if (this.transitionInFlight === run) {
+        this.transitionInFlight = null;
+      }
+    });
+    await this.transitionInFlight;
+  }
+
+  private async runContinueInterviewAfterWalkthrough(): Promise<void> {
     this.error.set(null);
     this.interactiveTask.set(null);
     this.panelCollapsed.set(false);
     this.walkthroughSubmission = null;
+    this.clearPauseTimers();
+    this.interactivePauseArmed = false;
+    this.afterSpeechAction = 'none';
+
+    // Always drop the walkthrough agent before reconnecting the interviewer.
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
+    this.connectionStatus.set('idle');
 
     try {
       const signed = await firstValueFrom(
@@ -346,6 +390,11 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     this.starting.set(true);
     this.error.set(null);
+
+    // Never stack two ConvAI sessions (pause miss + submit, or walkthrough → interview).
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
+
     this.activePurpose = options.purpose;
     this.disconnectIntent = 'none';
 
@@ -374,6 +423,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
       dynamicVariables['job_overview'] = this.agentContext.jobOverview;
     }
 
+    const gen = ++this.connectionGen;
+
     try {
       this.conversation = await Conversation.startSession({
         signedUrl: this.signedUrl,
@@ -386,6 +437,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
         },
         clientTools: {
           start_interactive_task: async (parameters: { taskId?: string }) => {
+            if (gen !== this.connectionGen) {
+              return 'Stale session';
+            }
+
             const taskId = parameters?.taskId?.trim();
             if (!taskId) {
               return 'Missing taskId';
@@ -400,49 +455,127 @@ export class InterviewPlay implements OnInit, OnDestroy {
             );
           },
           pause_for_interactive_task: async () => {
+            if (gen !== this.connectionGen) {
+              return 'Stale session';
+            }
+
             this.requestActionAfterAgentSpeech('pause');
             return 'Pausing the voice call for the interactive exercise';
           },
           finish_interview: async () => {
+            if (gen !== this.connectionGen) {
+              return 'Stale session';
+            }
+
             // Client-side hangup — do not wait for the candidate to answer the goodbye.
             this.requestActionAfterAgentSpeech('complete');
             return 'Interview closed';
           },
           finish_solution_walkthrough: async () => {
-            this.disconnectIntent = 'walkthrough_done';
-            if (this.conversation) {
-              await this.conversation.endSession();
+            if (gen !== this.connectionGen) {
+              return 'Stale session';
             }
+
+            // Tear down here (invalidates this session's onDisconnect) then reconnect.
+            await this.continueInterviewAfterWalkthrough();
             return 'Returning to the main interview';
           },
         },
         onStatusChange: ({ status }) => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.connectionStatus.set(status);
         },
         onModeChange: ({ mode }) => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.mode.set(mode);
           this.onVoiceModeChange(mode);
         },
         onMessage: (payload) => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.onAgentMessage(payload);
         },
         onError: () => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.error.set('The voice interview connection failed. Try again.');
           this.starting.set(false);
         },
         onConnect: () => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.starting.set(false);
           this.voicePhase.set(options.phase);
         },
         onDisconnect: () => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
           this.connectionStatus.set('disconnected');
           this.onVoiceDisconnected();
         },
       });
+
+      if (gen !== this.connectionGen) {
+        // Superseded while startSession was resolving — drop the late session.
+        const orphan = this.conversation;
+        this.conversation = null;
+        try {
+          await orphan.endSession();
+        } catch {
+          // ignore
+        }
+        this.starting.set(false);
+      }
     } catch {
-      this.starting.set(false);
-      this.error.set('Could not start the voice interview. Try again.');
+      if (gen === this.connectionGen) {
+        this.starting.set(false);
+        this.error.set('Could not start the voice interview. Try again.');
+      }
     }
+  }
+
+  /**
+   * Ends any live ConvAI session and invalidates its callbacks so a replacement
+   * agent cannot overlap with the previous one.
+   */
+  private async ensureDisconnected(): Promise<void> {
+    this.clearPauseTimers();
+    this.afterSpeechAction = 'none';
+    this.interactivePauseArmed = false;
+
+    const conversation = this.conversation;
+    if (!conversation) {
+      return;
+    }
+
+    this.connectionGen += 1;
+    this.conversation = null;
+
+    try {
+      await Promise.race([
+        conversation.endSession(),
+        new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+      ]);
+    } catch {
+      // Session may already be closed.
+    }
+
+    // Brief beat so the browser can release the mic before the next startSession.
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
   }
 
   /** Opens the exercise; agent must still speak, then call pause_for_interactive_task. */
@@ -471,6 +604,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     this.clearPauseFallbackTimer();
     this.afterSpeechAction = action;
+    const gen = this.connectionGen;
 
     if (this.mode() === 'speaking') {
       return;
@@ -478,6 +612,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     this.clearPauseDebounceTimer();
     this.pauseDebounceTimer = setTimeout(() => {
+      if (gen !== this.connectionGen) {
+        return;
+      }
+
       void this.disconnectAfterSpeech(action);
     }, 400);
   }
@@ -494,11 +632,18 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
     if (mode === 'listening') {
       const action = this.afterSpeechAction;
+      const gen = this.connectionGen;
       this.clearPauseDebounceTimer();
       this.pauseDebounceTimer = setTimeout(() => {
-        if (this.afterSpeechAction === action && this.mode() === 'listening') {
-          void this.disconnectAfterSpeech(action);
+        if (
+          gen !== this.connectionGen ||
+          this.afterSpeechAction !== action ||
+          this.mode() !== 'listening'
+        ) {
+          return;
         }
+
+        void this.disconnectAfterSpeech(action);
       }, 500);
     }
   }
@@ -527,7 +672,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private async disconnectAfterSpeech(action: Exclude<AfterSpeechAction, 'none'>): Promise<void> {
-    if (!this.conversation && this.voicePhase() === 'paused' && action === 'pause') {
+    if (action === 'pause' && this.voicePhase() === 'paused' && !this.conversation) {
       return;
     }
 
@@ -536,22 +681,18 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.clearPauseTimers();
 
     if (action === 'pause') {
-      this.disconnectIntent = 'pause';
       this.voicePhase.set('paused');
-    } else {
-      this.disconnectIntent = 'user_end';
-    }
-
-    if (!this.conversation) {
-      if (action === 'complete') {
-        void this.completeAndLeave();
-      }
+      this.disconnectIntent = 'none';
+      await this.ensureDisconnected();
+      this.connectionStatus.set('idle');
+      this.starting.set(false);
       return;
     }
 
-    const conversation = this.conversation;
-    this.conversation = null;
-    await conversation.endSession();
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
+    this.starting.set(false);
+    void this.completeAndLeave();
   }
 
   private onVoiceDisconnected(): void {
@@ -559,6 +700,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.disconnectIntent = 'none';
     this.conversation = null;
     this.starting.set(false);
+
+    // Intentional teardowns (pause / walkthrough→interview / hangup) use ensureDisconnected
+    // and bump connectionGen so this handler is skipped. Remaining cases are agent/network drops.
 
     if (intent === 'pause') {
       this.voicePhase.set('paused');
@@ -576,7 +720,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
       return;
     }
 
-    // Agent ended the call (end_call) or unexpected drop.
     if (this.activePurpose === 'walkthrough') {
       void this.continueInterviewAfterWalkthrough();
       return;
@@ -602,13 +745,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   private async endConversationLocally(): Promise<void> {
-    if (!this.conversation) {
-      return;
-    }
-
-    const conversation = this.conversation;
-    this.conversation = null;
-    await conversation.endSession();
+    this.disconnectIntent = 'none';
+    await this.ensureDisconnected();
   }
 
   private completeAndLeave(): void {
