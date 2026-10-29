@@ -290,7 +290,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
         ),
       )
       .subscribe((helpers) => {
-        this.activeHelpers.set(helpers);
+        // Backend should return only the current question; keep a single card if not.
+        this.activeHelpers.set(helpers.slice(0, 1));
       });
   }
 

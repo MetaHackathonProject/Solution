@@ -9,8 +9,9 @@ namespace Hackathon.Mcp.Tools;
 public sealed class InterviewQuestionsTool(IMediator mediator)
 {
     [McpServerTool(Name = "get_next_question"), Description(
-        "Get next question for interview session. " +
-        "Returns two questions that agent has to ask and remaining questions for the interview session")]
+        "Get the next question for the interview session. " +
+        "Returns one spoken question (or one interactive item) and how many questions remain. " +
+        "Call again after the candidate has answered before moving on.")]
     public Task<PopNextInterviewQuestionsResult> PopQuestionForInterview(
         string sessionId,
         CancellationToken cancellationToken)

@@ -11,7 +11,8 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
     IInterviewQuestionHelperStore questionHelpers)
     : IRequestHandler<PopNextInterviewQuestionsCommand, PopNextInterviewQuestionsResult>
 {
-    private const int QuestionsToPop = 2;
+    // One spoken question per pop so the UI helper matches the question being asked now.
+    private const int QuestionsToPop = 1;
 
     public async Task<PopNextInterviewQuestionsResult> Handle(
         PopNextInterviewQuestionsCommand request,
@@ -74,16 +75,16 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
                 cancellationToken);
         }
 
-        var spokenIds = popped.Questions
+        var currentSpokenId = popped.Questions
             .Where(item => !item.IsInteractive)
             .Select(item => item.QuestionId)
-            .ToList();
+            .FirstOrDefault();
 
-        if (spokenIds.Count > 0)
+        if (!string.IsNullOrWhiteSpace(currentSpokenId))
         {
             await questionHelpers.SetActiveQuestionIdsAsync(
                 request.SessionId,
-                spokenIds,
+                [currentSpokenId],
                 cancellationToken);
         }
         else
