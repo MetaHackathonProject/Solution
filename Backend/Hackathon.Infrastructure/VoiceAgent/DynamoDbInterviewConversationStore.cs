@@ -69,6 +69,50 @@ public sealed class DynamoDbInterviewConversationStore(
         return items;
     }
 
+    public async Task DeleteBySessionAsync(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+
+        var existing = await ListBySessionAsync(sessionId, cancellationToken);
+        if (existing.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var chunk in existing.Chunk(25))
+        {
+            var requestItems = new Dictionary<string, List<WriteRequest>>
+            {
+                [options.Value.TableName] = chunk
+                    .Select(item => new WriteRequest
+                    {
+                        DeleteRequest = new DeleteRequest
+                        {
+                            Key = new Dictionary<string, AttributeValue>
+                            {
+                                ["session_id"] = new(item.SessionId),
+                                ["created_at"] = new() { N = item.CreatedAt.ToString() },
+                            },
+                        },
+                    })
+                    .ToList(),
+            };
+
+            while (requestItems.Count > 0)
+            {
+                var response = await dynamoDb.BatchWriteItemAsync(
+                    new BatchWriteItemRequest { RequestItems = requestItems },
+                    cancellationToken);
+
+                requestItems = response.UnprocessedItems is { Count: > 0 }
+                    ? response.UnprocessedItems
+                    : [];
+            }
+        }
+    }
+
     private static InterviewConversation FromItem(Dictionary<string, AttributeValue> item) =>
         new(
             item["session_id"].S,
