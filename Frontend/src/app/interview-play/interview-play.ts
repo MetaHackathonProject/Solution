@@ -141,7 +141,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   }
 
   protected async startConversation(): Promise<void> {
-    if (this.voicePhase() === 'paused' || this.starting()) {
+    if (this.voicePhase() === 'paused' || this.starting() || this.transitionInFlight) {
       return;
     }
 
@@ -330,7 +330,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private async continueInterviewAfterWalkthrough(): Promise<void> {
     if (this.transitionInFlight) {
       await this.transitionInFlight;
-      return;
+      if (this.voicePhase() === 'interview' && this.conversation) {
+        return;
+      }
     }
 
     const run = this.runContinueInterviewAfterWalkthrough();
@@ -350,11 +352,12 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.clearPauseTimers();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
+    this.starting.set(true);
+    this.connectionStatus.set('connecting');
 
     // Always drop the walkthrough agent before reconnecting the interviewer.
     this.disconnectIntent = 'none';
     await this.ensureDisconnected();
-    this.connectionStatus.set('idle');
 
     try {
       const signed = await firstValueFrom(
@@ -371,7 +374,15 @@ export class InterviewPlay implements OnInit, OnDestroy {
         ),
         phase: 'interview',
       });
+
+      if (!this.conversation) {
+        this.starting.set(false);
+        this.voicePhase.set('idle');
+        this.connectionStatus.set('idle');
+        this.error.set('Could not resume the main interview. Try Start interview again.');
+      }
     } catch (err: unknown) {
+      this.starting.set(false);
       this.voicePhase.set('idle');
       this.connectionStatus.set('idle');
       this.error.set(this.describeError(err));
@@ -384,7 +395,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
     phase: Exclude<VoicePhase, 'idle' | 'paused' | 'reviewing'>;
     extraDynamicVariables?: Record<string, string>;
   }): Promise<void> {
-    if (!this.sessionId || !this.signedUrl || this.starting()) {
+    if (!this.sessionId || !this.signedUrl) {
+      this.starting.set(false);
+      this.error.set('Missing voice connection details.');
       return;
     }
 
@@ -476,8 +489,15 @@ export class InterviewPlay implements OnInit, OnDestroy {
               return 'Stale session';
             }
 
-            // Tear down here (invalidates this session's onDisconnect) then reconnect.
-            await this.continueInterviewAfterWalkthrough();
+            // Return first so ConvAI can send the tool result; closing the socket
+            // inside this handler caused "WebSocket is already CLOSING" and blocked resume.
+            window.setTimeout(() => {
+              if (gen !== this.connectionGen) {
+                return;
+              }
+
+              void this.continueInterviewAfterWalkthrough();
+            }, 450);
             return 'Returning to the main interview';
           },
         },
