@@ -1,5 +1,6 @@
 using Hackathon.Application.InterviewOverview;
 using Hackathon.Application.InterviewPreparation;
+using Hackathon.Application.InterviewQuestions;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Application.InterviewTasks;
 using Hackathon.Application.VoiceAgent;
@@ -52,6 +53,40 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         }
 
         return Ok(ToOverviewResponse(overview));
+    }
+
+    [HttpGet("{sessionId}/question-helpers/active")]
+    public async Task<ActionResult<IReadOnlyList<QuestionHelperResponse>>> GetActiveQuestionHelpers(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var helpers = await mediator.Send(
+            new GetActiveQuestionHelpersQuery(sessionId),
+            cancellationToken);
+
+        if (helpers is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(helpers.Select(ToHelperResponse).ToList());
+    }
+
+    [HttpGet("{sessionId}/question-helpers")]
+    public async Task<ActionResult<IReadOnlyList<QuestionHelperResponse>>> GetSessionQuestionHelpers(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var helpers = await mediator.Send(
+            new GetSessionQuestionHelpersQuery(sessionId),
+            cancellationToken);
+
+        if (helpers is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(helpers.Select(ToHelperResponse).ToList());
     }
 
     [HttpPost]
@@ -304,6 +339,14 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
                     task.Gaps,
                     task.Summary))
                 .ToList());
+
+    private static QuestionHelperResponse ToHelperResponse(QuestionHelper helper) =>
+        new(
+            helper.QuestionId,
+            helper.Module,
+            helper.Question,
+            helper.SuggestedAnswer,
+            helper.Hints);
 }
 
 public sealed class StartInterviewPreparationRequest
@@ -356,6 +399,13 @@ public sealed record InterviewOverviewInteractiveTaskResponse(
     IReadOnlyList<string> Strengths,
     IReadOnlyList<string> Gaps,
     string Summary);
+
+public sealed record QuestionHelperResponse(
+    string QuestionId,
+    string Module,
+    string Question,
+    string SuggestedAnswer,
+    IReadOnlyList<string> Hints);
 
 public sealed record VoiceAgentContextResponse(
     string? JobTitle,

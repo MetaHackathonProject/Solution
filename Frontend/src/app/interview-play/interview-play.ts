@@ -27,6 +27,11 @@ import {
 } from '../interactive-task.service';
 import { interviewOpeningMessage } from '../interview-opening-message';
 import {
+  InterviewSessionsService,
+  QuestionHelper,
+} from '../interview-sessions.service';
+import { QuestionHelperPanel } from '../question-helper-panel/question-helper-panel';
+import {
   VoiceAgentContextResponse,
   VoiceAgentPurpose,
   VoiceAgentService,
@@ -51,7 +56,7 @@ const AGENT_GOODBYE_RE =
 
 @Component({
   selector: 'app-interview-play',
-  imports: [RouterLink, InteractivePanel],
+  imports: [RouterLink, InteractivePanel, QuestionHelperPanel],
   templateUrl: './interview-play.html',
   styleUrl: './interview-play.scss',
 })
@@ -61,6 +66,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly voiceAgent = inject(VoiceAgentService);
   private readonly interactiveTasks = inject(InteractiveTaskService);
+  private readonly sessionsApi = inject(InterviewSessionsService);
 
   protected readonly loading = signal(true);
   protected readonly starting = signal(false);
@@ -70,6 +76,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected readonly interactiveTask = signal<InteractiveTaskResponse | null>(null);
   protected readonly panelCollapsed = signal(false);
   protected readonly voicePhase = signal<VoicePhase>('idle');
+  protected readonly activeHelpers = signal<QuestionHelper[]>([]);
 
   protected sessionId = '';
   private signedUrl: string | null = null;
@@ -89,6 +96,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private activePurpose: VoiceAgentPurpose = 'interview';
   private walkthroughSubmission: InteractiveSubmissionPayload | null = null;
   private visionReviewSub: Subscription | null = null;
+  private helperPollSub: Subscription | null = null;
   private transitionInFlight: Promise<void> | null = null;
 
   ngOnInit(): void {
@@ -132,6 +140,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.clearPauseTimers();
     this.stopVisionReviewPoll();
+    this.stopHelperPolling();
     if (this.voicePhase() === 'paused' || this.voicePhase() === 'reviewing') {
       this.conversation = null;
       return;
@@ -160,6 +169,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected async stopConversation(): Promise<void> {
     this.clearPauseTimers();
     this.stopVisionReviewPoll();
+    this.stopHelperPolling();
     this.interactivePauseArmed = false;
     this.afterSpeechAction = 'none';
     // Invalidate onDisconnect so a forced teardown does not also navigate/reconnect.
@@ -263,6 +273,30 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private stopVisionReviewPoll(): void {
     this.visionReviewSub?.unsubscribe();
     this.visionReviewSub = null;
+  }
+
+  private startHelperPolling(): void {
+    this.stopHelperPolling();
+    if (!this.sessionId) {
+      return;
+    }
+
+    this.helperPollSub = timer(0, 2500)
+      .pipe(
+        switchMap(() =>
+          this.sessionsApi.getActiveQuestionHelpers(this.sessionId).pipe(
+            catchError(() => of([] as QuestionHelper[])),
+          ),
+        ),
+      )
+      .subscribe((helpers) => {
+        this.activeHelpers.set(helpers);
+      });
+  }
+
+  private stopHelperPolling(): void {
+    this.helperPollSub?.unsubscribe();
+    this.helperPollSub = null;
   }
 
   private async startWalkthrough(): Promise<void> {
@@ -538,6 +572,12 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
           this.starting.set(false);
           this.voicePhase.set(options.phase);
+          if (options.phase === 'interview') {
+            this.startHelperPolling();
+          } else {
+            this.stopHelperPolling();
+            this.activeHelpers.set([]);
+          }
         },
         onDisconnect: () => {
           if (gen !== this.connectionGen) {
@@ -703,6 +743,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
     if (action === 'pause') {
       this.voicePhase.set('paused');
       this.disconnectIntent = 'none';
+      this.stopHelperPolling();
+      this.activeHelpers.set([]);
       await this.ensureDisconnected();
       this.connectionStatus.set('idle');
       this.starting.set(false);

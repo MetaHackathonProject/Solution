@@ -1,3 +1,4 @@
+using Hackathon.Application.InterviewQuestions;
 using Hackathon.Application.InterviewTasks;
 using Hackathon.Domain.InterviewTasks;
 using MediatR;
@@ -6,7 +7,8 @@ namespace Hackathon.Application.InterviewProgress;
 
 public sealed class PopNextInterviewQuestionsCommandHandler(
     IInterviewProgressStore progressStore,
-    IPendingInterviewTaskStore pendingTasks)
+    IPendingInterviewTaskStore pendingTasks,
+    IInterviewQuestionHelperStore questionHelpers)
     : IRequestHandler<PopNextInterviewQuestionsCommand, PopNextInterviewQuestionsResult>
 {
     private const int QuestionsToPop = 2;
@@ -24,6 +26,9 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
 
         if (inProgress is not null)
         {
+            // Interactive pause — hide spoken helpers until spoken questions resume.
+            await questionHelpers.ClearActiveQuestionIdsAsync(request.SessionId, cancellationToken);
+
             return new PopNextInterviewQuestionsResult(
                 [
                     new InterviewQuestionResultItem(
@@ -39,6 +44,7 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
 
         if (remaining.Count == 0)
         {
+            await questionHelpers.ClearActiveQuestionIdsAsync(request.SessionId, cancellationToken);
             return new PopNextInterviewQuestionsResult([], 0);
         }
 
@@ -66,6 +72,23 @@ public sealed class PopNextInterviewQuestionsCommandHandler(
                 item.TaskId!,
                 InteractiveTaskStatus.InProgress,
                 cancellationToken);
+        }
+
+        var spokenIds = popped.Questions
+            .Where(item => !item.IsInteractive)
+            .Select(item => item.QuestionId)
+            .ToList();
+
+        if (spokenIds.Count > 0)
+        {
+            await questionHelpers.SetActiveQuestionIdsAsync(
+                request.SessionId,
+                spokenIds,
+                cancellationToken);
+        }
+        else
+        {
+            await questionHelpers.ClearActiveQuestionIdsAsync(request.SessionId, cancellationToken);
         }
 
         return new PopNextInterviewQuestionsResult(

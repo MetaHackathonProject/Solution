@@ -57,6 +57,13 @@
             End interview
           </button>
         </div>
+
+        @if (voicePhase() === 'interview' && activeHelpers().length) {
+          <app-question-helper-panel
+            [helpers]="activeHelpers()"
+            title="Helpers for the current question"
+          />
+        }
       </section>
     } @else if (voicePhase() === 'reviewing') {
       <section class="card" role="status" aria-live="polite">

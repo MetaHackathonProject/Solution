@@ -12,6 +12,8 @@ Write each spoken question as its own DynamoDB item in $INTERVIEW_SESSION_QUESTI
 - module: the module name
 - question: the question text
 - assessment_goal: one or two sentences naming the competency and the evidence the interviewer should listen for
+- suggested_answer: a strong sample spoken answer (about 4–8 sentences) the candidate can study as a helper; write it in `recruiter_language` from the user message (the live interview language). Do not invent employer facts or stack not in the offer.
+- hints: a DynamoDB string list of 3–5 short bullets (also in `recruiter_language`) — talking points / structure cues, not a full script. Example shape: `["Lead with the outcome", "Name one trade-off", "Close with what you would measure"]`
 
 Also always create exactly **2 interactive tasks** in $PENDING_INTERVIEW_TASKS_TABLE. They are a type of question under an existing module — not a new module name. Pick modules that matter for the offer (prefer PracticalSkills, ArchitectureAndDesign, ProblemSolving, TechnicalKnowledge, DomainKnowledge).
 

@@ -16,12 +16,14 @@ import {
   InterviewOverview,
   InterviewSession,
   InterviewSessionsService,
+  QuestionHelper,
 } from '../interview-sessions.service';
+import { QuestionHelperPanel } from '../question-helper-panel/question-helper-panel';
 import { SessionActionsMenu } from '../session-actions-menu/session-actions-menu';
 
 @Component({
   selector: 'app-interview-detail',
-  imports: [RouterLink, DatePipe, SessionActionsMenu],
+  imports: [RouterLink, DatePipe, SessionActionsMenu, QuestionHelperPanel],
   templateUrl: './interview-detail.html',
   styleUrl: './interview-detail.scss',
 })
@@ -37,6 +39,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly session = signal<InterviewSession | null>(null);
   protected readonly overview = signal<InterviewOverview | null>(null);
   protected readonly overviewError = signal<string | null>(null);
+  protected readonly questionHelpers = signal<QuestionHelper[]>([]);
   protected readonly lastPreparingStatus = signal('STARTED');
   protected readonly starting = signal(false);
   protected readonly retaking = signal(false);
@@ -262,11 +265,19 @@ export class InterviewDetail implements OnInit, OnDestroy {
         this.overviewFetchInFlight = false;
         this.overview.set(overview);
         this.overviewError.set(null);
+        this.loadQuestionHelpers(sessionId);
       },
       error: (err: unknown) => {
         this.overviewFetchInFlight = false;
         this.overviewError.set(this.describeOverviewError(err));
       },
+    });
+  }
+
+  private loadQuestionHelpers(sessionId: string): void {
+    this.sessionsApi.getSessionQuestionHelpers(sessionId).subscribe({
+      next: (helpers) => this.questionHelpers.set(helpers),
+      error: () => this.questionHelpers.set([]),
     });
   }
 

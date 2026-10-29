@@ -1,0 +1,37 @@
+@if (helpers().length) {
+  <section class="helpers" [attr.aria-label]="title()">
+    <h3 class="helpers__title">{{ title() }}</h3>
+    <ul class="helpers__list">
+      @for (helper of helpers(); track helper.questionId) {
+        <li class="helpers__item">
+          <button
+            type="button"
+            class="helpers__toggle"
+            [attr.aria-expanded]="isExpanded(helper.questionId)"
+            (click)="toggle(helper.questionId)"
+          >
+            <span class="helpers__toggle-label">
+              {{ isExpanded(helper.questionId) ? 'Hide suggested answer' : 'Show suggested answer' }}
+            </span>
+            <span class="helpers__question">{{ helper.question }}</span>
+          </button>
+
+          @if (isExpanded(helper.questionId)) {
+            <div class="helpers__body">
+              @if (helper.hints.length) {
+                <p class="helpers__subhead">Hints</p>
+                <ul class="helpers__hints">
+                  @for (hint of helper.hints; track hint) {
+                    <li>{{ hint }}</li>
+                  }
+                </ul>
+              }
+              <p class="helpers__subhead">Suggested answer</p>
+              <p class="helpers__answer">{{ helper.suggestedAnswer }}</p>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  </section>
+}

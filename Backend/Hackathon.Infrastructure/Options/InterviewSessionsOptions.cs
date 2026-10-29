@@ -4,11 +4,11 @@ public sealed class InterviewSessionsOptions
 {
     public const string SectionName = "InterviewSessions";
 
-    public required string TableName { get; init; }
+    public string TableName { get; init; } = string.Empty;
 
-    public required string QuestionsTableName { get; init; }
+    public string QuestionsTableName { get; init; } = string.Empty;
 
-    public required string ProgressTableName { get; init; }
+    public string ProgressTableName { get; init; } = string.Empty;
 
-    public required string BucketName { get; init; }
+    public string BucketName { get; init; } = string.Empty;
 }

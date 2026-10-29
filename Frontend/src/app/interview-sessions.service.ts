@@ -57,6 +57,14 @@ export interface InterviewOverview {
   interactiveTasks: InterviewOverviewInteractiveTask[];
 }
 
+export interface QuestionHelper {
+  questionId: string;
+  module: string;
+  question: string;
+  suggestedAnswer: string;
+  hints: string[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -74,6 +82,14 @@ export class InterviewSessionsService {
 
   getOverview(sessionId: string): Observable<InterviewOverview> {
     return this.http.get<InterviewOverview>(`${this.baseUrl}/${sessionId}/overview`);
+  }
+
+  getActiveQuestionHelpers(sessionId: string): Observable<QuestionHelper[]> {
+    return this.http.get<QuestionHelper[]>(`${this.baseUrl}/${sessionId}/question-helpers/active`);
+  }
+
+  getSessionQuestionHelpers(sessionId: string): Observable<QuestionHelper[]> {
+    return this.http.get<QuestionHelper[]>(`${this.baseUrl}/${sessionId}/question-helpers`);
   }
 
   list(): Observable<InterviewSession[]> {

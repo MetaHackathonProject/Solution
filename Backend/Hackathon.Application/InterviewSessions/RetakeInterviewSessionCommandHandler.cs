@@ -1,5 +1,6 @@
 using Hackathon.Application.Context;
 using Hackathon.Application.InterviewProgress;
+using Hackathon.Application.InterviewQuestions;
 using Hackathon.Application.InterviewTasks;
 using Hackathon.Application.VoiceAgent;
 using Hackathon.Domain.InterviewSessions;
@@ -12,6 +13,7 @@ public sealed class RetakeInterviewSessionCommandHandler(
     IInterviewSessionStore sessionStore,
     IPendingInterviewTaskStore pendingTasks,
     IInterviewConversationStore conversationStore,
+    IInterviewQuestionHelperStore questionHelpers,
     IMediator mediator)
     : IRequestHandler<RetakeInterviewSessionCommand, RetakeInterviewSessionResult?>
 {
@@ -42,6 +44,7 @@ public sealed class RetakeInterviewSessionCommandHandler(
 
         await pendingTasks.ResetAllToNotAskedAsync(request.SessionId, cancellationToken);
         await conversationStore.DeleteBySessionAsync(request.SessionId, cancellationToken);
+        await questionHelpers.ClearActiveQuestionIdsAsync(request.SessionId, cancellationToken);
 
         var seeded = await mediator.Send(
             new SeedInterviewProgressCommand(userContext.UserId, request.SessionId),

@@ -228,6 +228,13 @@
                 </ul>
               </div>
             }
+
+            @if (questionHelpers().length) {
+              <app-question-helper-panel
+                [helpers]="questionHelpers()"
+                title="Suggested answers from the question bank"
+              />
+            }
           }
         </section>
       }
