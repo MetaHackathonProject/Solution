@@ -17,12 +17,9 @@ resource "aws_iam_role" "solution_vision_review" {
 
 data "aws_iam_policy_document" "solution_vision_review" {
   statement {
-    effect = "Allow"
-    actions = [
-      "bedrock-agentcore:InvokeHarness",
-      "bedrock-agentcore:InvokeAgentRuntime",
-    ]
-    resources = [aws_bedrockagentcore_harness.agent["solution_vision_describe"].arn]
+    effect    = "Allow"
+    actions   = ["lambda:InvokeFunction"]
+    resources = [module.describe_solution_vision.function_arn]
   }
 
   statement {
@@ -39,8 +36,6 @@ resource "aws_iam_role_policy" "solution_vision_review" {
 }
 
 locals {
-  solution_vision_review_message = "{% 'user_id=' & $user_id & ' session_id=' & $session_id & ' task_id=' & $task_id & ' answer_key=' & $answer_key %}"
-
   solution_vision_review_task_key = {
     session_id = { S = "{% $session_id %}" }
     task_id    = { S = "{% $task_id %}" }
@@ -82,19 +77,19 @@ resource "aws_sfn_state_machine" "solution_vision_review" {
       }
       "Describe solution" = {
         Type     = "Task"
-        Resource = "arn:aws:states:::bedrockagentcore:invokeHarness"
+        Resource = "arn:aws:states:::lambda:invoke"
         Arguments = {
-          HarnessArn       = aws_bedrockagentcore_harness.agent["solution_vision_describe"].arn
-          RuntimeSessionId = "{% $uuid() %}"
-          TimeoutSeconds   = 180
-          Messages = [{
-            Role    = "user"
-            Content = [{ Text = local.solution_vision_review_message }]
-          }]
+          FunctionName = module.describe_solution_vision.function_arn
+          Payload = {
+            user_id    = "{% $user_id %}"
+            session_id = "{% $session_id %}"
+            task_id    = "{% $task_id %}"
+            answer_key = "{% $answer_key %}"
+          }
         }
         Output = "{% $states.input %}"
         Retry = [{
-          ErrorEquals     = ["BedrockAgentCore.ThrottlingException"]
+          ErrorEquals     = ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.TooManyRequestsException"]
           IntervalSeconds = 2
           MaxAttempts     = 3
           BackoffRate     = 2
@@ -103,7 +98,6 @@ resource "aws_sfn_state_machine" "solution_vision_review" {
           ErrorEquals = ["States.ALL"]
           Next        = "Set vision review Failed"
         }]
-        # Agent writes Ready + vision_description (or Failed). SF only forces Failed on invoke errors.
         End = true
       }
       "Set vision review Failed" = {

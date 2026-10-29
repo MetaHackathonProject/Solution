@@ -21,3 +21,21 @@ variable "eleven_labs_api_url" {
   type        = string
   default     = "https://api.elevenlabs.io"
 }
+
+variable "meta_model_api_key" {
+  description = "Meta Model API key for solution vision describe (set via TF_VAR_meta_model_api_key / GitHub secret META_MODEL_API_KEY)"
+  type        = string
+  sensitive   = true
+}
+
+variable "meta_model_api_url" {
+  description = "Meta Model API base URL"
+  type        = string
+  default     = "https://api.meta.ai/v1"
+}
+
+variable "meta_model_id" {
+  description = "Meta model id used to describe interactive visual answers"
+  type        = string
+  default     = "muse-spark-1.3"
+}

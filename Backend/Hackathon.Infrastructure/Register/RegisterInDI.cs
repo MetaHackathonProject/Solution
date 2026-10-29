@@ -27,6 +27,7 @@ public static class RegisterInDI
         services.Configure<InterviewProgressOptions>(configuration.GetSection(InterviewProgressOptions.SectionName));
         services.Configure<PendingInterviewTasksOptions>(configuration.GetSection(PendingInterviewTasksOptions.SectionName));
         services.Configure<ElevenLabsOptions>(configuration.GetSection(ElevenLabsOptions.SectionName));
+        services.Configure<MetaModelApiOptions>(configuration.GetSection(MetaModelApiOptions.SectionName));
 
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient());
         services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client());
@@ -39,6 +40,8 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
         services.AddSingleton<IPendingInterviewTaskStore, DynamoDbPendingInterviewTaskStore>();
         services.AddSingleton<IInteractiveAnswerStore, S3InteractiveAnswerStore>();
+        services.AddSingleton<IInteractiveAnswerReader, S3InteractiveAnswerReader>();
+        services.AddSingleton<ISolutionVisionDescriber, MetaSolutionVisionDescriber>();
         services.AddSingleton<IOfferDetailsReader, S3OfferDetailsReader>();
         services.AddSingleton<IElevenLabsConversationClient, ElevenLabsConversationClient>();
 
@@ -49,6 +52,16 @@ public static class RegisterInDI
                 ? "https://api.elevenlabs.io"
                 : elevenLabs.ApiUrl.TrimEnd('/');
             client.BaseAddress = new Uri(baseUrl);
+        });
+
+        var meta = configuration.GetSection(MetaModelApiOptions.SectionName).Get<MetaModelApiOptions>();
+        services.AddHttpClient("MetaModelApi", client =>
+        {
+            var baseUrl = string.IsNullOrWhiteSpace(meta?.ApiUrl)
+                ? "https://api.meta.ai/v1"
+                : meta.ApiUrl.TrimEnd('/');
+            client.BaseAddress = new Uri(baseUrl + "/");
+            client.Timeout = TimeSpan.FromSeconds(120);
         });
     }
 }
