@@ -93,7 +93,7 @@ export function statusDetail(status: string): string {
     case 'IN_PROGRESS':
       return 'The live interview is in progress. You can continue from where you left off if the queue still has questions.';
     case 'COMPLETED':
-      return 'This interview is finished. The question queue was exhausted.';
+      return 'This interview is finished. An overview is built from the conversation and interactive answers.';
     case 'FAILED':
       return 'Preparation failed. Create a new session to try again.';
     default:

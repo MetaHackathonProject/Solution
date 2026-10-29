@@ -50,6 +50,12 @@ public sealed class RetakeInterviewSessionCommandHandler(
             InterviewSessionStatus.Success,
             cancellationToken);
 
+        await sessionStore.UpdateOverviewStatusAsync(
+            userContext.UserId,
+            request.SessionId,
+            OverviewStatus.NotAvailable,
+            cancellationToken);
+
         return new RetakeInterviewSessionResult(request.SessionId, seeded.QuestionsSeeded);
     }
 }

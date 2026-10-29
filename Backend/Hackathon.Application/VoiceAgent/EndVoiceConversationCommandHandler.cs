@@ -1,4 +1,5 @@
 using Hackathon.Application.Context;
+using Hackathon.Application.InterviewOverview;
 using Hackathon.Application.InterviewProgress;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Application.InterviewTasks;
@@ -11,7 +12,8 @@ public sealed class EndVoiceConversationCommandHandler(
     IUserContext userContext,
     IInterviewSessionStore sessionStore,
     IInterviewProgressStore progressStore,
-    IPendingInterviewTaskStore pendingTasks)
+    IPendingInterviewTaskStore pendingTasks,
+    IInterviewOverviewStarter overviewStarter)
     : IRequestHandler<EndVoiceConversationCommand, bool>
 {
     public async Task<bool> Handle(
@@ -41,6 +43,17 @@ public sealed class EndVoiceConversationCommandHandler(
             userContext.UserId,
             request.SessionId,
             InterviewSessionStatus.Completed,
+            cancellationToken);
+
+        await sessionStore.UpdateOverviewStatusAsync(
+            userContext.UserId,
+            request.SessionId,
+            OverviewStatus.Generating,
+            cancellationToken);
+
+        await overviewStarter.StartAsync(
+            userContext.UserId,
+            request.SessionId,
             cancellationToken);
 
         return true;

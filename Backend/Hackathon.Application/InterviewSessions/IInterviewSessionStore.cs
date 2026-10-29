@@ -17,4 +17,10 @@ public interface IInterviewSessionStore
         string sessionId,
         string status,
         CancellationToken cancellationToken);
+
+    Task UpdateOverviewStatusAsync(
+        string userId,
+        string sessionId,
+        string overviewStatus,
+        CancellationToken cancellationToken);
 }

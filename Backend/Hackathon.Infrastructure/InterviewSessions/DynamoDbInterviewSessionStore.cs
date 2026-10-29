@@ -92,6 +92,32 @@ public sealed class DynamoDbInterviewSessionStore(
             cancellationToken);
     }
 
+    public async Task UpdateOverviewStatusAsync(
+        string userId,
+        string sessionId,
+        string overviewStatus,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        await dynamoDb.UpdateItemAsync(
+            new UpdateItemRequest
+            {
+                TableName = options.Value.TableName,
+                Key = new Dictionary<string, AttributeValue>
+                {
+                    ["user_id"] = new(userId),
+                    ["session_id"] = new(sessionId),
+                },
+                UpdateExpression = "SET overview_status = :overview_status, updated_at = :updated_at",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":overview_status"] = new(overviewStatus),
+                    [":updated_at"] = new() { N = now.ToString() },
+                },
+            },
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyList<InterviewSession>> ListByUserAsync(
         string userId,
         CancellationToken cancellationToken)
@@ -143,6 +169,7 @@ public sealed class DynamoDbInterviewSessionStore(
             ["recruiter_language"] = new(session.Settings.RecruiterLanguage),
             ["difficulty"] = new(session.Settings.Difficulty),
             ["status"] = new(session.Status),
+            ["overview_status"] = new(session.OverviewStatus),
             ["created_at"] = new() { N = session.CreatedAt.ToString() },
             ["updated_at"] = new() { N = session.UpdatedAt.ToString() },
         };
@@ -160,7 +187,8 @@ public sealed class DynamoDbInterviewSessionStore(
                 item.GetValueOrDefault("difficulty")?.S ?? InterviewDifficulty.Auto),
             item.GetValueOrDefault("status")?.S ?? InterviewSessionStatus.Started,
             ParseLong(item.GetValueOrDefault("created_at")),
-            ParseLong(item.GetValueOrDefault("updated_at")));
+            ParseLong(item.GetValueOrDefault("updated_at")),
+            item.GetValueOrDefault("overview_status")?.S ?? OverviewStatus.NotAvailable);
     }
 
     private static long ParseLong(AttributeValue? value) =>

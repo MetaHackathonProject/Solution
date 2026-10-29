@@ -8,4 +8,5 @@ public sealed record InterviewSession(
     InterviewSessionSettings Settings,
     string Status,
     long CreatedAt,
-    long UpdatedAt);
+    long UpdatedAt,
+    string OverviewStatus = OverviewStatus.NotAvailable);

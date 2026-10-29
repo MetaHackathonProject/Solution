@@ -74,6 +74,14 @@ output "seed_interview_progress_function_arn" {
   value = module.seed_interview_progress.function_arn
 }
 
+output "build_interview_overview_function_name" {
+  value = module.build_interview_overview.function_name
+}
+
+output "interview_overview_state_machine_arn" {
+  value = aws_sfn_state_machine.interview_overview.arn
+}
+
 output "mcp_interview_questions_function_name" {
   value = module.mcp_interview_questions.function_name
 }

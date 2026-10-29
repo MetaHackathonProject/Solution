@@ -8,7 +8,8 @@ namespace Hackathon.Application.VoiceAgent;
 public sealed class GetVoiceAgentSignedUrlQueryHandler(
     IUserContext userContext,
     IInterviewSessionStore sessionStore,
-    IElevenLabsConversationClient elevenLabs)
+    IElevenLabsConversationClient elevenLabs,
+    IInterviewConversationStore conversationStore)
     : IRequestHandler<GetVoiceAgentSignedUrlQuery, VoiceAgentSignedUrlResult?>
 {
     public async Task<VoiceAgentSignedUrlResult?> Handle(
@@ -36,6 +37,18 @@ public sealed class GetVoiceAgentSignedUrlQueryHandler(
         var isResume = session.Status == InterviewSessionStatus.InProgress;
 
         var signed = await elevenLabs.GetSignedUrlAsync(request.Purpose, cancellationToken);
+
+        await conversationStore.SaveAsync(
+            new InterviewConversation(
+                request.SessionId,
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                signed.ConversationId,
+                request.Purpose switch
+                {
+                    VoiceAgentPurpose.Walkthrough => "walkthrough",
+                    _ => "interview",
+                }),
+            cancellationToken);
 
         await sessionStore.UpdateStatusAsync(
             userContext.UserId,

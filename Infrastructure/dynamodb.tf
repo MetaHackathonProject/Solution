@@ -89,3 +89,21 @@ resource "aws_dynamodb_table" "pending_interview_tasks" {
     type = "S"
   }
 }
+
+# ElevenLabs ConvAI conversation ids per session (interview + walkthrough legs).
+resource "aws_dynamodb_table" "interview_session_conversations" {
+  name         = "${local.name_prefix}-interview-sessions-conversations-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "session_id"
+  range_key    = "created_at"
+
+  attribute {
+    name = "session_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "created_at"
+    type = "N"
+  }
+}

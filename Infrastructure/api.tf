@@ -21,8 +21,10 @@ locals {
     "InterviewProgress/TableName"            = aws_dynamodb_table.interview_sessions_progress.name
     "InterviewProgress/BucketName"           = aws_s3_bucket.interview_sessions.bucket
     "PendingInterviewTasks/TableName"        = aws_dynamodb_table.pending_interview_tasks.name
+    "InterviewConversations/TableName"       = aws_dynamodb_table.interview_session_conversations.name
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
     "SolutionVisionReview/StateMachineArn"   = aws_sfn_state_machine.solution_vision_review.arn
+    "InterviewOverview/StateMachineArn"      = aws_sfn_state_machine.interview_overview.arn
     "ElevenLabs/ApiUrl"                      = var.eleven_labs_api_url
     "ElevenLabs/AgentId"                     = var.eleven_labs_agent_id
     "ElevenLabs/WalkthroughAgentId"          = var.eleven_labs_walkthrough_agent_id
@@ -51,8 +53,10 @@ module "api" {
     APP_InterviewProgress__TableName           = aws_dynamodb_table.interview_sessions_progress.name
     APP_InterviewProgress__BucketName          = aws_s3_bucket.interview_sessions.bucket
     APP_PendingInterviewTasks__TableName       = aws_dynamodb_table.pending_interview_tasks.name
+    APP_InterviewConversations__TableName      = aws_dynamodb_table.interview_session_conversations.name
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
     APP_SolutionVisionReview__StateMachineArn  = aws_sfn_state_machine.solution_vision_review.arn
+    APP_InterviewOverview__StateMachineArn     = aws_sfn_state_machine.interview_overview.arn
     APP_ElevenLabs__ApiUrl                     = var.eleven_labs_api_url
     APP_ElevenLabs__AgentId                    = var.eleven_labs_agent_id
     APP_ElevenLabs__WalkthroughAgentId         = var.eleven_labs_walkthrough_agent_id
@@ -101,6 +105,7 @@ data "aws_iam_policy_document" "api" {
       aws_dynamodb_table.interview_sessions_progress.arn,
       "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
       aws_dynamodb_table.pending_interview_tasks.arn,
+      aws_dynamodb_table.interview_session_conversations.arn,
     ]
   }
 
@@ -128,6 +133,7 @@ data "aws_iam_policy_document" "api" {
     resources = [
       aws_sfn_state_machine.interview_planner.arn,
       aws_sfn_state_machine.solution_vision_review.arn,
+      aws_sfn_state_machine.interview_overview.arn,
     ]
   }
 }

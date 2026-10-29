@@ -12,7 +12,11 @@ import {
   statusLabel,
   stepState,
 } from '../interview-session-status';
-import { InterviewSession, InterviewSessionsService } from '../interview-sessions.service';
+import {
+  InterviewOverview,
+  InterviewSession,
+  InterviewSessionsService,
+} from '../interview-sessions.service';
 import { SessionActionsMenu } from '../session-actions-menu/session-actions-menu';
 
 @Component({
@@ -31,17 +35,33 @@ export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly session = signal<InterviewSession | null>(null);
+  protected readonly overview = signal<InterviewOverview | null>(null);
+  protected readonly overviewError = signal<string | null>(null);
   protected readonly lastPreparingStatus = signal('STARTED');
   protected readonly starting = signal(false);
   protected readonly retaking = signal(false);
   protected readonly deleting = signal(false);
 
   protected readonly status = computed(() => this.session()?.status ?? 'STARTED');
+  protected readonly overviewStatus = computed(
+    () => this.session()?.overviewStatus ?? 'NOT_AVAILABLE',
+  );
   protected readonly preparing = computed(() => isPreparingStatus(this.status()));
   protected readonly ready = computed(
     () => this.status() === 'SUCCESS' || this.status() === 'IN_PROGRESS',
   );
   protected readonly completed = computed(() => this.status() === 'COMPLETED');
+  protected readonly overviewGenerating = computed(
+    () =>
+      this.completed() &&
+      (this.overviewStatus() === 'GENERATING' || this.overviewStatus() === 'NOT_AVAILABLE'),
+  );
+  protected readonly overviewReady = computed(
+    () => this.completed() && this.overviewStatus() === 'READY',
+  );
+  protected readonly overviewFailed = computed(
+    () => this.completed() && this.overviewStatus() === 'ERROR',
+  );
   protected readonly failed = computed(() => this.status() === 'FAILED');
   protected readonly statusTitle = computed(() => statusLabel(this.status()));
   protected readonly statusCopy = computed(() => statusDetail(this.status()));
@@ -50,6 +70,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   );
 
   private pollSub: Subscription | null = null;
+  private overviewFetchInFlight = false;
   private sessionId = '';
 
   ngOnInit(): void {
@@ -147,7 +168,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
       error: (err: unknown) => {
         this.deleting.set(false);
         this.error.set(this.describeDeleteError(err));
-        if (!isTerminalStatus(this.status()) && this.sessionId) {
+        if (this.shouldKeepPolling() && this.sessionId) {
           this.startPolling(this.sessionId);
         }
       },
@@ -201,11 +222,64 @@ export class InterviewDetail implements OnInit, OnDestroy {
         this.loading.set(false);
         this.error.set(null);
 
-        if (isTerminalStatus(session.status)) {
+        if (session.status === 'COMPLETED' && session.overviewStatus === 'READY') {
+          this.loadOverview(sessionId);
+        }
+
+        if (!this.shouldKeepPolling(session)) {
           this.pollSub?.unsubscribe();
           this.pollSub = null;
         }
       });
+  }
+
+  private shouldKeepPolling(session?: InterviewSession | null): boolean {
+    const current = session ?? this.session();
+    if (!current) {
+      return true;
+    }
+
+    if (!isTerminalStatus(current.status)) {
+      return true;
+    }
+
+    if (current.status !== 'COMPLETED') {
+      return false;
+    }
+
+    const overviewStatus = current.overviewStatus ?? 'NOT_AVAILABLE';
+    return overviewStatus === 'GENERATING' || overviewStatus === 'NOT_AVAILABLE';
+  }
+
+  private loadOverview(sessionId: string): void {
+    if (this.overview() || this.overviewFetchInFlight) {
+      return;
+    }
+
+    this.overviewFetchInFlight = true;
+    this.sessionsApi.getOverview(sessionId).subscribe({
+      next: (overview) => {
+        this.overviewFetchInFlight = false;
+        this.overview.set(overview);
+        this.overviewError.set(null);
+      },
+      error: (err: unknown) => {
+        this.overviewFetchInFlight = false;
+        this.overviewError.set(this.describeOverviewError(err));
+      },
+    });
+  }
+
+  private describeOverviewError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 404) {
+        return 'Overview is not ready yet.';
+      }
+
+      return err.error?.title || err.error?.detail || err.message || 'Could not load the overview.';
+    }
+
+    return 'Could not load the overview.';
   }
 
   private describeError(err: unknown): string {

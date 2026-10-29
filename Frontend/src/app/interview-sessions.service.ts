@@ -17,6 +17,8 @@ export interface CreateInterviewSessionResponse {
   sessionId: string;
 }
 
+export type OverviewStatus = 'NOT_AVAILABLE' | 'GENERATING' | 'READY' | 'ERROR' | string;
+
 export interface InterviewSession {
   sessionId: string;
   name: string;
@@ -28,6 +30,31 @@ export interface InterviewSession {
     recruiterLanguage: string;
     difficulty: string;
   };
+  overviewStatus?: OverviewStatus;
+}
+
+export interface InterviewOverviewQuestion {
+  question: string;
+  answer: string;
+  opinion: string;
+  recommendations: string[];
+}
+
+export interface InterviewOverviewInteractiveTask {
+  taskId: string;
+  kind: string;
+  score: number;
+  strengths: string[];
+  gaps: string[];
+  summary: string;
+}
+
+export interface InterviewOverview {
+  summary: string;
+  score: number;
+  questions: InterviewOverviewQuestion[];
+  recommendations: string[];
+  interactiveTasks: InterviewOverviewInteractiveTask[];
 }
 
 @Injectable({
@@ -43,6 +70,10 @@ export class InterviewSessionsService {
 
   get(sessionId: string): Observable<InterviewSession> {
     return this.http.get<InterviewSession>(`${this.baseUrl}/${sessionId}`);
+  }
+
+  getOverview(sessionId: string): Observable<InterviewOverview> {
+    return this.http.get<InterviewOverview>(`${this.baseUrl}/${sessionId}/overview`);
   }
 
   list(): Observable<InterviewSession[]> {

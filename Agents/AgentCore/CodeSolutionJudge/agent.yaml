@@ -1,0 +1,9 @@
+name: code_solution_judge
+timeout_seconds: 300
+max_iterations: 12
+model:
+  provider: litellm
+  model_id: openai/muse-wonder-1.0
+  api_base: https://api.meta.ai/v1
+  api_key_arn: arn:aws:bedrock-agentcore:eu-central-1:753350217363:token-vault/default/apikeycredentialprovider/resource-provider-api-key-6uzvg
+tools: []

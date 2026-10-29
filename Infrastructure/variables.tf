@@ -35,7 +35,13 @@ variable "meta_model_api_url" {
 }
 
 variable "meta_model_id" {
-  description = "Meta model id used to describe interactive visual answers"
+  description = "Meta model id used to describe interactive visual answers / overview compose"
   type        = string
   default     = "muse-spark-1.3"
+}
+
+variable "meta_wonder_model_id" {
+  description = "Meta Muse Wonder model id used to judge coding interactive answers"
+  type        = string
+  default     = "muse-wonder-1.0"
 }

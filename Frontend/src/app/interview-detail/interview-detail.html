@@ -54,9 +54,9 @@
         aria-live="polite"
       >
         <div class="prep__hero">
-          @if (preparing()) {
+          @if (preparing() || overviewGenerating()) {
             <span class="prep__spinner" aria-hidden="true"></span>
-          } @else if (ready()) {
+          } @else if (ready() || overviewReady()) {
             <span class="prep__icon prep__icon--ready" aria-hidden="true">✓</span>
           } @else {
             <span class="prep__icon prep__icon--failed" aria-hidden="true">!</span>
@@ -139,6 +139,98 @@
           }
         </div>
       </section>
+
+      @if (completed()) {
+        <section class="overview" aria-labelledby="overview-title">
+          <h2 class="overview__title" id="overview-title">Interview overview</h2>
+
+          @if (overviewGenerating()) {
+            <div class="overview__waiting" role="status" aria-live="polite">
+              <span class="prep__spinner" aria-hidden="true"></span>
+              <p>Building your overview from the conversation and interactive answers…</p>
+            </div>
+          } @else if (overviewFailed()) {
+            <p class="alert" role="alert">
+              Overview generation failed. You can still retake the interview.
+            </p>
+          } @else if (overviewError()) {
+            <p class="alert" role="alert">{{ overviewError() }}</p>
+          } @else if (overview(); as result) {
+            <div class="overview__score" aria-label="Overall score {{ result.score }} out of 10">
+              <span class="overview__score-value">{{ result.score }}</span>
+              <span class="overview__score-label">/ 10 overall</span>
+            </div>
+
+            <p class="overview__summary">{{ result.summary }}</p>
+
+            @if (result.recommendations.length) {
+              <div class="overview__block">
+                <h3 class="overview__heading">Recommendations</h3>
+                <ul class="overview__list">
+                  @for (item of result.recommendations; track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (result.questions.length) {
+              <div class="overview__block">
+                <h3 class="overview__heading">Spoken answers</h3>
+                <ol class="overview__questions">
+                  @for (item of result.questions; track item.question) {
+                    <li class="overview__question">
+                      <p class="overview__q">{{ item.question }}</p>
+                      <p class="overview__a"><span>Answer</span> {{ item.answer }}</p>
+                      <p class="overview__opinion"><span>Opinion</span> {{ item.opinion }}</p>
+                      @if (item.recommendations.length) {
+                        <ul class="overview__list">
+                          @for (tip of item.recommendations; track tip) {
+                            <li>{{ tip }}</li>
+                          }
+                        </ul>
+                      }
+                    </li>
+                  }
+                </ol>
+              </div>
+            }
+
+            @if (result.interactiveTasks.length) {
+              <div class="overview__block">
+                <h3 class="overview__heading">Interactive tasks</h3>
+                <ul class="overview__tasks">
+                  @for (task of result.interactiveTasks; track task.taskId) {
+                    <li class="overview__task">
+                      <div class="overview__task-top">
+                        <span class="overview__task-kind">{{ task.kind }}</span>
+                        <span class="overview__task-score">{{ task.score }}/10</span>
+                      </div>
+                      <p class="overview__task-summary">{{ task.summary }}</p>
+                      @if (task.strengths.length) {
+                        <p class="overview__subhead">Strengths</p>
+                        <ul class="overview__list">
+                          @for (item of task.strengths; track item) {
+                            <li>{{ item }}</li>
+                          }
+                        </ul>
+                      }
+                      @if (task.gaps.length) {
+                        <p class="overview__subhead">Gaps</p>
+                        <ul class="overview__list">
+                          @for (item of task.gaps; track item) {
+                            <li>{{ item }}</li>
+                          }
+                        </ul>
+                      }
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+        </section>
+      }
     }
   </div>
 </main>

@@ -8,6 +8,9 @@ public sealed class MetaModelApiOptions
 
     public string ModelId { get; init; } = "muse-spark-1.3";
 
-    /// <summary>Required for DescribeSolutionVision; unused by the API Lambda.</summary>
+    /// <summary>Used for coding interactive judgments (Muse Wonder).</summary>
+    public string WonderModelId { get; init; } = "muse-wonder-1.0";
+
+    /// <summary>Required for vision/overview Lambdas; unused by the API Lambda.</summary>
     public string ApiKey { get; init; } = string.Empty;
 }

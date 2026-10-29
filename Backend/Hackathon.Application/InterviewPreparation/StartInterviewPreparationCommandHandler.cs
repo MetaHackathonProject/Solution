@@ -36,7 +36,8 @@ public sealed class StartInterviewPreparationCommandHandler(
                 request.Settings,
                 InterviewSessionStatus.Started,
                 now,
-                now),
+                now,
+                OverviewStatus.NotAvailable),
             cancellationToken);
 
         await preparationStarter.StartAsync(

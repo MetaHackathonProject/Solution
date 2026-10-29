@@ -27,6 +27,8 @@ jobs:
             function: hackathon-solution-seed-interview-progress
           - project: Hackathon.DescribeSolutionVision
             function: hackathon-solution-describe-solution-vision
+          - project: Hackathon.BuildInterviewOverview
+            function: hackathon-solution-build-interview-overview
           - project: Hackathon.Mcp
             function: hackathon-solution-mcp-interview-questions
     defaults:

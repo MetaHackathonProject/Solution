@@ -1,3 +1,4 @@
+using Hackathon.Application.InterviewOverview;
 using Hackathon.Application.InterviewPreparation;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Application.InterviewTasks;
@@ -34,6 +35,23 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         }
 
         return Ok(ToResponse(session));
+    }
+
+    [HttpGet("{sessionId}/overview")]
+    public async Task<ActionResult<InterviewOverviewResponse>> GetOverview(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        var overview = await mediator.Send(
+            new GetInterviewOverviewQuery(sessionId),
+            cancellationToken);
+
+        if (overview is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(ToOverviewResponse(overview));
     }
 
     [HttpPost]
@@ -262,7 +280,30 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
             session.UpdatedAt,
             new InterviewSessionSettingsResponse(
                 session.Settings.RecruiterLanguage,
-                session.Settings.Difficulty));
+                session.Settings.Difficulty),
+            session.OverviewStatus);
+
+    private static InterviewOverviewResponse ToOverviewResponse(InterviewResultOverview overview) =>
+        new(
+            overview.Summary,
+            overview.Score,
+            overview.Questions
+                .Select(question => new InterviewOverviewQuestionResponse(
+                    question.Question,
+                    question.Answer,
+                    question.Opinion,
+                    question.Recommendations))
+                .ToList(),
+            overview.Recommendations,
+            overview.InteractiveTasks
+                .Select(task => new InterviewOverviewInteractiveTaskResponse(
+                    task.TaskId,
+                    task.Kind,
+                    task.Score,
+                    task.Strengths,
+                    task.Gaps,
+                    task.Summary))
+                .ToList());
 }
 
 public sealed class StartInterviewPreparationRequest
@@ -288,11 +329,33 @@ public sealed record InterviewSessionResponse(
     string Status,
     long CreatedAt,
     long UpdatedAt,
-    InterviewSessionSettingsResponse Settings);
+    InterviewSessionSettingsResponse Settings,
+    string OverviewStatus);
 
 public sealed record InterviewSessionSettingsResponse(
     string RecruiterLanguage,
     string Difficulty);
+
+public sealed record InterviewOverviewResponse(
+    string Summary,
+    int Score,
+    IReadOnlyList<InterviewOverviewQuestionResponse> Questions,
+    IReadOnlyList<string> Recommendations,
+    IReadOnlyList<InterviewOverviewInteractiveTaskResponse> InteractiveTasks);
+
+public sealed record InterviewOverviewQuestionResponse(
+    string Question,
+    string Answer,
+    string Opinion,
+    IReadOnlyList<string> Recommendations);
+
+public sealed record InterviewOverviewInteractiveTaskResponse(
+    string TaskId,
+    string Kind,
+    int Score,
+    IReadOnlyList<string> Strengths,
+    IReadOnlyList<string> Gaps,
+    string Summary);
 
 public sealed record VoiceAgentContextResponse(
     string? JobTitle,
