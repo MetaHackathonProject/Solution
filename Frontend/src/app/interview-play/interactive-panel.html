@@ -12,23 +12,29 @@
   </article>
 
   @if (submittedOk() || task().status === 'Answered') {
-    <p class="panel__done" role="status">Answer submitted. You can continue with the interviewer.</p>
-  } @else if (isCodeTask()) {
+    <p class="panel__done" role="status">
+      Answer submitted. Your solution stays on screen for the walkthrough.
+    </p>
+  }
+
+  @if (isCodeTask()) {
     <div class="panel__editor">
       <app-code-editor
         [preferredLanguage]="preferredLanguage()"
-        [readOnly]="submitting()"
+        [readOnly]="submitting() || submittedOk() || task().status === 'Answered'"
         (valueChange)="onCodeChange($event)"
       >
-        <button
-          editorActions
-          type="button"
-          class="code-editor__btn code-editor__btn--primary"
-          [disabled]="submitting() || !answerText().trim()"
-          (click)="submitCode()"
-        >
-          {{ submitting() ? 'Submitting…' : 'Submit solution' }}
-        </button>
+        @if (!submittedOk() && task().status !== 'Answered') {
+          <button
+            editorActions
+            type="button"
+            class="code-editor__btn code-editor__btn--primary"
+            [disabled]="submitting() || !answerText().trim()"
+            (click)="submitCode()"
+          >
+            {{ submitting() ? 'Submitting…' : 'Submit solution' }}
+          </button>
+        }
       </app-code-editor>
     </div>
   } @else if (isTextLike()) {
@@ -38,34 +44,39 @@
         class="field__input"
         rows="12"
         [value]="answerText()"
+        [readOnly]="submittedOk() || task().status === 'Answered'"
         (input)="onTextInput($event)"
         placeholder="Write your answer here…"
       ></textarea>
     </label>
-    <div class="panel__actions">
-      <button
-        type="button"
-        class="btn btn--primary"
-        [disabled]="submitting() || !answerText().trim()"
-        (click)="submitText()"
-      >
-        {{ submitting() ? 'Submitting…' : 'Submit answer' }}
-      </button>
-    </div>
-  } @else if (isDrawLike()) {
-    <div class="draw">
-      <div class="panel__actions panel__actions--end">
+    @if (!submittedOk() && task().status !== 'Answered') {
+      <div class="panel__actions">
         <button
           type="button"
           class="btn btn--primary"
-          [disabled]="submitting() || !canSubmitDiagram()"
-          (click)="submitDiagram()"
+          [disabled]="submitting() || !answerText().trim()"
+          (click)="submitText()"
         >
-          {{ submitting() ? 'Submitting…' : 'Submit diagram' }}
+          {{ submitting() ? 'Submitting…' : 'Submit answer' }}
         </button>
       </div>
+    }
+  } @else if (isDrawLike()) {
+    <div class="draw">
+      @if (!submittedOk() && task().status !== 'Answered') {
+        <div class="panel__actions panel__actions--end">
+          <button
+            type="button"
+            class="btn btn--primary"
+            [disabled]="submitting() || !canSubmitDiagram()"
+            (click)="submitDiagram()"
+          >
+            {{ submitting() ? 'Submitting…' : 'Submit diagram' }}
+          </button>
+        </div>
+      }
       <app-drawio-editor
-        [readOnly]="submitting()"
+        [readOnly]="submitting() || submittedOk() || task().status === 'Answered'"
         (stateChange)="onDiagramState($event)"
       />
     </div>
@@ -76,23 +87,26 @@
         class="field__input"
         rows="8"
         [value]="answerText()"
+        [readOnly]="submittedOk() || task().status === 'Answered'"
         (input)="onTextInput($event)"
       ></textarea>
     </label>
-    <div class="panel__actions">
-      <label class="btn btn--secondary file-btn">
-        Upload file
-        <input type="file" (change)="onFileSelected($event)" />
-      </label>
-      <button
-        type="button"
-        class="btn btn--primary"
-        [disabled]="submitting() || !answerText().trim()"
-        (click)="submitText()"
-      >
-        {{ submitting() ? 'Submitting…' : 'Submit answer' }}
-      </button>
-    </div>
+    @if (!submittedOk() && task().status !== 'Answered') {
+      <div class="panel__actions">
+        <label class="btn btn--secondary file-btn">
+          Upload file
+          <input type="file" (change)="onFileSelected($event)" />
+        </label>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="submitting() || !answerText().trim()"
+          (click)="submitText()"
+        >
+          {{ submitting() ? 'Submitting…' : 'Submit answer' }}
+        </button>
+      </div>
+    }
   }
 
   @if (error()) {

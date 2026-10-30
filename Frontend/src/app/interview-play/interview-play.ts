@@ -201,7 +201,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.stopVisionReviewPoll();
     this.error.set(null);
     this.voicePhase.set('reviewing');
-    this.panelCollapsed.set(true);
+    // Keep the submitted solution visible during review + walkthrough.
+    this.panelCollapsed.set(false);
 
     const startedAt = Date.now();
     this.visionReviewSub = timer(0, VISION_REVIEW_POLL_MS)

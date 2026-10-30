@@ -53,6 +53,11 @@
         }
 
         <div class="live__actions">
+          @if (panelCollapsed() && interactiveTask()) {
+            <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
+              {{ voicePhase() === 'walkthrough' ? 'Show solution' : 'Show exercise' }}
+            </button>
+          }
           <button type="button" class="btn btn--danger" (click)="stopConversation()">
             End interview
           </button>
@@ -70,12 +75,17 @@
         <span class="spinner" aria-hidden="true"></span>
         <h2 class="card__title">Reviewing your solution</h2>
         <p class="card__copy">
-          Interviewer is now checking your solution…
+          Interviewer is now checking your solution… Your submission stays visible below.
         </p>
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
         }
         <div class="card__actions">
+          @if (panelCollapsed() && interactiveTask()) {
+            <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
+              Show solution
+            </button>
+          }
           <button type="button" class="btn btn--danger" (click)="stopConversation()">
             End interview
           </button>
