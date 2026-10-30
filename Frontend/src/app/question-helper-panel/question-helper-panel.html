@@ -1,8 +1,11 @@
-@if (helpers().length) {
+@if (visibleHelpers().length) {
   <section class="helpers" [attr.aria-label]="title()">
-    <h3 class="helpers__title">{{ title() }}</h3>
+    <header class="helpers__header">
+      <span class="helpers__badge">Hint</span>
+      <h3 class="helpers__title">{{ title() }}</h3>
+    </header>
     <ul class="helpers__list">
-      @for (helper of helpers(); track helper.questionId) {
+      @for (helper of visibleHelpers(); track helper.questionId) {
         <li class="helpers__item">
           <button
             type="button"
@@ -11,7 +14,7 @@
             (click)="toggle(helper.questionId)"
           >
             <span class="helpers__toggle-label">
-              {{ isExpanded(helper.questionId) ? 'Hide suggested answer' : 'Show suggested answer' }}
+              {{ isExpanded(helper.questionId) ? 'Hide hint' : 'Show hint' }}
             </span>
             <span class="helpers__question">{{ helper.question }}</span>
           </button>
@@ -19,7 +22,7 @@
           @if (isExpanded(helper.questionId)) {
             <div class="helpers__body">
               @if (helper.hints.length) {
-                <p class="helpers__subhead">Hints</p>
+                <p class="helpers__subhead">Talking points</p>
                 <ul class="helpers__hints">
                   @for (hint of helper.hints; track hint) {
                     <li>{{ hint }}</li>

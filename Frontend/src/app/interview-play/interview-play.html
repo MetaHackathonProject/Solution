@@ -66,7 +66,8 @@
         @if (voicePhase() === 'interview' && activeHelpers().length) {
           <app-question-helper-panel
             [helpers]="activeHelpers()"
-            title="Helpers for the current question"
+            title="A hint is available if you want it"
+            [revealDelayMs]="7000"
           />
         }
       </section>
