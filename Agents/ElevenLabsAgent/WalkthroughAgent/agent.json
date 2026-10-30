@@ -37,8 +37,8 @@
       "noisy_environment_message": "Uhh ... sorry, I'm picking up some noise in the background. Could you move somewhere quieter?"
     },
     "tts": {
-      "model_id": "eleven_v4_turbo",
-      "voice_id": "cjVigY5qzO86Huf0OWal",
+      "model_id": "eleven_v3_conversational",
+      "voice_id": "ZauUyVXAz5znrgRuElJ5",
       "supported_voices": [],
       "expressive_mode": true,
       "suggested_audio_tags": [],
@@ -46,7 +46,7 @@
       "optimize_streaming_latency": 3,
       "stability": 0.5,
       "speed": 1,
-      "similarity_boost": 0.75,
+      "similarity_boost": 0.8,
       "clone_strength": 0,
       "text_normalisation_type": "system_prompt",
       "pronunciation_dictionary_locators": [],

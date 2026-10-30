@@ -4,7 +4,7 @@ Separate ConvAI agent for post-submit solution discussion. **No** interview-ques
 
 ## Setup
 
-1. Create a new Conversational AI agent in ElevenLabs (same voice/language presets as the main interviewer if you want continuity).
+1. Create a new Conversational AI agent in ElevenLabs. Use the **same** TTS voice and model as the main interviewer (`ZauUyVXAz5znrgRuElJ5` / `eleven_v3_conversational` in `agent.json`) so walkthrough does not change speaker.
 2. Paste `prompt.md` into the agent system prompt (keep `{{job_overview}}`).
 3. Add client tool from `tool_configs/finish_solution_walkthrough.json` and attach it (`tool_ids`).
 4. Security: allow **First message overrides** (frontend always overrides after submit).
