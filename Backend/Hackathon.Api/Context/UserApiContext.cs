@@ -10,8 +10,10 @@ public sealed class UserApiContext(IHttpContextAccessor httpContextAccessor) : I
     public string UserId => User?.FindFirstValue("username")
         ?? throw new ArgumentException("Invalid claims in authorization token");
 
-    public string Email => User?.FindFirstValue(ClaimTypes.Email)
-        ?? throw new ArgumentException("Invalid claims in authorization token");
+    public string Email =>
+        User?.FindFirstValue(ClaimTypes.Email)
+        ?? User?.FindFirstValue("email")
+        ?? string.Empty;
 
     public bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
 }
