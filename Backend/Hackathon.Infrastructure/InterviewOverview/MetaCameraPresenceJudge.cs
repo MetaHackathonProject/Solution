@@ -10,7 +10,8 @@ namespace Hackathon.Infrastructure.InterviewOverview;
 
 public sealed class MetaCameraPresenceJudge(
     IHttpClientFactory httpClientFactory,
-    IOptions<MetaModelApiOptions> options) : ICameraPresenceJudge
+    IOptions<MetaModelApiOptions> options,
+    FfmpegCameraMediaNormalizer mediaNormalizer) : ICameraPresenceJudge
 {
     private static readonly JsonSerializerOptions RequestJsonOptions = new()
     {
@@ -30,29 +31,58 @@ public sealed class MetaCameraPresenceJudge(
             .TakeLast(2)
             .ToList();
 
+        Exception? videoError = null;
+        var frames = stills.ToList();
+
         if (clips.Count > 0)
         {
-            try
+            var mp4s = new List<CameraVideoLink>();
+            foreach (var clip in clips)
             {
-                return await ReviewUploadedVideosAsync(clips, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                if (stills.Count == 0)
+                var mp4 = await mediaNormalizer.ToMp4Async(clip, cancellationToken);
+                if (mp4 is not null)
                 {
-                    return Inconclusive($"Video review failed: {Truncate(ex.Message, 280)}");
+                    mp4s.Add(mp4);
                 }
+            }
+
+            if (mp4s.Count > 0)
+            {
+                try
+                {
+                    return await ReviewUploadedVideosAsync(mp4s, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    videoError = ex;
+                }
+            }
+
+            foreach (var clip in clips)
+            {
+                frames.AddRange(await mediaNormalizer.ExtractStillsAsync(clip, cancellationToken));
             }
         }
 
-        if (stills.Count == 0)
+        if (frames.Count == 0)
         {
+            if (videoError is not null)
+            {
+                return Inconclusive($"Video review failed: {Truncate(videoError.Message, 280)}");
+            }
+
+            if (clips.Count > 0)
+            {
+                return Inconclusive(
+                    "Camera tape is WebM. Muse Spark only accepts MP4, and transcode/still extraction did not produce a usable clip.");
+            }
+
             return Inconclusive("No camera recording or stills were stored for this session.");
         }
 
         try
         {
-            return await CompleteAsync(BuildPrompt("stills"), BuildStillParts(stills), cancellationToken);
+            return await CompleteAsync(BuildPrompt("stills"), BuildStillParts(frames), cancellationToken);
         }
         catch (Exception ex)
         {

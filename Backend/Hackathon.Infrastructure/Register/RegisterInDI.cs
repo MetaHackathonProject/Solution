@@ -57,6 +57,7 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewOverviewArtifactStore, S3InterviewOverviewArtifactStore>();
         services.AddSingleton<IElevenLabsTranscriptClient, ElevenLabsTranscriptClient>();
         services.AddSingleton<IInteractiveSolutionJudge, MetaInteractiveSolutionJudge>();
+        services.AddSingleton<FfmpegCameraMediaNormalizer>();
         services.AddSingleton<ICameraPresenceJudge, MetaCameraPresenceJudge>();
         services.AddSingleton<IInterviewOverviewComposer, MetaInterviewOverviewComposer>();
 
@@ -77,6 +78,11 @@ public static class RegisterInDI
                 : meta.ApiUrl.TrimEnd('/');
             client.BaseAddress = new Uri(baseUrl + "/");
             client.Timeout = TimeSpan.FromSeconds(270);
+        });
+        services.AddHttpClient("FfmpegDownload", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(120);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("hackathon-build-interview-overview");
         });
     }
 }

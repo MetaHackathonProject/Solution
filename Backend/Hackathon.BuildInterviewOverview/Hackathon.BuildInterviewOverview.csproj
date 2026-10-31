@@ -12,6 +12,16 @@
     <ProjectReference Include="..\Hackathon.Infrastructure\Hackathon.Infrastructure.csproj" />
   </ItemGroup>
 
+  <Target Name="FetchLinuxFfmpeg" AfterTargets="Publish" Condition="'$(RuntimeIdentifier)' == 'linux-x64' and !Exists('$(PublishDir)ffmpeg')">
+    <DownloadFile
+      SourceUrl="https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-linux-x64.gz"
+      DestinationFolder="$(IntermediateOutputPath)"
+      DestinationFileName="ffmpeg-linux-x64.gz"
+      Retries="3" />
+    <Exec Command="python3 -c &quot;import gzip,shutil; shutil.copyfileobj(gzip.open(r'$(IntermediateOutputPath)ffmpeg-linux-x64.gz','rb'), open(r'$(PublishDir)ffmpeg','wb'))&quot;" />
+    <Exec Command="chmod +x &quot;$(PublishDir)ffmpeg&quot;" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.Core" Version="2.7.1" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
