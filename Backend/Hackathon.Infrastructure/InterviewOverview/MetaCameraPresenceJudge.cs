@@ -20,13 +20,13 @@ public sealed class MetaCameraPresenceJudge(
 
     private const long MaxVideoBytes = 200L * 1024 * 1024;
 
-    public async Task<CameraPresenceReview?> JudgeAsync(
+    public async Task<CameraPresenceReview> JudgeAsync(
         IReadOnlyList<CameraVideoLink> videos,
         IReadOnlyList<CameraStill> stills,
         CancellationToken cancellationToken)
     {
         var clips = videos
-            .Where(video => video.Size > 0 && video.Size <= MaxVideoBytes)
+            .Where(video => video.Content is { Length: > 0 } && video.Content.Length <= MaxVideoBytes)
             .TakeLast(2)
             .ToList();
 
@@ -34,20 +34,181 @@ public sealed class MetaCameraPresenceJudge(
         {
             try
             {
-                return await CompleteAsync(BuildPrompt("video"), BuildVideoParts(clips), cancellationToken);
+                return await ReviewUploadedVideosAsync(clips, cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
-                // WebM or a fetch failure — fall back to stills.
+                if (stills.Count == 0)
+                {
+                    return Inconclusive($"Video review failed: {Truncate(ex.Message, 280)}");
+                }
             }
         }
 
         if (stills.Count == 0)
         {
-            return null;
+            return Inconclusive("No camera recording or stills were stored for this session.");
         }
 
-        return await CompleteAsync(BuildPrompt("stills"), BuildStillParts(stills), cancellationToken);
+        try
+        {
+            return await CompleteAsync(BuildPrompt("stills"), BuildStillParts(stills), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return Inconclusive($"Still review failed: {Truncate(ex.Message, 280)}");
+        }
+    }
+
+    private async Task<CameraPresenceReview> ReviewUploadedVideosAsync(
+        IReadOnlyList<CameraVideoLink> clips,
+        CancellationToken cancellationToken)
+    {
+        var fileIds = new List<string>();
+        try
+        {
+            foreach (var clip in clips)
+            {
+                fileIds.Add(await UploadFileAsync(clip, cancellationToken));
+            }
+
+            var content = new List<object>
+            {
+                new ResponseInputText("input_text", BuildPrompt("video")),
+            };
+            content.AddRange(fileIds.Select(id => (object)new ResponseInputFile("input_file", id)));
+
+            var body = new ResponsesRequest(
+                options.Value.ModelId,
+                [
+                    new ResponseInputMessage("message", "user", content),
+                ]);
+
+            var raw = await SendResponsesAsync(body, cancellationToken);
+            return Parse(raw);
+        }
+        finally
+        {
+            foreach (var id in fileIds)
+            {
+                try
+                {
+                    await DeleteFileAsync(id, CancellationToken.None);
+                }
+                catch
+                {
+                    // expires_after still drops the upload within an hour
+                }
+            }
+        }
+    }
+
+    private async Task<string> UploadFileAsync(CameraVideoLink clip, CancellationToken cancellationToken)
+    {
+        var opts = options.Value;
+        if (string.IsNullOrWhiteSpace(opts.ApiKey))
+        {
+            throw new InvalidOperationException("Meta Model API key is not configured.");
+        }
+
+        using var form = new MultipartFormDataContent();
+        form.Add(new StringContent("user_data"), "purpose");
+        form.Add(new StringContent("created_at"), "expires_after[anchor]");
+        form.Add(new StringContent("3600"), "expires_after[seconds]");
+        var file = new ByteArrayContent(clip.Content ?? []);
+        file.Headers.ContentType = new MediaTypeHeaderValue(clip.ContentType);
+        form.Add(file, "file", string.IsNullOrWhiteSpace(clip.FileName) ? "camera.webm" : clip.FileName);
+
+        var client = httpClientFactory.CreateClient("MetaModelApi");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "files")
+        {
+            Content = form,
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", opts.ApiKey);
+
+        using var response = await client.SendAsync(request, cancellationToken);
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(
+                $"Meta Files API returned {(int)response.StatusCode}: {Truncate(raw, 400)}");
+        }
+
+        using var doc = JsonDocument.Parse(raw);
+        if (doc.RootElement.TryGetProperty("id", out var id))
+        {
+            return id.GetString() ?? throw new InvalidOperationException("Meta Files API returned an empty file id.");
+        }
+
+        throw new InvalidOperationException("Meta Files API response did not include a file id.");
+    }
+
+    private async Task DeleteFileAsync(string fileId, CancellationToken cancellationToken)
+    {
+        var opts = options.Value;
+        if (string.IsNullOrWhiteSpace(opts.ApiKey) || string.IsNullOrWhiteSpace(fileId))
+        {
+            return;
+        }
+
+        var client = httpClientFactory.CreateClient("MetaModelApi");
+        using var request = new HttpRequestMessage(HttpMethod.Delete, $"files/{fileId}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", opts.ApiKey);
+        using var response = await client.SendAsync(request, cancellationToken);
+        _ = await response.Content.ReadAsStringAsync(cancellationToken);
+    }
+
+    private async Task<string> SendResponsesAsync(ResponsesRequest body, CancellationToken cancellationToken)
+    {
+        var opts = options.Value;
+        if (string.IsNullOrWhiteSpace(opts.ApiKey))
+        {
+            throw new InvalidOperationException("Meta Model API key is not configured.");
+        }
+
+        var client = httpClientFactory.CreateClient("MetaModelApi");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "responses")
+        {
+            Content = JsonContent.Create(body, options: RequestJsonOptions),
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", opts.ApiKey);
+
+        using var response = await client.SendAsync(request, cancellationToken);
+        var raw = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(
+                $"Meta Responses API returned {(int)response.StatusCode}: {Truncate(raw, 400)}");
+        }
+
+        using var doc = JsonDocument.Parse(raw);
+        if (doc.RootElement.TryGetProperty("output_text", out var outputText) &&
+            outputText.ValueKind == JsonValueKind.String &&
+            !string.IsNullOrWhiteSpace(outputText.GetString()))
+        {
+            return outputText.GetString()!;
+        }
+
+        if (doc.RootElement.TryGetProperty("output", out var output) && output.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in output.EnumerateArray())
+            {
+                if (!item.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var part in content.EnumerateArray())
+                {
+                    if (part.TryGetProperty("text", out var text) && !string.IsNullOrWhiteSpace(text.GetString()))
+                    {
+                        return text.GetString()!;
+                    }
+                }
+            }
+        }
+
+        throw new InvalidOperationException("Empty model response.");
     }
 
     private async Task<CameraPresenceReview> CompleteAsync(
@@ -243,4 +404,21 @@ public sealed class MetaCameraPresenceJudge(
 
     private sealed record ChatVideoUrl(
         [property: JsonPropertyName("url")] string Url);
+
+    private sealed record ResponsesRequest(
+        [property: JsonPropertyName("model")] string Model,
+        [property: JsonPropertyName("input")] IReadOnlyList<ResponseInputMessage> Input);
+
+    private sealed record ResponseInputMessage(
+        [property: JsonPropertyName("type")] string Type,
+        [property: JsonPropertyName("role")] string Role,
+        [property: JsonPropertyName("content")] IReadOnlyList<object> Content);
+
+    private sealed record ResponseInputText(
+        [property: JsonPropertyName("type")] string Type,
+        [property: JsonPropertyName("text")] string Text);
+
+    private sealed record ResponseInputFile(
+        [property: JsonPropertyName("type")] string Type,
+        [property: JsonPropertyName("file_id")] string FileId);
 }

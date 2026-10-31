@@ -82,6 +82,26 @@ public sealed class S3InterviewRecordingStore(
             .ToList();
     }
 
+    public async Task<byte[]?> GetObjectBytesAsync(string objectKey, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(objectKey);
+
+        try
+        {
+            using var response = await s3.GetObjectAsync(
+                options.Value.BucketName,
+                objectKey,
+                cancellationToken);
+            await using var memory = new MemoryStream();
+            await response.ResponseStream.CopyToAsync(memory, cancellationToken);
+            return memory.ToArray();
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
     public async Task<IReadOnlyList<RecordingFrameObject>> ListFramesAsync(
         string userId,
         string sessionId,

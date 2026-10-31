@@ -76,7 +76,7 @@ public static class RegisterInDI
                 ? "https://api.meta.ai/v1"
                 : meta.ApiUrl.TrimEnd('/');
             client.BaseAddress = new Uri(baseUrl + "/");
-            client.Timeout = TimeSpan.FromSeconds(180);
+            client.Timeout = TimeSpan.FromSeconds(270);
         });
     }
 }

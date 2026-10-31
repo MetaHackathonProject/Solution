@@ -11,6 +11,8 @@ public interface IInterviewRecordingStore
         string sessionId,
         CancellationToken cancellationToken);
 
+    Task<byte[]?> GetObjectBytesAsync(string objectKey, CancellationToken cancellationToken);
+
     Task<IReadOnlyList<RecordingFrameObject>> ListFramesAsync(
         string userId,
         string sessionId,

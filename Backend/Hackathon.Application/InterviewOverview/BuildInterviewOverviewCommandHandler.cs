@@ -106,15 +106,22 @@ public sealed class BuildInterviewOverviewCommandHandler(
 
             try
             {
-                var videos = (await recordingStore.ListVideosAsync(
-                        request.UserId,
-                        request.SessionId,
-                        cancellationToken))
-                    .Select(video => new CameraVideoLink(
+                var listed = await recordingStore.ListVideosAsync(
+                    request.UserId,
+                    request.SessionId,
+                    cancellationToken);
+                var videos = new List<CameraVideoLink>();
+                foreach (var video in listed)
+                {
+                    var bytes = await recordingStore.GetObjectBytesAsync(video.Key, cancellationToken);
+                    videos.Add(new CameraVideoLink(
                         recordingStore.CreateDownloadUrl(video.Key),
                         video.ContentType,
-                        video.Size))
-                    .ToList();
+                        video.Size,
+                        Path.GetFileName(video.Key),
+                        bytes));
+                }
+
                 var frames = await recordingStore.ListFramesAsync(
                     request.UserId,
                     request.SessionId,
@@ -122,15 +129,24 @@ public sealed class BuildInterviewOverviewCommandHandler(
                 var stills = frames
                     .Select(frame => new CameraStill(frame.Content, frame.ContentType))
                     .ToList();
-                var presence = await cameraPresenceJudge.JudgeAsync(videos, stills, cancellationToken);
-                if (presence is not null)
+                overview = overview with
                 {
-                    overview = overview with { CameraPresence = presence };
-                }
+                    CameraPresence = await cameraPresenceJudge.JudgeAsync(videos, stills, cancellationToken),
+                };
             }
-            catch
+            catch (Exception)
             {
-                // Spoken/interactive overview still stands if camera stills cannot be judged.
+                overview = overview with
+                {
+                    CameraPresence = new CameraPresenceReview(
+                        "unknown",
+                        string.Empty,
+                        [],
+                        0,
+                        40,
+                        "inconclusive",
+                        "Camera review could not run. Spoken overview is unchanged."),
+                };
             }
 
             await artifactStore.PutOverviewAsync(
