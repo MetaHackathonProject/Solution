@@ -274,6 +274,19 @@ export class InterviewDetail implements OnInit, OnDestroy {
     });
   }
 
+  protected cameraVerdict(verdict: string): string {
+    switch (verdict) {
+      case 'no_clear_risk':
+        return 'No clear integrity risk';
+      case 'some_concerns':
+        return 'Some concerns';
+      case 'high_concern':
+        return 'High concern';
+      default:
+        return 'Inconclusive';
+    }
+  }
+
   private loadQuestionHelpers(sessionId: string): void {
     this.sessionsApi.getSessionQuestionHelpers(sessionId).subscribe({
       next: (helpers) => this.questionHelpers.set(helpers),

@@ -3,10 +3,16 @@ import { firstValueFrom } from 'rxjs';
 import { InterviewSessionsService } from './interview-sessions.service';
 
 const RECORDER_TYPES = [
+  'video/mp4',
   'video/webm;codecs=vp9,opus',
   'video/webm;codecs=vp8,opus',
   'video/webm',
-  'video/mp4',
+];
+
+const VIDEO_MODES: MediaTrackConstraints[] = [
+  { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+  { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+  {},
 ];
 
 @Injectable({
@@ -19,15 +25,20 @@ export class CandidateRecordingService {
   readonly recording = signal(false);
   readonly uploading = signal(false);
   readonly cameraError = signal<string | null>(null);
+  readonly cameraLabel = signal('');
+  readonly selectedDeviceId = signal('');
+  readonly cameras = signal<MediaDeviceInfo[]>([]);
+  readonly feedHint = signal<string | null>(null);
 
   private recorder: MediaRecorder | null = null;
   private chunks: Blob[] = [];
+  private stills: Blob[] = [];
   private recorderMime = 'video/webm';
   private startInFlight: Promise<void> | null = null;
   private uploaded = false;
 
-  async start(): Promise<void> {
-    if (this.recording() && this.previewStream()) {
+  async start(deviceId?: string): Promise<void> {
+    if (this.previewStream() && !deviceId) {
       return;
     }
 
@@ -35,11 +46,63 @@ export class CandidateRecordingService {
       return this.startInFlight;
     }
 
-    this.startInFlight = this.startInternal();
+    this.startInFlight = this.startInternal(deviceId);
     try {
       await this.startInFlight;
     } finally {
       this.startInFlight = null;
+    }
+  }
+
+  async switchTo(deviceId: string): Promise<void> {
+    if (!deviceId || deviceId === this.selectedDeviceId()) {
+      return;
+    }
+
+    await this.stopRecorderKeepChunks();
+    this.stopTracks();
+    this.uploaded = false;
+    await this.start(deviceId);
+  }
+
+  addStill(blob: Blob): void {
+    if (this.stills.length >= 8 || blob.size < 800) {
+      return;
+    }
+
+    this.stills.push(blob);
+  }
+
+  beginRecording(): void {
+    const stream = this.previewStream();
+    if (!stream || this.recorder) {
+      return;
+    }
+
+    try {
+      const mimeType = RECORDER_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = mimeType
+        ? new MediaRecorder(stream, {
+            mimeType,
+            videoBitsPerSecond: 1_200_000,
+            audioBitsPerSecond: 64_000,
+          })
+        : new MediaRecorder(stream, {
+            videoBitsPerSecond: 1_200_000,
+            audioBitsPerSecond: 64_000,
+          });
+
+      this.recorderMime = recorder.mimeType || mimeType || 'video/webm';
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          this.chunks.push(event.data);
+        }
+      };
+      recorder.start(2000);
+      this.recorder = recorder;
+      this.recording.set(true);
+    } catch {
+      this.stopTracks();
     }
   }
 
@@ -49,28 +112,43 @@ export class CandidateRecordingService {
     }
 
     const blob = await this.stopToBlob();
+    const frames = [...this.stills];
     this.stopTracks();
-    if (!blob || blob.size === 0) {
+    if ((!blob || blob.size === 0) && frames.length === 0) {
       return;
     }
 
     this.uploading.set(true);
     try {
-      const contentType = blob.type || this.recorderMime || 'video/webm';
-      const signed = await firstValueFrom(this.sessions.getRecordingUploadUrl(sessionId, contentType));
-      // Raw fetch — Angular HttpClient would attach the JWT and break the S3 signature.
-      const response = await fetch(signed.uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': signed.contentType },
-        body: blob,
-      });
-      if (!response.ok) {
-        throw new Error(`Recording upload failed (${response.status}).`);
+      if (blob && blob.size > 0) {
+        await this.putObject(sessionId, blob, blob.type || this.recorderMime || 'video/webm', 'segment');
+      }
+
+      for (const frame of frames) {
+        await this.putObject(sessionId, frame, frame.type || 'image/jpeg', 'frame');
       }
 
       this.uploaded = true;
+      this.stills = [];
     } finally {
       this.uploading.set(false);
+    }
+  }
+
+  private async putObject(
+    sessionId: string,
+    body: Blob,
+    contentType: string,
+    kind: 'segment' | 'frame',
+  ): Promise<void> {
+    const signed = await firstValueFrom(this.sessions.getRecordingUploadUrl(sessionId, contentType, kind));
+    const response = await fetch(signed.uploadUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': signed.contentType },
+      body,
+    });
+    if (!response.ok) {
+      throw new Error(`Recording upload failed (${response.status}).`);
     }
   }
 
@@ -96,61 +174,127 @@ export class CandidateRecordingService {
     return this.cameraError() || 'Could not start the camera.';
   }
 
-  private async startInternal(): Promise<void> {
+  private async startInternal(deviceId?: string): Promise<void> {
     this.cameraError.set(null);
+    this.feedHint.set(null);
     this.uploaded = false;
 
-    const stream = await this.requestCameraStream();
-    if (!stream) {
+    const opened = await this.openWorkingVideo(deviceId);
+    if (!opened) {
       return;
     }
 
+    const stream = await this.addMicrophone(opened.stream);
+    const videoTrack = stream.getVideoTracks()[0];
     this.previewStream.set(stream);
+    this.cameraLabel.set(videoTrack?.label ?? '');
+    this.selectedDeviceId.set(videoTrack?.getSettings().deviceId || deviceId || '');
+    if (opened.green) {
+      this.feedHint.set(
+        'Chrome is receiving a green frame from this camera. In the DroidCam Client use File → Exit, reopen it, then refresh. DroidCam’s own docs say a restart (or a PC reboot) resyncs webcam output.',
+      );
+    }
 
-    try {
-      const mimeType = RECORDER_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
-      const recorder = mimeType
-        ? new MediaRecorder(stream, {
-            mimeType,
-            videoBitsPerSecond: 1_200_000,
-            audioBitsPerSecond: 64_000,
-          })
-        : new MediaRecorder(stream, {
-            videoBitsPerSecond: 1_200_000,
-            audioBitsPerSecond: 64_000,
-          });
+    await this.refreshDevices();
+  }
 
-      this.recorderMime = recorder.mimeType || mimeType || 'video/webm';
-      this.chunks = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.chunks.push(event.data);
+  private async openWorkingVideo(preferredId?: string): Promise<{ stream: MediaStream; green: boolean } | null> {
+    const probe = await this.getUserMedia({ video: true });
+    if (!probe) {
+      return null;
+    }
+
+    await this.refreshDevices();
+    const cameras = this.cameras();
+    const probeId = probe.getVideoTracks()[0]?.getSettings().deviceId;
+    const order = [
+      ...cameras.filter((camera) => camera.deviceId === preferredId),
+      ...cameras.filter((camera) => camera.deviceId === probeId && camera.deviceId !== preferredId),
+      ...cameras.filter((camera) => camera.deviceId !== preferredId && camera.deviceId !== probeId),
+    ];
+    const deviceIds = order.map((camera) => camera.deviceId);
+    if (!deviceIds.length && probeId) {
+      deviceIds.push(probeId);
+    }
+
+    this.stopStream(probe);
+
+    let fallback: MediaStream | null = null;
+    for (const id of deviceIds) {
+      for (const mode of VIDEO_MODES) {
+        const stream = await this.getUserMedia({
+          video: { deviceId: { exact: id }, ...mode },
+        });
+        if (!stream) {
+          continue;
         }
-      };
-      recorder.start(2000);
-      this.recorder = recorder;
-      this.recording.set(true);
+
+        const green = await isMostlyGreenStream(stream);
+        if (!green) {
+          if (fallback) {
+            this.stopStream(fallback);
+          }
+
+          return { stream, green: false };
+        }
+
+        if (fallback) {
+          this.stopStream(fallback);
+        }
+
+        fallback = stream;
+      }
+    }
+
+    return fallback ? { stream: fallback, green: true } : null;
+  }
+
+  private async addMicrophone(stream: MediaStream): Promise<MediaStream> {
+    if (stream.getAudioTracks().length) {
+      return stream;
+    }
+
+    const mic = await this.getUserMedia({ audio: true });
+    if (!mic) {
+      return stream;
+    }
+
+    for (const track of mic.getAudioTracks()) {
+      stream.addTrack(track);
+    }
+
+    return stream;
+  }
+
+  private async refreshDevices(): Promise<void> {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.cameras.set(devices.filter((device) => device.kind === 'videoinput' && device.deviceId));
     } catch {
-      this.stopTracks();
+      this.cameras.set([]);
     }
   }
 
-  private async requestCameraStream(): Promise<MediaStream | null> {
-    const video = {
-      facingMode: 'user' as const,
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-    };
-
+  private async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream | null> {
     try {
-      return await navigator.mediaDevices.getUserMedia({ video, audio: true });
+      return await navigator.mediaDevices.getUserMedia(constraints);
     } catch {
-      try {
-        return await navigator.mediaDevices.getUserMedia({ video, audio: false });
-      } catch {
-        return null;
-      }
+      return null;
     }
+  }
+
+  private async stopRecorderKeepChunks(): Promise<void> {
+    const recorder = this.recorder;
+    this.recorder = null;
+    this.recording.set(false);
+    if (!recorder || recorder.state === 'inactive') {
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      recorder.addEventListener('stop', () => resolve(), { once: true });
+      recorder.stop();
+    });
   }
 
   private stopToBlob(): Promise<Blob | null> {
@@ -180,8 +324,80 @@ export class CandidateRecordingService {
   }
 
   private stopTracks(): void {
-    const stream = this.previewStream();
-    stream?.getTracks().forEach((track) => track.stop());
+    this.stopStream(this.previewStream());
     this.previewStream.set(null);
+    this.cameraLabel.set('');
+    this.feedHint.set(null);
   }
+
+  private stopStream(stream: MediaStream | null): void {
+    stream?.getTracks().forEach((track) => track.stop());
+  }
+}
+
+function isMostlyGreenStream(stream: MediaStream): Promise<boolean> {
+  const video = document.createElement('video');
+  video.muted = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.srcObject = stream;
+  video.setAttribute(
+    'style',
+    'position:fixed;bottom:0;left:0;width:160px;height:120px;opacity:0.02;pointer-events:none;z-index:-1',
+  );
+  document.body.appendChild(video);
+
+  return new Promise((resolve) => {
+    const finish = (green: boolean) => {
+      window.clearTimeout(timer);
+      video.pause();
+      video.srcObject = null;
+      video.remove();
+      resolve(green);
+    };
+
+    const sample = () => {
+      if (video.videoWidth < 2) {
+        return true;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 16;
+      canvas.height = 16;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) {
+        return true;
+      }
+
+      ctx.drawImage(video, 0, 0, 16, 16);
+      const pixels = ctx.getImageData(0, 0, 16, 16).data;
+      let green = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        if (g > 70 && g > r + 25 && g > b + 25) {
+          green += 1;
+        }
+      }
+
+      return green > 180;
+    };
+
+    const timer = window.setTimeout(() => finish(sample()), 1400);
+    void video.play().then(async () => {
+      await wait(500);
+      if (!sample()) {
+        finish(false);
+        return;
+      }
+
+      await wait(700);
+      finish(sample());
+    }).catch(() => finish(true));
+  });
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }

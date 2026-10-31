@@ -17,13 +17,54 @@
   box-shadow: 0 10px 30px rgb(17 17 17 / 18%);
 }
 
+.camera__frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #111;
+}
+
 .camera video {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
   object-fit: cover;
   background: #111;
-  transform: scaleX(-1);
+}
+
+.camera__hint {
+  margin: 0;
+  padding: 0.45rem 0.65rem 0;
+  color: #fde68a;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.35;
+}
+
+.camera__picker {
+  min-width: 0;
+  flex: 1;
+}
+
+.camera__picker select {
+  width: 100%;
+  max-width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 
 .camera__meta {

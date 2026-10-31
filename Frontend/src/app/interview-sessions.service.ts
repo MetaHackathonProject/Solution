@@ -55,6 +55,17 @@ export interface InterviewOverview {
   questions: InterviewOverviewQuestion[];
   recommendations: string[];
   interactiveTasks: InterviewOverviewInteractiveTask[];
+  cameraPresence?: CameraPresenceReview | null;
+}
+
+export interface CameraPresenceReview {
+  presence: string;
+  mimicsSummary: string;
+  signals: string[];
+  integrityRisk: number;
+  confidence: number;
+  verdict: string;
+  rationale: string;
 }
 
 export interface QuestionHelper {
@@ -110,9 +121,10 @@ export class InterviewSessionsService {
   getRecordingUploadUrl(
     sessionId: string,
     contentType: string,
+    kind: 'segment' | 'frame' = 'segment',
   ): Observable<RecordingUploadUrl> {
     return this.http.get<RecordingUploadUrl>(`${this.baseUrl}/${sessionId}/recording/upload-url`, {
-      params: { contentType },
+      params: { contentType, kind },
     });
   }
 }

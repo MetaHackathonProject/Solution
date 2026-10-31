@@ -16,7 +16,9 @@ public sealed class BuildInterviewOverviewCommandHandler(
     IElevenLabsTranscriptClient transcriptClient,
     IInteractiveSolutionJudge solutionJudge,
     IInterviewOverviewArtifactStore artifactStore,
-    IInterviewOverviewComposer overviewComposer)
+    IInterviewOverviewComposer overviewComposer,
+    IInterviewRecordingStore recordingStore,
+    ICameraPresenceJudge cameraPresenceJudge)
     : IRequestHandler<BuildInterviewOverviewCommand, BuildInterviewOverviewResult>
 {
     public async Task<BuildInterviewOverviewResult> Handle(
@@ -101,6 +103,35 @@ public sealed class BuildInterviewOverviewCommandHandler(
                 judgments,
                 session.Settings.RecruiterLanguage,
                 cancellationToken);
+
+            try
+            {
+                var videos = (await recordingStore.ListVideosAsync(
+                        request.UserId,
+                        request.SessionId,
+                        cancellationToken))
+                    .Select(video => new CameraVideoLink(
+                        recordingStore.CreateDownloadUrl(video.Key),
+                        video.ContentType,
+                        video.Size))
+                    .ToList();
+                var frames = await recordingStore.ListFramesAsync(
+                    request.UserId,
+                    request.SessionId,
+                    cancellationToken);
+                var stills = frames
+                    .Select(frame => new CameraStill(frame.Content, frame.ContentType))
+                    .ToList();
+                var presence = await cameraPresenceJudge.JudgeAsync(videos, stills, cancellationToken);
+                if (presence is not null)
+                {
+                    overview = overview with { CameraPresence = presence };
+                }
+            }
+            catch
+            {
+                // Spoken/interactive overview still stands if camera stills cannot be judged.
+            }
 
             await artifactStore.PutOverviewAsync(
                 request.UserId,

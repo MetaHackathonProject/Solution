@@ -146,12 +146,13 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
     public async Task<ActionResult<RecordingUploadUrlResponse>> GetRecordingUploadUrl(
         string sessionId,
         [FromQuery] string? contentType,
+        [FromQuery] string? kind,
         CancellationToken cancellationToken)
     {
         try
         {
             var result = await mediator.Send(
-                new GetRecordingUploadUrlQuery(sessionId, contentType),
+                new GetRecordingUploadUrlQuery(sessionId, contentType, kind),
                 cancellationToken);
 
             if (result is null)
@@ -366,7 +367,17 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
                     task.Strengths,
                     task.Gaps,
                     task.Summary))
-                .ToList());
+                .ToList(),
+            overview.CameraPresence is null
+                ? null
+                : new CameraPresenceResponse(
+                    overview.CameraPresence.Presence,
+                    overview.CameraPresence.MimicsSummary,
+                    overview.CameraPresence.Signals,
+                    overview.CameraPresence.IntegrityRisk,
+                    overview.CameraPresence.Confidence,
+                    overview.CameraPresence.Verdict,
+                    overview.CameraPresence.Rationale));
 
     private static QuestionHelperResponse ToHelperResponse(QuestionHelper helper) =>
         new(
@@ -412,13 +423,23 @@ public sealed record InterviewOverviewResponse(
     int Score,
     IReadOnlyList<InterviewOverviewQuestionResponse> Questions,
     IReadOnlyList<string> Recommendations,
-    IReadOnlyList<InterviewOverviewInteractiveTaskResponse> InteractiveTasks);
+    IReadOnlyList<InterviewOverviewInteractiveTaskResponse> InteractiveTasks,
+    CameraPresenceResponse? CameraPresence);
 
 public sealed record InterviewOverviewQuestionResponse(
     string Question,
     string Answer,
     string Opinion,
     IReadOnlyList<string> Recommendations);
+
+public sealed record CameraPresenceResponse(
+    string Presence,
+    string MimicsSummary,
+    IReadOnlyList<string> Signals,
+    int IntegrityRisk,
+    int Confidence,
+    string Verdict,
+    string Rationale);
 
 public sealed record InterviewOverviewInteractiveTaskResponse(
     string TaskId,

@@ -1,26 +1,37 @@
-@if (recording.previewStream(); as stream) {
+@if (recording.previewStream()) {
   <aside
     class="camera"
     [class.camera--live]="recording.recording()"
     [class.camera--uploading]="recording.uploading()"
     aria-label="Candidate camera"
   >
-    <video
-      [srcObject]="stream"
-      autoplay
-      muted
-      playsinline
-      (loadedmetadata)="playPreview($event)"
-    ></video>
-    <p class="camera__meta">
+    <div class="camera__frame">
+      <video #preview autoplay muted playsinline></video>
+    </div>
+    @if (recording.feedHint()) {
+      <p class="camera__hint">{{ recording.feedHint() }}</p>
+    }
+    <div class="camera__meta">
       @if (recording.recording()) {
         <span class="camera__rec" aria-hidden="true"></span>
-        <span>Recording</span>
+      }
+      @if (recording.cameras().length > 1) {
+        <label class="camera__picker">
+          <span class="visually-hidden">Camera</span>
+          <select
+            [value]="recording.selectedDeviceId()"
+            (change)="onCameraChange($event)"
+          >
+            @for (camera of recording.cameras(); track camera.deviceId) {
+              <option [value]="camera.deviceId">{{ camera.label || 'Camera' }}</option>
+            }
+          </select>
+        </label>
       } @else if (recording.uploading()) {
         <span>Saving recording…</span>
       } @else {
-        <span>Camera</span>
+        <span>{{ recording.cameraLabel() || 'Camera' }}</span>
       }
-    </p>
+    </div>
   </aside>
 }

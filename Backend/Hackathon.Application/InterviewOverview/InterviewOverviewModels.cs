@@ -21,4 +21,14 @@ public sealed record InterviewResultOverview(
     [property: JsonPropertyName("score")] int Score,
     [property: JsonPropertyName("questions")] IReadOnlyList<OverviewQuestion> Questions,
     [property: JsonPropertyName("recommendations")] IReadOnlyList<string> Recommendations,
-    [property: JsonPropertyName("interactiveTasks")] IReadOnlyList<InteractiveJudgment> InteractiveTasks);
+    [property: JsonPropertyName("interactiveTasks")] IReadOnlyList<InteractiveJudgment> InteractiveTasks,
+    [property: JsonPropertyName("cameraPresence")] CameraPresenceReview? CameraPresence = null);
+
+public sealed record CameraPresenceReview(
+    [property: JsonPropertyName("presence")] string Presence,
+    [property: JsonPropertyName("mimicsSummary")] string MimicsSummary,
+    [property: JsonPropertyName("signals")] IReadOnlyList<string> Signals,
+    [property: JsonPropertyName("integrityRisk")] int IntegrityRisk,
+    [property: JsonPropertyName("confidence")] int Confidence,
+    [property: JsonPropertyName("verdict")] string Verdict,
+    [property: JsonPropertyName("rationale")] string Rationale);

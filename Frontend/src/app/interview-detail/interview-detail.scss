@@ -417,6 +417,20 @@
   letter-spacing: -0.01em;
 }
 
+.overview__presence-verdict {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.overview__disclaimer {
+  margin: 0.15rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .overview__subhead {
   margin: 0.35rem 0 0;
   color: var(--color-muted);

@@ -163,6 +163,34 @@
 
             <p class="overview__summary">{{ result.summary }}</p>
 
+            @if (result.cameraPresence; as camera) {
+              <div class="overview__block">
+                <h3 class="overview__heading">Camera presence</h3>
+                <p class="overview__presence-verdict">
+                  {{ cameraVerdict(camera.verdict) }}
+                  · integrity risk {{ camera.integrityRisk }}/100
+                  · confidence {{ camera.confidence }}/100
+                </p>
+                @if (camera.mimicsSummary) {
+                  <p class="overview__opinion"><span>Mimics</span> {{ camera.mimicsSummary }}</p>
+                }
+                @if (camera.signals.length) {
+                  <p class="overview__subhead">Observed signals</p>
+                  <ul class="overview__list">
+                    @for (signal of camera.signals; track signal) {
+                      <li>{{ signal }}</li>
+                    }
+                  </ul>
+                }
+                @if (camera.rationale) {
+                  <p class="overview__a"><span>Notes</span> {{ camera.rationale }}</p>
+                }
+                <p class="overview__disclaimer">
+                  Based on a few stills, not the full tape. This is not a finding that the candidate cheated.
+                </p>
+              </div>
+            }
+
             @if (result.recommendations.length) {
               <div class="overview__block">
                 <h3 class="overview__heading">Recommendations</h3>

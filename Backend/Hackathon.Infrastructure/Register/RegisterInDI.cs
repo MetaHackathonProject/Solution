@@ -57,6 +57,7 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewOverviewArtifactStore, S3InterviewOverviewArtifactStore>();
         services.AddSingleton<IElevenLabsTranscriptClient, ElevenLabsTranscriptClient>();
         services.AddSingleton<IInteractiveSolutionJudge, MetaInteractiveSolutionJudge>();
+        services.AddSingleton<ICameraPresenceJudge, MetaCameraPresenceJudge>();
         services.AddSingleton<IInterviewOverviewComposer, MetaInterviewOverviewComposer>();
 
         var elevenLabs = configuration.GetSection(ElevenLabsOptions.SectionName).Get<ElevenLabsOptions>();
@@ -75,7 +76,7 @@ public static class RegisterInDI
                 ? "https://api.meta.ai/v1"
                 : meta.ApiUrl.TrimEnd('/');
             client.BaseAddress = new Uri(baseUrl + "/");
-            client.Timeout = TimeSpan.FromSeconds(120);
+            client.Timeout = TimeSpan.FromSeconds(180);
         });
     }
 }
