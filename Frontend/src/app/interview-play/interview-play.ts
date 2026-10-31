@@ -131,9 +131,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
         if (interactive && interactive.status !== 'Answered') {
           this.interactiveTask.set(interactive);
           this.voicePhase.set('paused');
-          void this.recording.start().catch((err: unknown) => {
-            this.error.set(this.recording.describeError(err));
-          });
+          void this.recording.start();
         }
         this.loading.set(false);
       },
@@ -164,12 +162,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
       return;
     }
 
-    try {
-      await this.recording.start();
-    } catch (err) {
-      this.error.set(this.recording.describeError(err));
-      return;
-    }
+    await this.recording.start();
 
     await this.connectVoice({
       purpose: 'interview',

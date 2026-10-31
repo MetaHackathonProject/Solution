@@ -1,4 +1,4 @@
-import { Component, ElementRef, effect, inject, viewChild } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CandidateRecordingService } from '../candidate-recording.service';
 
 @Component({
@@ -8,14 +8,11 @@ import { CandidateRecordingService } from '../candidate-recording.service';
 })
 export class CandidateCamera {
   protected readonly recording = inject(CandidateRecordingService);
-  private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
 
-  constructor() {
-    effect(() => {
-      const video = this.preview()?.nativeElement;
-      if (video) {
-        video.srcObject = this.recording.previewStream();
-      }
-    });
+  protected playPreview(event: Event): void {
+    const video = event.target;
+    if (video instanceof HTMLVideoElement) {
+      void video.play().catch(() => undefined);
+    }
   }
 }

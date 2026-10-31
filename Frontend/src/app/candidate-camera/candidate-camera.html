@@ -1,11 +1,17 @@
-@if (recording.previewStream() || recording.uploading()) {
+@if (recording.previewStream(); as stream) {
   <aside
     class="camera"
     [class.camera--live]="recording.recording()"
     [class.camera--uploading]="recording.uploading()"
     aria-label="Candidate camera"
   >
-    <video #preview autoplay muted playsinline></video>
+    <video
+      [srcObject]="stream"
+      autoplay
+      muted
+      playsinline
+      (loadedmetadata)="playPreview($event)"
+    ></video>
     <p class="camera__meta">
       @if (recording.recording()) {
         <span class="camera__rec" aria-hidden="true"></span>

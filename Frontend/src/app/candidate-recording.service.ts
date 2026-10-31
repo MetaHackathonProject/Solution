@@ -77,7 +77,7 @@ export class CandidateRecordingService {
   describeError(err: unknown): string {
     if (err instanceof DOMException) {
       if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
-        return 'Camera and microphone access are required to start the interview.';
+        return 'Camera access was not granted.';
       }
 
       if (err.name === 'NotFoundError') {
@@ -100,19 +100,9 @@ export class CandidateRecordingService {
     this.cameraError.set(null);
     this.uploaded = false;
 
-    let stream: MediaStream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-        audio: true,
-      });
-    } catch (err) {
-      this.cameraError.set(this.describeError(err));
-      throw err;
+    const stream = await this.requestCameraStream();
+    if (!stream) {
+      return;
     }
 
     this.previewStream.set(stream);
@@ -140,10 +130,26 @@ export class CandidateRecordingService {
       recorder.start(2000);
       this.recorder = recorder;
       this.recording.set(true);
-    } catch (err) {
+    } catch {
       this.stopTracks();
-      this.cameraError.set('This browser cannot record camera video.');
-      throw err;
+    }
+  }
+
+  private async requestCameraStream(): Promise<MediaStream | null> {
+    const video = {
+      facingMode: 'user' as const,
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+    };
+
+    try {
+      return await navigator.mediaDevices.getUserMedia({ video, audio: true });
+    } catch {
+      try {
+        return await navigator.mediaDevices.getUserMedia({ video, audio: false });
+      } catch {
+        return null;
+      }
     }
   }
 
