@@ -9,7 +9,7 @@ import { CandidateRecordingService } from '../candidate-recording.service';
 export class CandidateCamera implements OnDestroy {
   protected readonly recording = inject(CandidateRecordingService);
   private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
-  private stillTimer: ReturnType<typeof window.setInterval> | null = null;
+  private stillTimer: number | null = null;
 
   constructor() {
     afterRenderEffect((onCleanup) => {
@@ -49,7 +49,7 @@ export class CandidateCamera implements OnDestroy {
   private startStillCapture(video: HTMLVideoElement): void {
     this.clearStillTimer();
     window.setTimeout(() => this.captureStill(video), 2500);
-    this.stillTimer = window.setInterval(() => this.captureStill(video), 12000);
+    this.stillTimer = window.setInterval(() => this.captureStill(video), 12000) as unknown as number;
   }
 
   private captureStill(video: HTMLVideoElement): void {
