@@ -1,0 +1,46 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__header">
+      <div>
+        <p class="page__eyebrow">Employer</p>
+        <h1 class="page__title">Candidate interviews</h1>
+        <p class="page__lead">Open a session to see progress and the full overview, including camera.</p>
+      </div>
+      <a class="btn btn--primary" routerLink="/templates">Templates</a>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate">
+        <h2 class="gate__title">Sign in to review candidates</h2>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn('/assignments')">
+          Sign in
+        </button>
+      </section>
+    } @else if (loading()) {
+      <p class="muted">Loading assignments…</p>
+    } @else if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    } @else if (assignments().length === 0) {
+      <section class="gate">
+        <h2 class="gate__title">No candidates yet</h2>
+        <p class="gate__copy">Copy a template link. Each candidate who joins appears here.</p>
+        <a class="btn btn--primary" routerLink="/templates">Open templates</a>
+      </section>
+    } @else {
+      <ul class="list">
+        @for (item of assignments(); track item.sessionId) {
+          <li>
+            <a class="row" [routerLink]="['/interviews', item.sessionId]">
+              <span class="row__title">{{ item.jobTitle }} · {{ item.company }}</span>
+              <span class="row__sub">
+                {{ item.templateName }}
+                · {{ statusLabel(item.status) }}
+                · {{ createdLabel(item.createdAt) | date: 'mediumDate' }}
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</main>

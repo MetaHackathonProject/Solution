@@ -1,4 +1,3 @@
-using Hackathon.Application.Context;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Domain.InterviewSessions;
 using MediatR;
@@ -6,8 +5,7 @@ using MediatR;
 namespace Hackathon.Application.InterviewOverview;
 
 public sealed class GetInterviewOverviewQueryHandler(
-    IUserContext userContext,
-    IInterviewSessionStore sessionStore,
+    IInterviewSessionAccess access,
     IInterviewOverviewArtifactStore artifactStore)
     : IRequestHandler<GetInterviewOverviewQuery, InterviewResultOverview?>
 {
@@ -17,24 +15,27 @@ public sealed class GetInterviewOverviewQueryHandler(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SessionId);
 
-        var session = await sessionStore.GetAsync(
-            userContext.UserId,
-            request.SessionId,
-            cancellationToken);
-
-        if (session is null)
+        var resolved = await access.ResolveAsync(request.SessionId, cancellationToken);
+        if (resolved is null)
         {
             return null;
         }
 
-        if (session.OverviewStatus != OverviewStatus.Ready)
+        if (resolved.Session.OverviewStatus != OverviewStatus.Ready)
         {
             return null;
         }
 
-        return await artifactStore.GetOverviewAsync(
-            userContext.UserId,
+        var overview = await artifactStore.GetOverviewAsync(
+            resolved.Session.UserId,
             request.SessionId,
             cancellationToken);
+
+        if (overview is null || resolved.CanSeeCameraOverview)
+        {
+            return overview;
+        }
+
+        return overview with { CameraPresence = null };
     }
 }

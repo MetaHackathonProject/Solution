@@ -12,8 +12,10 @@
         <video #preview autoplay muted playsinline></video>
       } @else {
         <div class="camera__placeholder">
-          <p class="camera__placeholder-title">Camera off</p>
-          <p class="camera__placeholder-copy">Mic only — you can still talk</p>
+          <p class="camera__placeholder-title">{{ required() ? 'Camera required' : 'Camera off' }}</p>
+          <p class="camera__placeholder-copy">
+            {{ required() ? 'Allow camera to start this interview' : 'Mic only — you can still talk' }}
+          </p>
         </div>
       }
     </div>

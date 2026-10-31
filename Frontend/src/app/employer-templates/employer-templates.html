@@ -1,0 +1,53 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__header">
+      <div>
+        <p class="page__eyebrow">Employer</p>
+        <h1 class="page__title">Interview templates</h1>
+        <p class="page__lead">Write questions once, then copy a link for each candidate.</p>
+      </div>
+      <a class="btn btn--primary" routerLink="/templates/new">New template</a>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate">
+        <h2 class="gate__title">Sign in to manage templates</h2>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn('/templates')">
+          Sign in
+        </button>
+      </section>
+    } @else if (loading()) {
+      <p class="muted">Loading templates…</p>
+    } @else if (error() && templates().length === 0) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    } @else if (templates().length === 0) {
+      <section class="gate">
+        <h2 class="gate__title">No templates yet</h2>
+        <p class="gate__copy">Create a template with spoken questions and optional interactive tasks.</p>
+        <a class="btn btn--primary" routerLink="/templates/new">Create template</a>
+      </section>
+    } @else {
+      @if (error()) {
+        <p class="alert" role="alert">{{ error() }}</p>
+      }
+      <ul class="list">
+        @for (template of templates(); track template.templateId) {
+          <li class="row-item">
+            <a class="row" [routerLink]="['/templates', template.templateId]">
+              <span class="row__copy">
+                <span class="row__title">{{ template.name }}</span>
+                <span class="row__sub">
+                  {{ template.jobTitle }} · {{ template.company }} · {{ template.language }}
+                  · {{ createdLabel(template.updatedAt) | date: 'mediumDate' }}
+                </span>
+              </span>
+            </a>
+            <button type="button" class="btn btn--secondary" (click)="copyLink($event, template)">
+              {{ copiedId() === template.templateId ? 'Copied' : 'Copy link' }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</main>

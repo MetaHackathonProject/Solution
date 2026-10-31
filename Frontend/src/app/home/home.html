@@ -12,7 +12,16 @@
       <section class="gate" aria-labelledby="sign-in-title">
         <h2 class="gate__title" id="sign-in-title">Sign in to start</h2>
         <p class="gate__copy">Sessions are tied to your account so the plan stays private.</p>
-        <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in</button>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn()">Sign in / Sign up</button>
+      </section>
+    } @else if (account.isEmployer()) {
+      <section class="gate" aria-labelledby="employer-home-title">
+        <h2 class="gate__title" id="employer-home-title">Send interviews from a template</h2>
+        <p class="gate__copy">
+          Employers write questions once, copy a link, and review each candidate. Mock interviews from
+          a job-offer URL stay on candidate accounts.
+        </p>
+        <a class="btn btn--primary" routerLink="/templates">Open templates</a>
       </section>
     } @else {
       <form

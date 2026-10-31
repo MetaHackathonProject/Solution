@@ -24,6 +24,8 @@ public interface IPendingInterviewTaskStore
         string? visionDescription,
         CancellationToken cancellationToken);
 
+    Task PutAsync(PendingInterviewTask task, CancellationToken cancellationToken);
+
     Task ResetAllToNotAskedAsync(string sessionId, CancellationToken cancellationToken);
 
     Task<bool> HasOpenAsync(string sessionId, CancellationToken cancellationToken);

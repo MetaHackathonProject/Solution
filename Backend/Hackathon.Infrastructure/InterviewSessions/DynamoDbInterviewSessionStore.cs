@@ -159,8 +159,9 @@ public sealed class DynamoDbInterviewSessionStore(
             .ToList();
     }
 
-    private static Dictionary<string, AttributeValue> ToItem(InterviewSession session) =>
-        new()
+    private static Dictionary<string, AttributeValue> ToItem(InterviewSession session)
+    {
+        var item = new Dictionary<string, AttributeValue>
         {
             ["user_id"] = new(session.UserId),
             ["session_id"] = new(session.SessionId),
@@ -172,7 +173,23 @@ public sealed class DynamoDbInterviewSessionStore(
             ["overview_status"] = new(session.OverviewStatus),
             ["created_at"] = new() { N = session.CreatedAt.ToString() },
             ["updated_at"] = new() { N = session.UpdatedAt.ToString() },
+            ["source"] = new(session.Source),
+            ["retake_allowed"] = new() { BOOL = session.RetakeAllowed },
+            ["hide_camera_overview"] = new() { BOOL = session.HideCameraOverview },
         };
+
+        if (!string.IsNullOrWhiteSpace(session.EmployerUserId))
+        {
+            item["employer_user_id"] = new(session.EmployerUserId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(session.TemplateId))
+        {
+            item["template_id"] = new(session.TemplateId);
+        }
+
+        return item;
+    }
 
     private static InterviewSession FromItem(Dictionary<string, AttributeValue> item)
     {
@@ -188,8 +205,16 @@ public sealed class DynamoDbInterviewSessionStore(
             item.GetValueOrDefault("status")?.S ?? InterviewSessionStatus.Started,
             ParseLong(item.GetValueOrDefault("created_at")),
             ParseLong(item.GetValueOrDefault("updated_at")),
-            item.GetValueOrDefault("overview_status")?.S ?? OverviewStatus.NotAvailable);
+            item.GetValueOrDefault("overview_status")?.S ?? OverviewStatus.NotAvailable,
+            item.GetValueOrDefault("source")?.S ?? InterviewSessionSource.Self,
+            EmptyToNull(item.GetValueOrDefault("employer_user_id")?.S),
+            EmptyToNull(item.GetValueOrDefault("template_id")?.S),
+            item.GetValueOrDefault("retake_allowed")?.BOOL ?? true,
+            item.GetValueOrDefault("hide_camera_overview")?.BOOL ?? false);
     }
+
+    private static string? EmptyToNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static long ParseLong(AttributeValue? value) =>
         value?.N is { Length: > 0 } number && long.TryParse(number, out var parsed)

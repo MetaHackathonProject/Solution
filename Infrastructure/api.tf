@@ -22,6 +22,9 @@ locals {
     "InterviewProgress/BucketName"           = aws_s3_bucket.interview_sessions.bucket
     "PendingInterviewTasks/TableName"        = aws_dynamodb_table.pending_interview_tasks.name
     "InterviewConversations/TableName"       = aws_dynamodb_table.interview_session_conversations.name
+    "UserProfiles/TableName"                 = aws_dynamodb_table.user_profiles.name
+    "InterviewTemplates/TableName"           = aws_dynamodb_table.interview_templates.name
+    "InterviewTemplates/AssignmentsTableName" = aws_dynamodb_table.interview_assignments.name
     "InterviewPlanner/StateMachineArn"       = aws_sfn_state_machine.interview_planner.arn
     "SolutionVisionReview/StateMachineArn"   = aws_sfn_state_machine.solution_vision_review.arn
     "InterviewOverview/StateMachineArn"      = aws_sfn_state_machine.interview_overview.arn
@@ -54,6 +57,9 @@ module "api" {
     APP_InterviewProgress__BucketName          = aws_s3_bucket.interview_sessions.bucket
     APP_PendingInterviewTasks__TableName       = aws_dynamodb_table.pending_interview_tasks.name
     APP_InterviewConversations__TableName      = aws_dynamodb_table.interview_session_conversations.name
+    APP_UserProfiles__TableName                = aws_dynamodb_table.user_profiles.name
+    APP_InterviewTemplates__TableName          = aws_dynamodb_table.interview_templates.name
+    APP_InterviewTemplates__AssignmentsTableName = aws_dynamodb_table.interview_assignments.name
     APP_InterviewPlanner__StateMachineArn      = aws_sfn_state_machine.interview_planner.arn
     APP_SolutionVisionReview__StateMachineArn  = aws_sfn_state_machine.solution_vision_review.arn
     APP_InterviewOverview__StateMachineArn     = aws_sfn_state_machine.interview_overview.arn
@@ -106,6 +112,11 @@ data "aws_iam_policy_document" "api" {
       "${aws_dynamodb_table.interview_sessions_progress.arn}/index/*",
       aws_dynamodb_table.pending_interview_tasks.arn,
       aws_dynamodb_table.interview_session_conversations.arn,
+      aws_dynamodb_table.user_profiles.arn,
+      aws_dynamodb_table.interview_templates.arn,
+      "${aws_dynamodb_table.interview_templates.arn}/index/*",
+      aws_dynamodb_table.interview_assignments.arn,
+      "${aws_dynamodb_table.interview_assignments.arn}/index/*",
     ]
   }
 

@@ -14,7 +14,11 @@ export class AuthService {
     return userData?.email ?? '';
   });
 
-  signIn(): void {
+  signIn(returnUrl?: string): void {
+    if (returnUrl) {
+      sessionStorage.setItem('post_login_redirect', returnUrl);
+    }
+
     this.oidc.authorize('cognito', {
       customParams: { prompt: 'login' },
     });

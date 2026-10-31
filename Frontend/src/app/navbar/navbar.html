@@ -6,10 +6,16 @@
         <span class="nav-v2__wordmark">Hackathon Solution</span>
       </a>
 
-      @if (auth.isAuthenticated()) {
+      @if (auth.isAuthenticated() && account.isCandidate()) {
         <div class="nav-v2__links">
           <a class="nav-v2__link" routerLink="/interviews">Interviews</a>
           <a class="nav-v2__link" routerLink="/">New</a>
+        </div>
+      }
+      @if (auth.isAuthenticated() && account.isEmployer()) {
+        <div class="nav-v2__links">
+          <a class="nav-v2__link" routerLink="/templates">Templates</a>
+          <a class="nav-v2__link" routerLink="/assignments">Candidates</a>
         </div>
       }
     </div>

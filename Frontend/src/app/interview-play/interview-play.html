@@ -55,7 +55,7 @@
             />
           </article>
           <article class="tile tile--you" aria-label="You">
-            <app-candidate-camera layout="tile" />
+            <app-candidate-camera layout="tile" [required]="cameraRequired()" />
           </article>
         </div>
 
@@ -77,6 +77,16 @@
         }
 
         <div class="room__actions">
+          @if (cameraRequired() && !recording.previewStream()) {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="enablingCamera()"
+              (click)="enableCamera()"
+            >
+              {{ enablingCamera() ? 'Opening camera…' : 'Allow camera' }}
+            </button>
+          }
           @if (panelCollapsed() && interactiveTask()) {
             <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
               {{ voicePhase() === 'walkthrough' || voicePhase() === 'reviewing' ? 'Show solution' : 'Show exercise' }}
@@ -99,17 +109,41 @@
       <section class="card">
         <h2 class="card__title">Ready when you are</h2>
         <p class="card__copy">
-          Allow microphone access, then start. Camera is optional — if you allow it, you appear
-          beside the interviewer and the session is recorded when it ends.
+          @if (cameraRequired()) {
+            This employer interview requires your camera. Allow camera access, then start. The
+            interviewer will not begin until the camera is on.
+          } @else {
+            Allow microphone access, then start. Camera is optional — if you allow it, you appear
+            beside the interviewer and the session is recorded when it ends.
+          }
         </p>
+        @if (cameraRequired()) {
+          <app-candidate-camera layout="tile" [required]="true" />
+        }
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
         }
         <div class="card__actions">
           <a class="btn btn--secondary" [routerLink]="['/interviews', sessionId]">Back</a>
-          <button type="button" class="btn btn--primary" (click)="startConversation()">
-            Start interview
-          </button>
+          @if (cameraRequired() && !recording.previewStream()) {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="enablingCamera()"
+              (click)="enableCamera()"
+            >
+              {{ enablingCamera() ? 'Opening camera…' : 'Allow camera' }}
+            </button>
+          } @else {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="starting() || enablingCamera()"
+              (click)="startConversation()"
+            >
+              Start interview
+            </button>
+          }
         </div>
       </section>
     }

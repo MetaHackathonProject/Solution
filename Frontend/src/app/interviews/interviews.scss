@@ -248,6 +248,15 @@
   letter-spacing: -0.02em;
 }
 
+.row__tag {
+  margin-inline-start: 0.4rem;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .row__sub {
   color: var(--color-muted);
   font-size: 0.8rem;

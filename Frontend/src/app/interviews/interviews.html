@@ -52,7 +52,12 @@
                       <span class="row__spinner"></span>
                     </span>
                     <span class="row__copy">
-                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__title">
+                        {{ session.name }}
+                        @if (session.source === 'employer') {
+                          <span class="row__tag">Assigned</span>
+                        }
+                      </span>
                       <span class="row__sub">
                         {{ statusLabel(session.status) }}
                         · {{ difficultyLabel(session.settings.difficulty) }}
@@ -92,7 +97,12 @@
                       {{ session.status === 'IN_PROGRESS' ? '▶' : '✓' }}
                     </span>
                     <span class="row__copy">
-                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__title">
+                        {{ session.name }}
+                        @if (session.source === 'employer') {
+                          <span class="row__tag">Assigned</span>
+                        }
+                      </span>
                       <span class="row__sub">
                         {{ statusLabel(session.status) }}
                         · {{ difficultyLabel(session.settings.difficulty) }}
@@ -130,7 +140,12 @@
                   >
                     <span class="row__tile" aria-hidden="true">●</span>
                     <span class="row__copy">
-                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__title">
+                        {{ session.name }}
+                        @if (session.source === 'employer') {
+                          <span class="row__tag">Assigned</span>
+                        }
+                      </span>
                       <span class="row__sub">
                         {{ statusLabel(session.status) }}
                         · {{ difficultyLabel(session.settings.difficulty) }}
@@ -168,7 +183,12 @@
                   >
                     <span class="row__tile" aria-hidden="true">!</span>
                     <span class="row__copy">
-                      <span class="row__title">{{ session.name }}</span>
+                      <span class="row__title">
+                        {{ session.name }}
+                        @if (session.source === 'employer') {
+                          <span class="row__tag">Assigned</span>
+                        }
+                      </span>
                       <span class="row__sub">
                         {{ statusLabel(session.status) }}
                         · {{ difficultyLabel(session.settings.difficulty) }}

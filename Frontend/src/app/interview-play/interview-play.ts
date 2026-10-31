@@ -85,6 +85,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected readonly voicePhase = signal<VoicePhase>('idle');
   protected readonly activeHelpers = signal<QuestionHelper[]>([]);
   protected readonly sessionReady = signal(false);
+  protected readonly cameraRequired = signal(false);
+  protected readonly enablingCamera = signal(false);
 
   protected sessionId = '';
   private signedUrl: string | null = null;
@@ -128,15 +130,26 @@ export class InterviewPlay implements OnInit, OnDestroy {
       ),
     }).subscribe({
       next: ({ session, context, interactive }) => {
+        if (session.canPlay === false || session.isOwner === false) {
+          this.loading.set(false);
+          this.error.set('Only the candidate can start this live interview.');
+          return;
+        }
+
         this.isResume = session.status === 'IN_PROGRESS';
         this.agentContext = context;
+        this.cameraRequired.set(session.cameraRequired === true || session.source === 'employer');
         if (interactive && interactive.status !== 'Answered') {
           this.interactiveTask.set(interactive);
           this.voicePhase.set('paused');
-          void this.recording.start();
         }
         this.sessionReady.set(true);
         this.loading.set(false);
+        if (this.cameraRequired()) {
+          void this.enableCamera();
+        } else if (this.voicePhase() === 'paused') {
+          void this.recording.start();
+        }
       },
       error: (err: unknown) => {
         this.loading.set(false);
@@ -209,13 +222,43 @@ export class InterviewPlay implements OnInit, OnDestroy {
     return 'Ready when you are';
   }
 
+  protected async enableCamera(): Promise<boolean> {
+    this.enablingCamera.set(true);
+    try {
+      await this.recording.start(undefined, { required: true });
+      if (this.error()?.includes('camera') || this.error()?.includes('Camera')) {
+        this.error.set(null);
+      }
+
+      return true;
+    } catch (err) {
+      this.error.set(
+        this.recording.describeError(err) +
+          (this.cameraRequired()
+            ? ' This employer interview cannot start without a camera.'
+            : ''),
+      );
+      return false;
+    } finally {
+      this.enablingCamera.set(false);
+    }
+  }
+
   protected async startConversation(): Promise<void> {
     if (this.voicePhase() === 'paused' || this.starting() || this.transitionInFlight) {
       return;
     }
 
     this.starting.set(true);
-    await this.recording.start();
+    if (this.cameraRequired()) {
+      const ready = await this.enableCamera();
+      if (!ready) {
+        this.starting.set(false);
+        return;
+      }
+    } else {
+      await this.recording.start();
+    }
 
     await this.connectVoice({
       purpose: 'interview',

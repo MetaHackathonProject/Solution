@@ -70,6 +70,33 @@ public sealed class DynamoDbPendingInterviewTaskStore(
         return items;
     }
 
+    public async Task PutAsync(PendingInterviewTask task, CancellationToken cancellationToken)
+    {
+        var item = new Dictionary<string, AttributeValue>
+        {
+            ["session_id"] = new(task.SessionId),
+            ["task_id"] = new(task.TaskId),
+            ["module"] = new(task.Module),
+            ["question_content"] = new(task.QuestionContent),
+            ["question_content_formatted"] = new(task.QuestionContentFormatted),
+            ["expected_input"] = new(task.ExpectedInput),
+            ["status"] = new(task.Status),
+        };
+
+        if (!string.IsNullOrWhiteSpace(task.AssessmentGoal))
+        {
+            item["assessment_goal"] = new(task.AssessmentGoal);
+        }
+
+        await dynamoDb.PutItemAsync(
+            new PutItemRequest
+            {
+                TableName = options.Value.TableName,
+                Item = item,
+            },
+            cancellationToken);
+    }
+
     public async Task UpdateStatusAsync(
         string sessionId,
         string taskId,

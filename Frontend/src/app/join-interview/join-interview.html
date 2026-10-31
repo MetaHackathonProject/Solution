@@ -1,0 +1,67 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__intro">
+      <p class="page__eyebrow">Employer invite</p>
+      <h1 class="page__title">
+        {{ preview()?.jobTitle || 'You’ve been invited to an interview' }}
+      </h1>
+      <p class="page__lead">
+        @if (preview(); as invite) {
+          {{ invite.company }} · {{ invite.language }}
+        } @else {
+          Sign in or create an account to accept this interview.
+        }
+      </p>
+    </header>
+
+    @if (loading()) {
+      <p class="muted">Loading invite…</p>
+    } @else if (error() && !preview()) {
+      <section class="gate">
+        <h2 class="gate__title">Invite unavailable</h2>
+        <p class="gate__copy">{{ error() }}</p>
+      </section>
+    } @else if (!auth.isAuthenticated()) {
+      <section class="gate">
+        <h2 class="gate__title">Sign in / Sign up</h2>
+        <p class="gate__copy">
+          This interview is one-shot and requires your camera. After you sign in as a candidate,
+          you can start it once.
+        </p>
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="auth.signIn('/join/' + inviteCode())"
+        >
+          Sign in / Sign up
+        </button>
+      </section>
+    } @else if (account.isEmployer()) {
+      <section class="gate">
+        <h2 class="gate__title">This link is for candidates</h2>
+        <p class="gate__copy">
+          Your account is an employer account, so you cannot take this interview.
+        </p>
+      </section>
+    } @else {
+      @if (error()) {
+        <p class="alert" role="alert">{{ error() }}</p>
+      }
+      <section class="gate">
+        <h2 class="gate__title">{{ preview()?.name || 'Ready when you are' }}</h2>
+        <p class="gate__copy">
+          Opening this interview copies the employer’s questions into your account. You cannot
+          retake it later. Your camera must stay on for the live interview.
+        </p>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="joining()"
+          (click)="accept()"
+        >
+          {{ joining() ? 'Opening…' : 'Start interview' }}
+        </button>
+      </section>
+    }
+  </div>
+</main>

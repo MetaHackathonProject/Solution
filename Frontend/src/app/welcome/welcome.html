@@ -1,0 +1,56 @@
+<main class="page">
+  <div class="page__inner">
+    <header class="page__intro">
+      <p class="page__eyebrow">Welcome</p>
+      <h1 class="page__title">How will you use this app?</h1>
+      <p class="page__lead">
+        Pick one role. You cannot switch later. Candidates practice; employers send interviews.
+      </p>
+    </header>
+
+    @if (!auth.isAuthenticated()) {
+      <section class="gate">
+        <h2 class="gate__title">Sign in to continue</h2>
+        <p class="gate__copy">Create an account or sign in, then choose your role.</p>
+        <button type="button" class="btn btn--primary" (click)="auth.signIn('/welcome')">
+          Sign in / Sign up
+        </button>
+      </section>
+    } @else {
+      @if (error()) {
+        <p class="alert" role="alert">{{ error() }}</p>
+      }
+
+      <div class="roles">
+        <button
+          type="button"
+          class="role"
+          [disabled]="submitting() !== null"
+          (click)="choose('Candidate')"
+        >
+          <span class="role__title">I’m a candidate</span>
+          <span class="role__copy">
+            Create mock interviews from a job offer, or open a link an employer sent you.
+          </span>
+          <span class="role__action">
+            {{ submitting() === 'Candidate' ? 'Saving…' : 'Continue as candidate' }}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="role"
+          [disabled]="submitting() !== null"
+          (click)="choose('Employer')"
+        >
+          <span class="role__title">I’m hiring</span>
+          <span class="role__copy">
+            Write the questions once, copy a link, and review each candidate’s results.
+          </span>
+          <span class="role__action">
+            {{ submitting() === 'Employer' ? 'Saving…' : 'Continue as employer' }}
+          </span>
+        </button>
+      </div>
+    }
+  </div>
+</main>

@@ -6,7 +6,7 @@
           <p class="page__eyebrow">Interview details</p>
           <h1 class="page__title">{{ session()?.name || 'Interview session' }}</h1>
         </div>
-        @if (session()) {
+        @if (session()?.isOwner !== false) {
           <app-session-actions-menu
             [label]="'Actions for ' + (session()?.name || 'session')"
             [busy]="deleting()"
@@ -15,7 +15,13 @@
         }
       </div>
       <p class="page__lead">
-        Follow preparation progress, then start the mock interview when the plan is ready.
+        @if (session()?.source === 'employer' && session()?.isOwner === false) {
+          Review this candidate’s progress and overview. Camera presence is included for employers.
+        } @else if (session()?.source === 'employer') {
+          This interview was assigned by an employer. It is one-shot and requires your camera.
+        } @else {
+          Follow preparation progress, then start the mock interview when the plan is ready.
+        }
       </p>
     </header>
 
@@ -108,8 +114,10 @@
         }
 
         <div class="prep__actions">
-          <a class="btn btn--secondary" routerLink="/interviews">Back to interviews</a>
-          @if (ready()) {
+          <a class="btn btn--secondary" [routerLink]="session()?.isOwner === false ? '/assignments' : '/interviews'">
+            {{ session()?.isOwner === false ? 'Back to candidates' : 'Back to interviews' }}
+          </a>
+          @if (ready() && session()?.canPlay !== false && session()?.isOwner !== false) {
             <button
               type="button"
               class="btn btn--primary"
@@ -124,7 +132,7 @@
                     : 'Start interview'
               }}
             </button>
-          } @else if (completed()) {
+          } @else if (completed() && session()?.retakeAllowed !== false) {
             <button
               type="button"
               class="btn btn--primary"
@@ -134,7 +142,7 @@
               {{ retaking() ? 'Preparing retake…' : 'Retake interview' }}
             </button>
             <a class="btn btn--secondary" routerLink="/">Create another session</a>
-          } @else if (failed()) {
+          } @else if (failed() && session()?.isOwner !== false) {
             <a class="btn btn--primary" routerLink="/">Create another session</a>
           }
         </div>
@@ -151,7 +159,10 @@
             </div>
           } @else if (overviewFailed()) {
             <p class="alert" role="alert">
-              Overview generation failed. You can still retake the interview.
+              Overview generation failed.
+              @if (session()?.retakeAllowed !== false) {
+                You can still retake the interview.
+              }
             </p>
           } @else if (overviewError()) {
             <p class="alert" role="alert">{{ overviewError() }}</p>

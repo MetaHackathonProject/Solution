@@ -8,6 +8,7 @@ import { CandidateRecordingService } from '../candidate-recording.service';
 })
 export class CandidateCamera implements OnDestroy {
   readonly layout = input<'pip' | 'tile'>('pip');
+  readonly required = input(false);
   protected readonly recording = inject(CandidateRecordingService);
   private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
   private stillTimer: number | null = null;

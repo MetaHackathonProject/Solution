@@ -31,6 +31,11 @@ export interface InterviewSession {
     difficulty: string;
   };
   overviewStatus?: OverviewStatus;
+  source?: 'self' | 'employer' | string;
+  retakeAllowed?: boolean;
+  canPlay?: boolean;
+  isOwner?: boolean;
+  cameraRequired?: boolean;
 }
 
 export interface InterviewOverviewQuestion {

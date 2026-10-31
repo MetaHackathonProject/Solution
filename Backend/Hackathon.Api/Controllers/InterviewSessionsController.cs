@@ -21,7 +21,7 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         CancellationToken cancellationToken)
     {
         var sessions = await mediator.Send(new ListInterviewSessionsQuery(), cancellationToken);
-        return Ok(sessions.Select(ToResponse).ToList());
+        return Ok(sessions.Select(session => ToResponse(session, isOwner: true)).ToList());
     }
 
     [HttpGet("{sessionId}")]
@@ -29,13 +29,13 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         string sessionId,
         CancellationToken cancellationToken)
     {
-        var session = await mediator.Send(new GetInterviewSessionQuery(sessionId), cancellationToken);
-        if (session is null)
+        var access = await mediator.Send(new GetInterviewSessionQuery(sessionId), cancellationToken);
+        if (access is null)
         {
             return NotFound();
         }
 
-        return Ok(ToResponse(session));
+        return Ok(ToResponse(access.Session, access.IsOwner));
     }
 
     [HttpGet("{sessionId}/overview")]
@@ -90,18 +90,26 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
     }
 
     [HttpPost]
-    public async Task<StartInterviewPreparationResult> Start(
+    public async Task<ActionResult<StartInterviewPreparationResult>> Start(
         StartInterviewPreparationRequest request,
         CancellationToken cancellationToken)
     {
-        return await mediator.Send(
-            new StartInterviewPreparationCommand(
-                request.Name,
-                request.OfferUrl,
-                new InterviewSessionSettings(
-                    request.Settings.RecruiterLanguage,
-                    request.Settings.Difficulty)),
-            cancellationToken);
+        try
+        {
+            var result = await mediator.Send(
+                new StartInterviewPreparationCommand(
+                    request.Name,
+                    request.OfferUrl,
+                    new InterviewSessionSettings(
+                        request.Settings.RecruiterLanguage,
+                        request.Settings.Difficulty)),
+                cancellationToken);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
     }
 
     [HttpDelete("{sessionId}")]
@@ -334,7 +342,7 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
 
     private sealed record AnswerPayload(Stream? Stream, string ContentType, string Extension);
 
-    private static InterviewSessionResponse ToResponse(InterviewSession session) =>
+    private static InterviewSessionResponse ToResponse(InterviewSession session, bool isOwner) =>
         new(
             session.SessionId,
             session.Name,
@@ -345,7 +353,12 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
             new InterviewSessionSettingsResponse(
                 session.Settings.RecruiterLanguage,
                 session.Settings.Difficulty),
-            session.OverviewStatus);
+            session.OverviewStatus,
+            session.Source,
+            isOwner && session.RetakeAllowed,
+            isOwner,
+            isOwner,
+            string.Equals(session.Source, InterviewSessionSource.Employer, StringComparison.Ordinal));
 
     private static InterviewOverviewResponse ToOverviewResponse(InterviewResultOverview overview) =>
         new(
@@ -412,7 +425,12 @@ public sealed record InterviewSessionResponse(
     long CreatedAt,
     long UpdatedAt,
     InterviewSessionSettingsResponse Settings,
-    string OverviewStatus);
+    string OverviewStatus,
+    string Source,
+    bool RetakeAllowed,
+    bool CanPlay,
+    bool IsOwner,
+    bool CameraRequired);
 
 public sealed record InterviewSessionSettingsResponse(
     string RecruiterLanguage,

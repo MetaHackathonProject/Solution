@@ -34,21 +34,22 @@ export class CandidateRecordingService {
   private chunks: Blob[] = [];
   private stills: Blob[] = [];
   private recorderMime = 'video/webm';
-  private startInFlight: Promise<void> | null = null;
+  private startInFlight: Promise<boolean> | null = null;
   private uploaded = false;
+  private lastMediaError: unknown = null;
 
-  async start(deviceId?: string): Promise<void> {
+  async start(deviceId?: string, options?: { required?: boolean }): Promise<boolean> {
     if (this.previewStream() && !deviceId) {
-      return;
+      return true;
     }
 
     if (this.startInFlight) {
       return this.startInFlight;
     }
 
-    this.startInFlight = this.startInternal(deviceId);
+    this.startInFlight = this.startInternal(deviceId, options?.required === true);
     try {
-      await this.startInFlight;
+      return await this.startInFlight;
     } finally {
       this.startInFlight = null;
     }
@@ -182,14 +183,21 @@ export class CandidateRecordingService {
     return this.cameraError() || 'Could not start the camera.';
   }
 
-  private async startInternal(deviceId?: string): Promise<void> {
+  private async startInternal(deviceId?: string, required = false): Promise<boolean> {
     this.cameraError.set(null);
     this.feedHint.set(null);
     this.uploaded = false;
+    this.lastMediaError = null;
 
     const opened = await this.openWorkingVideo(deviceId);
     if (!opened) {
-      return;
+      const message = this.describeError(this.lastMediaError);
+      this.cameraError.set(message);
+      if (required) {
+        throw new Error(message);
+      }
+
+      return false;
     }
 
     const videoTrack = opened.stream.getVideoTracks()[0];
@@ -203,6 +211,7 @@ export class CandidateRecordingService {
     }
 
     await this.refreshDevices();
+    return true;
   }
 
   private async openWorkingVideo(preferredId?: string): Promise<{ stream: MediaStream; dead: boolean } | null> {
@@ -270,7 +279,8 @@ export class CandidateRecordingService {
   private async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream | null> {
     try {
       return await navigator.mediaDevices.getUserMedia(constraints);
-    } catch {
+    } catch (err) {
+      this.lastMediaError = err;
       return null;
     }
   }

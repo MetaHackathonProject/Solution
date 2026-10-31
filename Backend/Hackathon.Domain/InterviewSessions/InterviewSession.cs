@@ -9,4 +9,9 @@ public sealed record InterviewSession(
     string Status,
     long CreatedAt,
     long UpdatedAt,
-    string OverviewStatus = OverviewStatus.NotAvailable);
+    string OverviewStatus = OverviewStatus.NotAvailable,
+    string Source = InterviewSessionSource.Self,
+    string? EmployerUserId = null,
+    string? TemplateId = null,
+    bool RetakeAllowed = true,
+    bool HideCameraOverview = false);

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AccountService } from '../account.service';
 import { AuthService } from '../auth.service';
 import { BrandMark } from '../brand-mark/brand-mark';
 import { ProfileMenu } from '../profile-menu/profile-menu';
@@ -12,4 +13,5 @@ import { ProfileMenu } from '../profile-menu/profile-menu';
 })
 export class Navbar {
   protected readonly auth = inject(AuthService);
+  protected readonly account = inject(AccountService);
 }

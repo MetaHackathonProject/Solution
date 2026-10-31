@@ -1,17 +1,20 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { AccountService } from '../account.service';
 import { AuthService } from '../auth.service';
 import { InterviewSessionsService } from '../interview-sessions.service';
 
 @Component({
   selector: 'app-home',
+  imports: [RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
   protected readonly auth = inject(AuthService);
+  protected readonly account = inject(AccountService);
   private readonly sessions = inject(InterviewSessionsService);
   private readonly router = inject(Router);
 

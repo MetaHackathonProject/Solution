@@ -1,19 +1,23 @@
 using Amazon.DynamoDBv2;
 using Amazon.S3;
 using Amazon.StepFunctions;
+using Hackathon.Application.Accounts;
 using Hackathon.Application.InterviewOverview;
 using Hackathon.Application.InterviewPreparation;
 using Hackathon.Application.InterviewProgress;
 using Hackathon.Application.InterviewQuestions;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Application.InterviewTasks;
+using Hackathon.Application.InterviewTemplates;
 using Hackathon.Application.VoiceAgent;
+using Hackathon.Infrastructure.Accounts;
 using Hackathon.Infrastructure.InterviewOverview;
 using Hackathon.Infrastructure.InterviewPreparation;
 using Hackathon.Infrastructure.InterviewProgress;
 using Hackathon.Infrastructure.InterviewQuestions;
 using Hackathon.Infrastructure.InterviewSessions;
 using Hackathon.Infrastructure.InterviewTasks;
+using Hackathon.Infrastructure.InterviewTemplates;
 using Hackathon.Infrastructure.Options;
 using Hackathon.Infrastructure.VoiceAgent;
 using Microsoft.Extensions.Configuration;
@@ -32,18 +36,26 @@ public static class RegisterInDI
         services.Configure<InterviewProgressOptions>(configuration.GetSection(InterviewProgressOptions.SectionName));
         services.Configure<PendingInterviewTasksOptions>(configuration.GetSection(PendingInterviewTasksOptions.SectionName));
         services.Configure<InterviewConversationsOptions>(configuration.GetSection(InterviewConversationsOptions.SectionName));
+        services.Configure<UserProfilesOptions>(configuration.GetSection(UserProfilesOptions.SectionName));
+        services.Configure<InterviewTemplatesOptions>(configuration.GetSection(InterviewTemplatesOptions.SectionName));
         services.Configure<ElevenLabsOptions>(configuration.GetSection(ElevenLabsOptions.SectionName));
         services.Configure<MetaModelApiOptions>(configuration.GetSection(MetaModelApiOptions.SectionName));
 
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient());
         services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client());
         services.AddSingleton<IAmazonStepFunctions>(_ => new AmazonStepFunctionsClient());
+        services.AddSingleton<IUserProfileStore, DynamoDbUserProfileStore>();
+        services.AddSingleton<IInterviewTemplateStore, DynamoDbInterviewTemplateStore>();
+        services.AddSingleton<IInterviewAssignmentStore, DynamoDbInterviewAssignmentStore>();
+        services.AddSingleton<IOfferPageReader, HttpOfferPageReader>();
+        services.AddSingleton<IInterviewSessionAccess, InterviewSessionAccessResolver>();
         services.AddSingleton<IInterviewSessionStore, DynamoDbInterviewSessionStore>();
         services.AddSingleton<IInterviewSessionArtifactStore, InterviewSessionArtifactStore>();
         services.AddSingleton<IInterviewPreparationStarter, StepFunctionsInterviewPreparationStarter>();
         services.AddSingleton<ISolutionVisionReviewStarter, StepFunctionsSolutionVisionReviewStarter>();
         services.AddSingleton<IInterviewOverviewStarter, StepFunctionsInterviewOverviewStarter>();
         services.AddSingleton<IInterviewPlanReader, S3InterviewPlanReader>();
+        services.AddSingleton<IInterviewPlanWriter, S3InterviewPlanWriter>();
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
         services.AddSingleton<IPendingInterviewTaskStore, DynamoDbPendingInterviewTaskStore>();
         services.AddSingleton<IInteractiveAnswerStore, S3InteractiveAnswerStore>();
@@ -51,6 +63,7 @@ public static class RegisterInDI
         services.AddSingleton<IInteractiveAnswerReader, S3InteractiveAnswerReader>();
         services.AddSingleton<ISolutionVisionDescriber, MetaSolutionVisionDescriber>();
         services.AddSingleton<IOfferDetailsReader, S3OfferDetailsReader>();
+        services.AddSingleton<IOfferDetailsWriter, S3OfferDetailsWriter>();
         services.AddSingleton<IElevenLabsConversationClient, ElevenLabsConversationClient>();
         services.AddSingleton<IInterviewConversationStore, DynamoDbInterviewConversationStore>();
         services.AddSingleton<IInterviewQuestionHelperStore, DynamoDbInterviewQuestionHelperStore>();
@@ -83,6 +96,11 @@ public static class RegisterInDI
         {
             client.Timeout = TimeSpan.FromSeconds(120);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("hackathon-build-interview-overview");
+        });
+        services.AddHttpClient("OfferImport", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(8);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("hackathon-offer-import");
         });
     }
 }

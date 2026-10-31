@@ -1,19 +1,15 @@
-using Hackathon.Application.Context;
-using Hackathon.Domain.InterviewSessions;
 using MediatR;
 
 namespace Hackathon.Application.InterviewSessions;
 
-public sealed class GetInterviewSessionQueryHandler(
-    IUserContext userContext,
-    IInterviewSessionStore sessionStore)
-    : IRequestHandler<GetInterviewSessionQuery, InterviewSession?>
+public sealed class GetInterviewSessionQueryHandler(IInterviewSessionAccess access)
+    : IRequestHandler<GetInterviewSessionQuery, InterviewSessionAccess?>
 {
-    public Task<InterviewSession?> Handle(
+    public Task<InterviewSessionAccess?> Handle(
         GetInterviewSessionQuery request,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SessionId);
-        return sessionStore.GetAsync(userContext.UserId, request.SessionId, cancellationToken);
+        return access.ResolveAsync(request.SessionId, cancellationToken);
     }
 }

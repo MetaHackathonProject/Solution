@@ -1,5 +1,7 @@
+using Hackathon.Application.Accounts;
 using Hackathon.Application.Context;
 using Hackathon.Application.InterviewSessions;
+using Hackathon.Domain.Accounts;
 using Hackathon.Domain.InterviewSessions;
 using MediatR;
 
@@ -7,6 +9,7 @@ namespace Hackathon.Application.InterviewPreparation;
 
 public sealed class StartInterviewPreparationCommandHandler(
     IUserContext userContext,
+    IUserProfileStore profiles,
     IInterviewSessionStore sessionStore,
     IInterviewPreparationStarter preparationStarter)
     : IRequestHandler<StartInterviewPreparationCommand, StartInterviewPreparationResult>
@@ -15,6 +18,12 @@ public sealed class StartInterviewPreparationCommandHandler(
         StartInterviewPreparationCommand request,
         CancellationToken cancellationToken)
     {
+        await UserRoleGuard.RequireAsync(
+            profiles,
+            userContext.UserId,
+            UserRoles.Candidate,
+            cancellationToken);
+
         ArgumentException.ThrowIfNullOrWhiteSpace(request.OfferUrl);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Settings.Difficulty);
         if (!InterviewDifficulty.IsDefined(request.Settings.Difficulty))

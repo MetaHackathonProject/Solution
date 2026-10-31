@@ -34,6 +34,11 @@ public sealed class RetakeInterviewSessionCommandHandler(
             return null;
         }
 
+        if (!session.RetakeAllowed)
+        {
+            throw new InvalidOperationException("This interview cannot be retaken.");
+        }
+
         if (session.Status is not (
             InterviewSessionStatus.Completed
             or InterviewSessionStatus.Success
