@@ -9,7 +9,7 @@ import { CandidateRecordingService } from '../candidate-recording.service';
 export class CandidateCamera implements OnDestroy {
   protected readonly recording = inject(CandidateRecordingService);
   private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
-  private stillTimer: ReturnType<typeof setInterval> | null = null;
+  private stillTimer: ReturnType<typeof window.setInterval> | null = null;
 
   constructor() {
     afterRenderEffect((onCleanup) => {
