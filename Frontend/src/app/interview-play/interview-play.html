@@ -4,7 +4,7 @@
       <p class="page__eyebrow">Live interview</p>
       <h1 class="page__title">Mock interview</h1>
       <p class="page__lead">
-        Speak with the AI interviewer. Questions come from the prepared plan via the session queue.
+        Speak with the interviewer. After you start, you and they sit side by side, like a video call.
       </p>
     </header>
 
@@ -33,42 +33,53 @@
           <p class="alert" role="alert">{{ error() }}</p>
         }
       </section>
-    } @else if (error() && connectionStatus() === 'idle' && voicePhase() === 'idle' && !interactiveTask()) {
+    } @else if (error() && !sessionReady() && !interactiveTask()) {
       <section class="card card--error" role="alert">
         <h2 class="card__title">Could not start</h2>
         <p class="card__copy">{{ error() }}</p>
         <a class="btn btn--secondary" [routerLink]="['/interviews', sessionId || '']">Back to session</a>
       </section>
-    } @else if (starting() || connectionStatus() === 'connecting') {
-      <section class="card" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <h2 class="card__title">Connecting…</h2>
-        <p class="card__copy">Opening the voice connection…</p>
-      </section>
-    } @else if (connectionStatus() === 'connected' || connectionStatus() === 'disconnecting') {
-      <section class="live" [attr.data-mode]="mode()">
-        <div class="live__panel">
-          <p class="live__label">
-            {{ voicePhase() === 'walkthrough' ? 'Solution walkthrough' : 'AI interviewer' }}
-          </p>
-          <p class="live__mode">
-            {{ mode() === 'speaking' ? 'Speaking' : 'Listening' }}
-          </p>
-          <div class="live__wave" [class.is-live]="mode() === 'speaking'" aria-hidden="true">
-            @for (bar of [1, 2, 3, 4, 5, 6, 7, 8]; track bar) {
-              <span></span>
-            }
-          </div>
+    } @else if (showStage()) {
+      <section class="room" [attr.data-mode]="mode()" aria-label="Interview room">
+        <div class="room__stage">
+          <article
+            class="tile"
+            [class.tile--speaking]="interviewerSpeaking()"
+            [attr.aria-label]="interviewerName()"
+          >
+            <app-interviewer-avatar
+              [speaking]="interviewerSpeaking()"
+              [live]="connectionStatus() === 'connected'"
+              [name]="interviewerName()"
+              [status]="interviewerStatus()"
+            />
+          </article>
+          <article class="tile tile--you" aria-label="You">
+            <app-candidate-camera layout="tile" />
+          </article>
         </div>
+
+        @if (starting() || connectionStatus() === 'connecting') {
+          <p class="room__note" role="status">Opening the voice connection…</p>
+        } @else if (voicePhase() === 'reviewing') {
+          <p class="room__note" role="status">
+            Interviewer is now checking your solution… Your submission stays visible below.
+          </p>
+        } @else if (voicePhase() === 'paused') {
+          <p class="room__note">
+            The interviewer is waiting for your solution. Submit your answer to continue with a
+            short walkthrough.
+          </p>
+        }
 
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
         }
 
-        <div class="live__actions">
+        <div class="room__actions">
           @if (panelCollapsed() && interactiveTask()) {
             <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
-              {{ voicePhase() === 'walkthrough' ? 'Show solution' : 'Show exercise' }}
+              {{ voicePhase() === 'walkthrough' || voicePhase() === 'reviewing' ? 'Show solution' : 'Show exercise' }}
             </button>
           }
           <button type="button" class="btn btn--danger" (click)="stopConversation()">
@@ -84,54 +95,12 @@
           />
         }
       </section>
-    } @else if (voicePhase() === 'reviewing') {
-      <section class="card" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <h2 class="card__title">Reviewing your solution</h2>
-        <p class="card__copy">
-          Interviewer is now checking your solution… Your submission stays visible below.
-        </p>
-        @if (error()) {
-          <p class="alert" role="alert">{{ error() }}</p>
-        }
-        <div class="card__actions">
-          @if (panelCollapsed() && interactiveTask()) {
-            <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
-              Show solution
-            </button>
-          }
-          <button type="button" class="btn btn--danger" (click)="stopConversation()">
-            End interview
-          </button>
-        </div>
-      </section>
-    } @else if (voicePhase() === 'paused') {
-      <section class="card" role="status">
-        <h2 class="card__title">Interview paused</h2>
-        <p class="card__copy">
-          The interviewer is waiting for your solution.
-          Submit your answer to continue with a short walkthrough.
-        </p>
-        @if (error()) {
-          <p class="alert" role="alert">{{ error() }}</p>
-        }
-        <div class="card__actions">
-          @if (panelCollapsed() && interactiveTask()) {
-            <button type="button" class="btn btn--secondary" (click)="showInteractiveTask()">
-              Show exercise
-            </button>
-          }
-          <button type="button" class="btn btn--danger" (click)="stopConversation()">
-            End interview
-          </button>
-        </div>
-      </section>
     } @else {
       <section class="card">
         <h2 class="card__title">Ready when you are</h2>
         <p class="card__copy">
-          Allow microphone access, then start. Camera is optional — if you allow it, the session is
-          recorded and uploaded when the interview ends. The interviewer will ask the planned questions in order.
+          Allow microphone access, then start. Camera is optional — if you allow it, you appear
+          beside the interviewer and the session is recorded when it ends.
         </p>
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
@@ -156,5 +125,4 @@
       }
     }
   </div>
-  <app-candidate-camera />
 </main>

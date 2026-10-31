@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, afterRenderEffect, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, afterRenderEffect, inject, input, viewChild } from '@angular/core';
 import { CandidateRecordingService } from '../candidate-recording.service';
 
 @Component({
@@ -7,6 +7,7 @@ import { CandidateRecordingService } from '../candidate-recording.service';
   styleUrl: './candidate-camera.scss',
 })
 export class CandidateCamera implements OnDestroy {
+  readonly layout = input<'pip' | 'tile'>('pip');
   protected readonly recording = inject(CandidateRecordingService);
   private readonly preview = viewChild<ElementRef<HTMLVideoElement>>('preview');
   private stillTimer: number | null = null;

@@ -1,0 +1,32 @@
+<div
+  class="avatar"
+  [class.avatar--speaking]="speaking()"
+  [class.avatar--live]="live()"
+  [style.--mouth]="speaking() ? mouth() : 0"
+>
+  <div class="avatar__frame">
+    <img
+      class="avatar__photo avatar__photo--listen"
+      src="/interviewer/listen.jpg?v=3"
+      width="960"
+      height="720"
+      alt=""
+    />
+    <img
+      class="avatar__photo avatar__photo--speak"
+      src="/interviewer/speak.jpg?v=1"
+      width="960"
+      height="720"
+      alt=""
+    />
+    <div class="avatar__wave" aria-hidden="true">
+      @for (bar of [1, 2, 3, 4, 5, 6, 7]; track bar) {
+        <span></span>
+      }
+    </div>
+  </div>
+  <div class="avatar__plate">
+    <p class="avatar__name">{{ name() }}</p>
+    <p class="avatar__status">{{ status() }}</p>
+  </div>
+</div>

@@ -73,6 +73,14 @@ export class CandidateRecordingService {
     this.stills.push(blob);
   }
 
+  async stopPreview(): Promise<void> {
+    await this.stopRecorderKeepChunks();
+    this.chunks = [];
+    this.stills = [];
+    this.stopTracks();
+    this.uploaded = false;
+  }
+
   beginRecording(): void {
     const stream = this.previewStream();
     if (!stream || this.recorder) {
@@ -184,21 +192,20 @@ export class CandidateRecordingService {
       return;
     }
 
-    const stream = await this.addMicrophone(opened.stream);
-    const videoTrack = stream.getVideoTracks()[0];
-    this.previewStream.set(stream);
+    const videoTrack = opened.stream.getVideoTracks()[0];
+    this.previewStream.set(opened.stream);
     this.cameraLabel.set(videoTrack?.label ?? '');
     this.selectedDeviceId.set(videoTrack?.getSettings().deviceId || deviceId || '');
-    if (opened.green) {
+    if (opened.dead) {
       this.feedHint.set(
-        'Chrome is receiving a green frame from this camera. In the DroidCam Client use File → Exit, reopen it, then refresh. DroidCam’s own docs say a restart (or a PC reboot) resyncs webcam output.',
+        'This camera is sending a blank frame. If you are on DroidCam, use File → Exit in the client, reopen it, then pick the camera again. A phone reconnect or PC reboot usually resyncs the feed.',
       );
     }
 
     await this.refreshDevices();
   }
 
-  private async openWorkingVideo(preferredId?: string): Promise<{ stream: MediaStream; green: boolean } | null> {
+  private async openWorkingVideo(preferredId?: string): Promise<{ stream: MediaStream; dead: boolean } | null> {
     const probe = await this.getUserMedia({ video: true });
     if (!probe) {
       return null;
@@ -207,10 +214,12 @@ export class CandidateRecordingService {
     await this.refreshDevices();
     const cameras = this.cameras();
     const probeId = probe.getVideoTracks()[0]?.getSettings().deviceId;
+    const rest = cameras.filter((camera) => camera.deviceId !== preferredId);
+    const virtual = (label: string) => /droidcam|obs virtual/i.test(label);
     const order = [
       ...cameras.filter((camera) => camera.deviceId === preferredId),
-      ...cameras.filter((camera) => camera.deviceId === probeId && camera.deviceId !== preferredId),
-      ...cameras.filter((camera) => camera.deviceId !== preferredId && camera.deviceId !== probeId),
+      ...rest.filter((camera) => !virtual(camera.label)),
+      ...rest.filter((camera) => virtual(camera.label)),
     ];
     const deviceIds = order.map((camera) => camera.deviceId);
     if (!deviceIds.length && probeId) {
@@ -229,13 +238,13 @@ export class CandidateRecordingService {
           continue;
         }
 
-        const green = await isMostlyGreenStream(stream);
-        if (!green) {
+        const dead = await isUnusableStream(stream);
+        if (!dead) {
           if (fallback) {
             this.stopStream(fallback);
           }
 
-          return { stream, green: false };
+          return { stream, dead: false };
         }
 
         if (fallback) {
@@ -246,24 +255,7 @@ export class CandidateRecordingService {
       }
     }
 
-    return fallback ? { stream: fallback, green: true } : null;
-  }
-
-  private async addMicrophone(stream: MediaStream): Promise<MediaStream> {
-    if (stream.getAudioTracks().length) {
-      return stream;
-    }
-
-    const mic = await this.getUserMedia({ audio: true });
-    if (!mic) {
-      return stream;
-    }
-
-    for (const track of mic.getAudioTracks()) {
-      stream.addTrack(track);
-    }
-
-    return stream;
+    return fallback ? { stream: fallback, dead: true } : null;
   }
 
   private async refreshDevices(): Promise<void> {
@@ -335,7 +327,7 @@ export class CandidateRecordingService {
   }
 }
 
-function isMostlyGreenStream(stream: MediaStream): Promise<boolean> {
+function isUnusableStream(stream: MediaStream): Promise<boolean> {
   const video = document.createElement('video');
   video.muted = true;
   video.autoplay = true;
@@ -348,12 +340,12 @@ function isMostlyGreenStream(stream: MediaStream): Promise<boolean> {
   document.body.appendChild(video);
 
   return new Promise((resolve) => {
-    const finish = (green: boolean) => {
+    const finish = (dead: boolean) => {
       window.clearTimeout(timer);
       video.pause();
       video.srcObject = null;
       video.remove();
-      resolve(green);
+      resolve(dead);
     };
 
     const sample = () => {
@@ -372,6 +364,7 @@ function isMostlyGreenStream(stream: MediaStream): Promise<boolean> {
       ctx.drawImage(video, 0, 0, 16, 16);
       const pixels = ctx.getImageData(0, 0, 16, 16).data;
       let green = 0;
+      let black = 0;
       for (let i = 0; i < pixels.length; i += 4) {
         const r = pixels[i];
         const g = pixels[i + 1];
@@ -379,20 +372,24 @@ function isMostlyGreenStream(stream: MediaStream): Promise<boolean> {
         if (g > 70 && g > r + 25 && g > b + 25) {
           green += 1;
         }
+
+        if (r < 22 && g < 22 && b < 22) {
+          black += 1;
+        }
       }
 
-      return green > 180;
+      return green > 180 || black > 200;
     };
 
-    const timer = window.setTimeout(() => finish(sample()), 1400);
+    const timer = window.setTimeout(() => finish(sample()), 2200);
     void video.play().then(async () => {
-      await wait(500);
+      await wait(800);
       if (!sample()) {
         finish(false);
         return;
       }
 
-      await wait(700);
+      await wait(900);
       finish(sample());
     }).catch(() => finish(true));
   });

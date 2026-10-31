@@ -21,6 +21,8 @@ import {
 import { AuthService } from '../auth.service';
 import { CandidateCamera } from '../candidate-camera/candidate-camera';
 import { CandidateRecordingService } from '../candidate-recording.service';
+import { InterviewerAvatar } from '../interviewer-avatar/interviewer-avatar';
+import { InterviewerTalkingHead } from '../interviewer-avatar/interviewer-talking-head';
 import { continueInterviewFirstMessage } from '../continue-interview-first-message';
 import { toElevenLabsLanguage } from '../eleven-labs-language';
 import {
@@ -58,7 +60,7 @@ const AGENT_GOODBYE_RE =
 
 @Component({
   selector: 'app-interview-play',
-  imports: [RouterLink, InteractivePanel, QuestionHelperPanel, CandidateCamera],
+  imports: [RouterLink, InteractivePanel, QuestionHelperPanel, CandidateCamera, InterviewerAvatar],
   templateUrl: './interview-play.html',
   styleUrl: './interview-play.scss',
 })
@@ -70,6 +72,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private readonly interactiveTasks = inject(InteractiveTaskService);
   private readonly sessionsApi = inject(InterviewSessionsService);
   protected readonly recording = inject(CandidateRecordingService);
+  private readonly talkingHead = inject(InterviewerTalkingHead);
 
   protected readonly loading = signal(true);
   protected readonly starting = signal(false);
@@ -81,6 +84,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
   protected readonly panelCollapsed = signal(false);
   protected readonly voicePhase = signal<VoicePhase>('idle');
   protected readonly activeHelpers = signal<QuestionHelper[]>([]);
+  protected readonly sessionReady = signal(false);
 
   protected sessionId = '';
   private signedUrl: string | null = null;
@@ -117,22 +121,21 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     forkJoin({
-      signed: this.voiceAgent.getSignedUrl(this.sessionId, 'interview'),
+      session: this.sessionsApi.get(this.sessionId),
       context: this.voiceAgent.getVoiceContext(this.sessionId),
       interactive: this.interactiveTasks.getActive(this.sessionId).pipe(
         catchError(() => of(null)),
       ),
     }).subscribe({
-      next: ({ signed, context, interactive }) => {
-        this.signedUrl = signed.signedUrl;
-        this.conversationId = signed.conversationId;
-        this.isResume = signed.isResume;
+      next: ({ session, context, interactive }) => {
+        this.isResume = session.status === 'IN_PROGRESS';
         this.agentContext = context;
         if (interactive && interactive.status !== 'Answered') {
           this.interactiveTask.set(interactive);
           this.voicePhase.set('paused');
           void this.recording.start();
         }
+        this.sessionReady.set(true);
         this.loading.set(false);
       },
       error: (err: unknown) => {
@@ -157,11 +160,61 @@ export class InterviewPlay implements OnInit, OnDestroy {
     void this.endConversationLocally();
   }
 
+  protected showStage(): boolean {
+    return (
+      this.starting() ||
+      this.connectionStatus() === 'connecting' ||
+      this.connectionStatus() === 'connected' ||
+      this.connectionStatus() === 'disconnecting' ||
+      this.voicePhase() === 'interview' ||
+      this.voicePhase() === 'walkthrough' ||
+      this.voicePhase() === 'paused' ||
+      this.voicePhase() === 'reviewing'
+    );
+  }
+
+  protected interviewerSpeaking(): boolean {
+    return this.connectionStatus() === 'connected' && this.mode() === 'speaking';
+  }
+
+  protected interviewerName(): string {
+    return this.voicePhase() === 'walkthrough' ? 'Walkthrough' : 'Interviewer';
+  }
+
+  protected interviewerStatus(): string {
+    if (this.interviewerSpeaking()) {
+      return 'Speaking';
+    }
+
+    if (this.starting() || this.connectionStatus() === 'connecting') {
+      return 'Connecting';
+    }
+
+    if (this.connectionStatus() === 'connected') {
+      return 'Listening';
+    }
+
+    if (this.voicePhase() === 'reviewing') {
+      return 'Reviewing your solution';
+    }
+
+    if (this.voicePhase() === 'paused') {
+      return 'Waiting for your solution';
+    }
+
+    if (this.connectionStatus() === 'disconnecting') {
+      return 'Leaving';
+    }
+
+    return 'Ready when you are';
+  }
+
   protected async startConversation(): Promise<void> {
     if (this.voicePhase() === 'paused' || this.starting() || this.transitionInFlight) {
       return;
     }
 
+    this.starting.set(true);
     await this.recording.start();
 
     await this.connectVoice({
@@ -174,6 +227,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
       }),
       phase: 'interview',
     });
+
+    if (!this.conversation) {
+      await this.recording.stopPreview();
+    }
   }
 
   protected async stopConversation(): Promise<void> {
@@ -340,12 +397,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.connectionStatus.set('idle');
 
     try {
-      const signed = await firstValueFrom(
-        this.voiceAgent.getSignedUrl(this.sessionId, 'walkthrough'),
-      );
-      this.signedUrl = signed.signedUrl;
-      this.conversationId = signed.conversationId;
-
       const submission = this.walkthroughSubmission;
       const extraDynamicVariables: Record<string, string> = {};
       if (submission) {
@@ -406,11 +457,6 @@ export class InterviewPlay implements OnInit, OnDestroy {
     await this.ensureDisconnected();
 
     try {
-      const signed = await firstValueFrom(
-        this.voiceAgent.getSignedUrl(this.sessionId, 'interview'),
-      );
-      this.signedUrl = signed.signedUrl;
-      this.conversationId = signed.conversationId;
       this.isResume = true;
 
       await this.connectVoice({
@@ -441,7 +487,7 @@ export class InterviewPlay implements OnInit, OnDestroy {
     phase: Exclude<VoicePhase, 'idle' | 'paused' | 'reviewing'>;
     extraDynamicVariables?: Record<string, string>;
   }): Promise<void> {
-    if (!this.sessionId || !this.signedUrl) {
+    if (!this.sessionId) {
       this.starting.set(false);
       this.error.set('Missing voice connection details.');
       return;
@@ -458,7 +504,8 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.disconnectIntent = 'none';
 
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mic.getTracks().forEach((track) => track.stop());
     } catch {
       this.starting.set(false);
       this.error.set('Microphone access is required to start the interview.');
@@ -485,8 +532,23 @@ export class InterviewPlay implements OnInit, OnDestroy {
     const gen = ++this.connectionGen;
 
     try {
+      const signed = await firstValueFrom(
+        this.voiceAgent.getSignedUrl(this.sessionId, options.purpose),
+      );
+      if (gen !== this.connectionGen) {
+        this.starting.set(false);
+        return;
+      }
+
+      this.signedUrl = signed.signedUrl;
+      this.conversationId = signed.conversationId;
+      if (options.purpose === 'interview') {
+        this.isResume = signed.isResume || this.isResume;
+      }
+
       this.conversation = await Conversation.startSession({
         signedUrl: this.signedUrl,
+        connectionType: 'websocket',
         dynamicVariables,
         overrides: {
           agent: {
@@ -561,6 +623,23 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
           this.mode.set(mode);
           this.onVoiceModeChange(mode);
+          if (mode === 'listening') {
+            this.talkingHead.notifySpeechEnd();
+          }
+        },
+        onAudio: (audio) => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
+          this.talkingHead.feedAudio(audio);
+        },
+        onAudioAlignmentPlayback: ({ alignment }) => {
+          if (gen !== this.connectionGen) {
+            return;
+          }
+
+          this.talkingHead.feedAlignment(alignment);
         },
         onMessage: (payload) => {
           if (gen !== this.connectionGen) {
@@ -612,10 +691,10 @@ export class InterviewPlay implements OnInit, OnDestroy {
         }
         this.starting.set(false);
       }
-    } catch {
+    } catch (err: unknown) {
       if (gen === this.connectionGen) {
         this.starting.set(false);
-        this.error.set('Could not start the voice interview. Try again.');
+        this.error.set(this.describeStartError(err));
       }
     }
   }
@@ -871,6 +950,18 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private clearPauseTimers(): void {
     this.clearPauseFallbackTimer();
     this.clearPauseDebounceTimer();
+  }
+
+  private describeStartError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      return this.describeError(err);
+    }
+
+    if (err instanceof DOMException && (err.name === 'NotReadableError' || err.name === 'NotAllowedError')) {
+      return 'The microphone is busy or was blocked. Close other apps using the mic and try again.';
+    }
+
+    return 'Could not start the voice interview. Try again.';
   }
 
   private describeError(err: unknown): string {

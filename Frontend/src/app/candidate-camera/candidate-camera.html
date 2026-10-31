@@ -1,12 +1,21 @@
-@if (recording.previewStream()) {
+@if (layout() === 'tile' || recording.previewStream()) {
   <aside
     class="camera"
+    [class.camera--tile]="layout() === 'tile'"
     [class.camera--live]="recording.recording()"
     [class.camera--uploading]="recording.uploading()"
-    aria-label="Candidate camera"
+    [class.camera--empty]="!recording.previewStream()"
+    aria-label="You"
   >
     <div class="camera__frame">
-      <video #preview autoplay muted playsinline></video>
+      @if (recording.previewStream()) {
+        <video #preview autoplay muted playsinline></video>
+      } @else {
+        <div class="camera__placeholder">
+          <p class="camera__placeholder-title">Camera off</p>
+          <p class="camera__placeholder-copy">Mic only — you can still talk</p>
+        </div>
+      }
     </div>
     @if (recording.feedHint()) {
       <p class="camera__hint">{{ recording.feedHint() }}</p>
@@ -15,6 +24,7 @@
       @if (recording.recording()) {
         <span class="camera__rec" aria-hidden="true"></span>
       }
+      <span class="camera__you">You</span>
       @if (recording.cameras().length > 1) {
         <label class="camera__picker">
           <span class="visually-hidden">Camera</span>
@@ -29,7 +39,7 @@
         </label>
       } @else if (recording.uploading()) {
         <span>Saving recording…</span>
-      } @else {
+      } @else if (recording.previewStream()) {
         <span>{{ recording.cameraLabel() || 'Camera' }}</span>
       }
     </div>

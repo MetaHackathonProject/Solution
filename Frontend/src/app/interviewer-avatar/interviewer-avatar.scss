@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.avatar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  --mouth: 0;
+}
+
+.avatar__frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  background: #d8dde4;
+}
+
+.avatar__photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+}
+
+.avatar__photo--speak {
+  opacity: var(--mouth, 0);
+  transition: opacity 70ms linear;
+}
+
+.avatar--speaking .avatar__frame {
+  translate: 0 -0.35%;
+  transition: translate 180ms ease;
+}
+
+.avatar__wave {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.22rem;
+  height: 2.1rem;
+  padding-block-end: 0.45rem;
+  background: linear-gradient(transparent, rgb(0 0 0 / 55%));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.avatar--speaking .avatar__wave {
+  opacity: 1;
+
+  span {
+    width: 0.28rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: #fff;
+    animation: wave 0.7s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.07s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.14s;
+    }
+    &:nth-child(4) {
+      animation-delay: 0.21s;
+    }
+    &:nth-child(5) {
+      animation-delay: 0.28s;
+    }
+    &:nth-child(6) {
+      animation-delay: 0.35s;
+    }
+    &:nth-child(7) {
+      animation-delay: 0.42s;
+    }
+  }
+}
+
+.avatar__plate {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  color: #fff;
+  background: rgb(17 17 17 / 92%);
+}
+
+.avatar__name,
+.avatar__status {
+  margin: 0;
+}
+
+.avatar__name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.avatar__status {
+  color: #c7d7f8;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.avatar--speaking .avatar__status {
+  color: #93c5fd;
+}
+
+.avatar--live .avatar__name::before {
+  content: '';
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-inline-end: 0.4rem;
+  border-radius: 999px;
+  background: #22c55e;
+  vertical-align: 0.05rem;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    height: 0.35rem;
+  }
+
+  50% {
+    height: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar__photo--speak {
+    transition: none;
+  }
+
+  .avatar--speaking .avatar__frame {
+    translate: none;
+  }
+
+  .avatar--speaking .avatar__wave span {
+    animation: none;
+  }
+}
