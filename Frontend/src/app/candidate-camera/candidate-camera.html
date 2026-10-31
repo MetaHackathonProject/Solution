@@ -1,0 +1,20 @@
+@if (recording.previewStream() || recording.uploading()) {
+  <aside
+    class="camera"
+    [class.camera--live]="recording.recording()"
+    [class.camera--uploading]="recording.uploading()"
+    aria-label="Candidate camera"
+  >
+    <video #preview autoplay muted playsinline></video>
+    <p class="camera__meta">
+      @if (recording.recording()) {
+        <span class="camera__rec" aria-hidden="true"></span>
+        <span>Recording</span>
+      } @else if (recording.uploading()) {
+        <span>Saving recording…</span>
+      } @else {
+        <span>Camera</span>
+      }
+    </p>
+  </aside>
+}

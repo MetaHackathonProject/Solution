@@ -14,6 +14,7 @@ public sealed class RetakeInterviewSessionCommandHandler(
     IPendingInterviewTaskStore pendingTasks,
     IInterviewConversationStore conversationStore,
     IInterviewQuestionHelperStore questionHelpers,
+    IInterviewRecordingStore recordingStore,
     IMediator mediator)
     : IRequestHandler<RetakeInterviewSessionCommand, RetakeInterviewSessionResult?>
 {
@@ -45,6 +46,10 @@ public sealed class RetakeInterviewSessionCommandHandler(
         await pendingTasks.ResetAllToNotAskedAsync(request.SessionId, cancellationToken);
         await conversationStore.DeleteBySessionAsync(request.SessionId, cancellationToken);
         await questionHelpers.ClearActiveQuestionIdsAsync(request.SessionId, cancellationToken);
+        await recordingStore.DeleteBySessionAsync(
+            userContext.UserId,
+            request.SessionId,
+            cancellationToken);
 
         var seeded = await mediator.Send(
             new SeedInterviewProgressCommand(userContext.UserId, request.SessionId),

@@ -106,4 +106,19 @@ export class InterviewSessionsService {
       {},
     );
   }
+
+  getRecordingUploadUrl(
+    sessionId: string,
+    contentType: string,
+  ): Observable<RecordingUploadUrl> {
+    return this.http.get<RecordingUploadUrl>(`${this.baseUrl}/${sessionId}/recording/upload-url`, {
+      params: { contentType },
+    });
+  }
+}
+
+export interface RecordingUploadUrl {
+  uploadUrl: string;
+  objectKey: string;
+  contentType: string;
 }

@@ -20,6 +20,19 @@
         <h2 class="card__title">Preparing connection…</h2>
         <p class="card__copy">Fetching the interview room and role context.</p>
       </section>
+    } @else if (endingSession() || recording.uploading()) {
+      <section class="card" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <h2 class="card__title">
+          {{ recording.uploading() ? 'Saving your recording…' : 'Ending interview…' }}
+        </h2>
+        <p class="card__copy">
+          Uploading the camera recording, then returning to the session.
+        </p>
+        @if (error()) {
+          <p class="alert" role="alert">{{ error() }}</p>
+        }
+      </section>
     } @else if (error() && connectionStatus() === 'idle' && voicePhase() === 'idle' && !interactiveTask()) {
       <section class="card card--error" role="alert">
         <h2 class="card__title">Could not start</h2>
@@ -117,7 +130,8 @@
       <section class="card">
         <h2 class="card__title">Ready when you are</h2>
         <p class="card__copy">
-          Allow microphone access, then start. The interviewer will ask the planned questions in order.
+          Allow camera and microphone access, then start. Your camera is recorded for this session
+          and uploaded when the interview ends. The interviewer will ask the planned questions in order.
         </p>
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
@@ -142,4 +156,5 @@
       }
     }
   </div>
+  <app-candidate-camera />
 </main>

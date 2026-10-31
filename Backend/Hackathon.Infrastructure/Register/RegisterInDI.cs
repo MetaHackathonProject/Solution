@@ -47,6 +47,7 @@ public static class RegisterInDI
         services.AddSingleton<IInterviewProgressStore, DynamoDbInterviewProgressStore>();
         services.AddSingleton<IPendingInterviewTaskStore, DynamoDbPendingInterviewTaskStore>();
         services.AddSingleton<IInteractiveAnswerStore, S3InteractiveAnswerStore>();
+        services.AddSingleton<IInterviewRecordingStore, S3InterviewRecordingStore>();
         services.AddSingleton<IInteractiveAnswerReader, S3InteractiveAnswerReader>();
         services.AddSingleton<ISolutionVisionDescriber, MetaSolutionVisionDescriber>();
         services.AddSingleton<IOfferDetailsReader, S3OfferDetailsReader>();

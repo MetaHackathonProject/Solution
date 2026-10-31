@@ -142,6 +142,34 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         }
     }
 
+    [HttpGet("{sessionId}/recording/upload-url")]
+    public async Task<ActionResult<RecordingUploadUrlResponse>> GetRecordingUploadUrl(
+        string sessionId,
+        [FromQuery] string? contentType,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await mediator.Send(
+                new GetRecordingUploadUrlQuery(sessionId, contentType),
+                cancellationToken);
+
+            if (result is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new RecordingUploadUrlResponse(
+                result.UploadUrl,
+                result.ObjectKey,
+                result.ContentType));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
+    }
+
     [HttpGet("{sessionId}/voice-context")]
     public async Task<ActionResult<VoiceAgentContextResponse>> GetVoiceContext(
         string sessionId,
@@ -431,3 +459,8 @@ public sealed record VisionReviewResponse(
 public sealed record RetakeInterviewSessionResponse(
     string SessionId,
     int QuestionsSeeded);
+
+public sealed record RecordingUploadUrlResponse(
+    string UploadUrl,
+    string ObjectKey,
+    string ContentType);

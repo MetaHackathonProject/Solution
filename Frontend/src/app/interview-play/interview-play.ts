@@ -19,6 +19,8 @@ import {
   timer,
 } from 'rxjs';
 import { AuthService } from '../auth.service';
+import { CandidateCamera } from '../candidate-camera/candidate-camera';
+import { CandidateRecordingService } from '../candidate-recording.service';
 import { continueInterviewFirstMessage } from '../continue-interview-first-message';
 import { toElevenLabsLanguage } from '../eleven-labs-language';
 import {
@@ -56,7 +58,7 @@ const AGENT_GOODBYE_RE =
 
 @Component({
   selector: 'app-interview-play',
-  imports: [RouterLink, InteractivePanel, QuestionHelperPanel],
+  imports: [RouterLink, InteractivePanel, QuestionHelperPanel, CandidateCamera],
   templateUrl: './interview-play.html',
   styleUrl: './interview-play.scss',
 })
@@ -67,9 +69,11 @@ export class InterviewPlay implements OnInit, OnDestroy {
   private readonly voiceAgent = inject(VoiceAgentService);
   private readonly interactiveTasks = inject(InteractiveTaskService);
   private readonly sessionsApi = inject(InterviewSessionsService);
+  protected readonly recording = inject(CandidateRecordingService);
 
   protected readonly loading = signal(true);
   protected readonly starting = signal(false);
+  protected readonly endingSession = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly connectionStatus = signal<Status | 'idle'>('idle');
   protected readonly mode = signal<Mode>('listening');
@@ -127,6 +131,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
         if (interactive && interactive.status !== 'Answered') {
           this.interactiveTask.set(interactive);
           this.voicePhase.set('paused');
+          void this.recording.start().catch((err: unknown) => {
+            this.error.set(this.recording.describeError(err));
+          });
         }
         this.loading.set(false);
       },
@@ -141,6 +148,9 @@ export class InterviewPlay implements OnInit, OnDestroy {
     this.clearPauseTimers();
     this.stopVisionReviewPoll();
     this.stopHelperPolling();
+    if (!this.ending) {
+      void this.recording.stopAndUpload(this.sessionId).catch(() => undefined);
+    }
     if (this.voicePhase() === 'paused' || this.voicePhase() === 'reviewing') {
       this.conversation = null;
       return;
@@ -151,6 +161,13 @@ export class InterviewPlay implements OnInit, OnDestroy {
 
   protected async startConversation(): Promise<void> {
     if (this.voicePhase() === 'paused' || this.starting() || this.transitionInFlight) {
+      return;
+    }
+
+    try {
+      await this.recording.start();
+    } catch (err) {
+      this.error.set(this.recording.describeError(err));
       return;
     }
 
@@ -819,23 +836,29 @@ export class InterviewPlay implements OnInit, OnDestroy {
     }
 
     this.ending = true;
+    this.endingSession.set(true);
     const conversationId = this.conversationId;
     this.conversation = null;
     this.voicePhase.set('idle');
+    void this.finishSession(conversationId);
+  }
 
-    if (!conversationId) {
-      void this.router.navigate(['/interviews', this.sessionId]);
-      return;
+  private async finishSession(conversationId: string | null): Promise<void> {
+    try {
+      await this.recording.stopAndUpload(this.sessionId);
+    } catch (err) {
+      this.error.set(this.recording.describeError(err));
     }
 
-    this.voiceAgent.endConversation(this.sessionId, conversationId).subscribe({
-      next: () => {
-        void this.router.navigate(['/interviews', this.sessionId]);
-      },
-      error: () => {
-        void this.router.navigate(['/interviews', this.sessionId]);
-      },
-    });
+    if (conversationId) {
+      try {
+        await firstValueFrom(this.voiceAgent.endConversation(this.sessionId, conversationId));
+      } catch {
+        // Still leave the play page; session status is updated on a successful hangup.
+      }
+    }
+
+    await this.router.navigate(['/interviews', this.sessionId]);
   }
 
   private clearPauseFallbackTimer(): void {
