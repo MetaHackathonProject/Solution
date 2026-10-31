@@ -33,6 +33,12 @@ public sealed record ListEmployerAssignmentsQuery : IRequest<IReadOnlyList<Emplo
 
 public sealed record ImportOfferFromUrlCommand(string OfferUrl) : IRequest<ImportedOfferResult>;
 
+public sealed record StartEmployerOfferGenerationCommand(string OfferUrl, string Language)
+    : IRequest<StartEmployerOfferGenerationResult>;
+
+public sealed record GetGeneratedTemplateFromOfferQuery(string SessionId)
+    : IRequest<GeneratedTemplateFromOfferResult?>;
+
 public sealed record InterviewTemplateResult(
     string TemplateId,
     string Name,
@@ -66,3 +72,14 @@ public sealed record EmployerAssignmentResult(
     long CreatedAt);
 
 public sealed record ImportedOfferResult(string? Title, string? Company, string OfferUrl);
+
+public sealed record StartEmployerOfferGenerationResult(string SessionId);
+
+public sealed record GeneratedTemplateFromOfferResult(
+    string SessionId,
+    string Status,
+    string? Title,
+    string? Company,
+    string OfferUrl,
+    IReadOnlyList<TemplateSpokenQuestion> SpokenQuestions,
+    IReadOnlyList<TemplateInteractiveTask> InteractiveTasks);

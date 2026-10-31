@@ -1,10 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subscription, catchError, of, switchMap, timer } from 'rxjs';
+import { isPreparingStatus, statusDetail, statusLabel } from '../interview-session-status';
 import {
-  EXPECTED_INPUTS,
-  INTERVIEW_MODULES,
+  EXPECTED_INPUT_OPTIONS,
+  expectedInputDescription,
+  GeneratedTemplateFromOffer,
+  MODULE_OPTIONS,
+  moduleDescription,
   InterviewTemplate,
   InterviewTemplatesService,
   TemplateInteractiveTask,
@@ -17,13 +22,15 @@ import {
   templateUrl: './employer-template-edit.html',
   styleUrl: './employer-template-edit.scss',
 })
-export class EmployerTemplateEdit implements OnInit {
+export class EmployerTemplateEdit implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly templatesApi = inject(InterviewTemplatesService);
 
-  protected readonly modules = INTERVIEW_MODULES;
-  protected readonly expectedInputs = EXPECTED_INPUTS;
+  protected readonly moduleOptions = MODULE_OPTIONS;
+  protected readonly expectedInputOptions = EXPECTED_INPUT_OPTIONS;
+  protected readonly moduleDescription = moduleDescription;
+  protected readonly expectedInputDescription = expectedInputDescription;
   protected readonly languages = [
     'English',
     'Polish',
@@ -47,13 +54,16 @@ export class EmployerTemplateEdit implements OnInit {
   protected readonly templateId = signal<string | null>(null);
   protected readonly inviteCode = signal('');
   protected readonly offerUrl = signal('');
+  protected readonly generateStatus = signal<string | null>(null);
 
   protected name = '';
   protected jobTitle = '';
   protected company = '';
   protected language = 'English';
+  protected autoGenerate = false;
   protected spoken: TemplateSpokenQuestion[] = [this.emptySpoken()];
   protected tasks: TemplateInteractiveTask[] = [];
+  private generatePoll: Subscription | null = null;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('templateId');
@@ -70,6 +80,10 @@ export class EmployerTemplateEdit implements OnInit {
         this.error.set(this.describeError(err, 'Could not load this template.'));
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.generatePoll?.unsubscribe();
   }
 
   protected addSpoken(): void {
@@ -99,6 +113,40 @@ export class EmployerTemplateEdit implements OnInit {
 
     this.importing.set(true);
     this.error.set(null);
+    this.offerUrl.set(url);
+    this.applyImportedMeta(url, !this.autoGenerate);
+
+    if (!this.autoGenerate) {
+      return;
+    }
+
+    this.generateStatus.set('STARTED');
+    this.templatesApi.startOfferGeneration(url, this.language).subscribe({
+      next: (started) => this.pollGeneration(started.sessionId),
+      error: (err: unknown) => {
+        this.importing.set(false);
+        this.generateStatus.set(null);
+        this.error.set(this.describeError(err, 'Could not start question generation.'));
+      },
+    });
+  }
+
+  protected generating(): boolean {
+    const status = this.generateStatus();
+    return status !== null && isPreparingStatus(status);
+  }
+
+  protected generateLabel(): string {
+    const status = this.generateStatus();
+    return status ? statusDetail(status) : '';
+  }
+
+  protected generateTitle(): string {
+    const status = this.generateStatus();
+    return status ? statusLabel(status) : '';
+  }
+
+  private applyImportedMeta(url: string, finishWhenDone: boolean): void {
     this.templatesApi.importOffer(url).subscribe({
       next: (imported) => {
         this.offerUrl.set(imported.offerUrl);
@@ -108,13 +156,79 @@ export class EmployerTemplateEdit implements OnInit {
         if (imported.company && !this.company.trim()) {
           this.company = imported.company;
         }
-        this.importing.set(false);
+        if (finishWhenDone) {
+          this.importing.set(false);
+        }
       },
       error: (err: unknown) => {
-        this.importing.set(false);
-        this.error.set(this.describeError(err, 'Could not read that posting.'));
+        if (finishWhenDone) {
+          this.importing.set(false);
+          this.error.set(this.describeError(err, 'Could not read that posting.'));
+        }
       },
     });
+  }
+
+  private pollGeneration(sessionId: string): void {
+    this.generatePoll?.unsubscribe();
+    this.generatePoll = timer(0, 2500)
+      .pipe(
+        switchMap(() =>
+          this.templatesApi.getGeneratedFromOffer(sessionId).pipe(
+            catchError((err: unknown) => {
+              this.error.set(this.describeError(err, 'Could not check generation status.'));
+              return of(null);
+            }),
+          ),
+        ),
+      )
+      .subscribe((generated) => {
+        if (!generated) {
+          return;
+        }
+
+        this.generateStatus.set(generated.status);
+        if (isPreparingStatus(generated.status)) {
+          return;
+        }
+
+        this.generatePoll?.unsubscribe();
+        this.generatePoll = null;
+        this.importing.set(false);
+
+        if (generated.status === 'FAILED') {
+          this.error.set('Question generation failed. You can write questions manually.');
+          return;
+        }
+
+        if (generated.status !== 'SUCCESS') {
+          return;
+        }
+
+        this.applyGenerated(generated);
+      });
+  }
+
+  private applyGenerated(generated: GeneratedTemplateFromOffer): void {
+    if (generated.offerUrl) {
+      this.offerUrl.set(generated.offerUrl);
+    }
+    if (generated.title) {
+      this.jobTitle = generated.title;
+    }
+    if (generated.company) {
+      this.company = generated.company;
+    }
+    if (!this.name.trim() && generated.title) {
+      this.name = generated.company
+        ? `${generated.title} · ${generated.company}`
+        : generated.title;
+    }
+
+    this.spoken = generated.spokenQuestions.length
+      ? generated.spokenQuestions.map((question) => ({ ...question }))
+      : [this.emptySpoken()];
+    this.tasks = generated.interactiveTasks.map((task) => ({ ...task }));
   }
 
   protected save(): void {

@@ -2,7 +2,10 @@
   <header class="panel__header">
     <div>
       <p class="panel__eyebrow">Interactive exercise</p>
-      <h2 class="panel__title" id="interactive-title">{{ task().module }}</h2>
+      <h2 class="panel__title" id="interactive-title">{{ moduleTitle() }}</h2>
+      @if (answerTypeTitle()) {
+        <p class="panel__meta">{{ answerTypeTitle() }}</p>
+      }
     </div>
     <button type="button" class="btn btn--ghost" (click)="dismiss()">Hide</button>
   </header>

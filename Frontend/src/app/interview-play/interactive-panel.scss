@@ -33,6 +33,13 @@
   letter-spacing: -0.02em;
 }
 
+.panel__meta {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
 .panel__prompt {
   max-height: 22rem;
   overflow: auto;

@@ -17,6 +17,7 @@ import {
 import { CodeEditor } from './code-editor';
 import { DrawioEditor, DrawioEditorState } from './drawio-editor';
 import { detectCodeLanguage } from './detect-code-language';
+import { expectedInputLabel, moduleLabel } from '../interview-templates.service';
 import {
   InteractiveSubmissionPayload,
   WALKTHROUGH_SOLUTION_MAX_CHARS,
@@ -50,6 +51,8 @@ export class InteractivePanel {
   protected readonly diagramReady = signal(false);
   protected readonly diagramHasContent = signal(false);
 
+  protected readonly moduleTitle = computed(() => moduleLabel(this.task().module));
+  protected readonly answerTypeTitle = computed(() => expectedInputLabel(this.task().expectedInput));
   protected readonly isCodeTask = computed(() => this.task().expectedInput === 'code');
   protected readonly isTextLike = computed(() => {
     const expected = this.task().expectedInput;

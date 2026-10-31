@@ -79,10 +79,10 @@ Live interview (API + frontend, not AgentCore):
 Employer-assigned interviews (same Cognito app, exclusive role):
 
 1. `GET/PUT /api/me` — persist `Candidate` or `Employer` once on the users table. A user cannot be both.
-2. Employer templates: `GET/POST /api/interview-templates`, `GET/PUT/DELETE /api/interview-templates/{id}` — job title, company, language required; optional offer URL (`POST .../import-offer` reads public page title/company only, does not invent facts). Definition includes spoken questions and interactive tasks. Each template has an `invite_code`; UI copies `{origin}/join/{code}`.
+2. Employer templates: `GET/POST /api/interview-templates`, `GET/PUT/DELETE /api/interview-templates/{id}` — job title, company, language required; optional offer URL (`POST .../import-offer` reads public page title/company only, does not invent facts). Employer can opt in to auto-generate questions: `POST .../generate-from-offer` starts the existing planner as a `template_draft` session; poll session status then `GET .../generate-from-offer/{sessionId}` for spoken questions + interactive tasks. Definition includes spoken questions and interactive tasks. Each template has an `invite_code`; UI copies `{origin}/join/{code}`.
 3. Candidate `GET/POST /api/interview-templates/join/{code}` — after sign-in/up as Candidate, clones a session under the candidate `user_id`, writes `offer/details.json` + pending tasks + `plan.json`, seeds progress, sets `SUCCESS`. Same play page and ElevenLabs flow. One assignment per candidate per template. No retake (`retakeAllowed=false`). Camera is required (`cameraRequired=true`).
 4. Overview: employer-sent sessions hide `cameraPresence` from the candidate; the employer can `GET` the candidate session/overview via the assignments table (`GET /api/interview-templates/assignments`) and sees the full overview including camera. Self-created mocks keep the full overview for the owner.
-5. Do **not** run AgentCore for employer templates. Agents still write the self-mock pipeline only.
+5. Candidate join still does **not** run AgentCore. Employers may start the existing planner once to fill a template from an offer URL; agents still write only that self-mock pipeline.
 
 ## Interview domain
 

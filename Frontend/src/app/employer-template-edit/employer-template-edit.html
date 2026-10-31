@@ -67,7 +67,12 @@
           </div>
           <div class="field">
             <label class="field__label" for="language">Language</label>
-            <select id="language" name="language" class="field__control" [(ngModel)]="language">
+            <select
+              id="language"
+              name="language"
+              class="field__control field__control--select"
+              [(ngModel)]="language"
+            >
               @for (item of languages; track item) {
                 <option [value]="item">{{ item }}</option>
               }
@@ -76,7 +81,8 @@
           <div class="field">
             <label class="field__label" for="offer_url">Offer URL</label>
             <span class="field__hint" id="offer_url_hint">
-              Optional. Import fills empty title and company from the posting page.
+              Optional. Import fills empty title and company. Turn on auto-generate to also build
+              questions from the posting.
             </span>
             <div class="field__row">
               <input
@@ -88,14 +94,47 @@
                 autocomplete="url"
                 autocorrect="off"
                 spellcheck="false"
-                aria-describedby="offer_url_hint"
+                aria-describedby="offer_url_hint auto_generate_hint"
                 [ngModel]="offerUrl()"
                 (ngModelChange)="offerUrl.set($event)"
               />
-              <button type="button" class="btn btn--secondary" [disabled]="importing()" (click)="importOffer()">
-                {{ importing() ? 'Importing…' : 'Import' }}
+              <button
+                type="button"
+                class="btn btn--secondary"
+                [disabled]="importing()"
+                (click)="importOffer()"
+              >
+                {{
+                  importing()
+                    ? autoGenerate
+                      ? 'Generating…'
+                      : 'Importing…'
+                    : autoGenerate
+                      ? 'Import & generate'
+                      : 'Import'
+                }}
               </button>
             </div>
+            <label class="check" for="auto_generate">
+              <input
+                id="auto_generate"
+                name="autoGenerate"
+                type="checkbox"
+                [(ngModel)]="autoGenerate"
+              />
+              <span>
+                Auto-generate spoken questions and interactive tasks from this offer
+              </span>
+            </label>
+            <p class="field__hint" id="auto_generate_hint">
+              Leave this off to write the questions yourself.
+            </p>
+            @if (generateStatus()) {
+              <p class="generate" role="status" aria-live="polite">
+                <strong>{{ generateTitle() }}</strong>
+                {{ generateLabel() }}
+              </p>
+            }
           </div>
         </fieldset>
 
@@ -104,19 +143,25 @@
           @for (question of spoken; track $index) {
             <div class="item">
               <div class="item__top">
-                <label class="field__label" [attr.for]="'spoken_module_' + $index">Question {{ $index + 1 }}</label>
+                <p class="field__label">Question {{ $index + 1 }}</p>
                 <button type="button" class="linkish" (click)="removeSpoken($index)">Remove</button>
               </div>
+              <label class="field__label field__label--quiet" [attr.for]="'spoken_module_' + $index">
+                Question type
+              </label>
               <select
-                class="field__control"
+                class="field__control field__control--select"
                 [id]="'spoken_module_' + $index"
                 [name]="'spokenModule' + $index"
                 [(ngModel)]="question.module"
               >
-                @for (module of modules; track module) {
-                  <option [value]="module">{{ module }}</option>
+                @for (option of moduleOptions; track option.id) {
+                  <option [value]="option.id">{{ option.title }}</option>
                 }
               </select>
+              @if (moduleDescription(question.module)) {
+                <p class="field__hint">{{ moduleDescription(question.module) }}</p>
+              }
               <textarea
                 class="field__control"
                 [name]="'spokenQuestion' + $index"
@@ -144,28 +189,47 @@
           @for (task of tasks; track $index) {
             <div class="item">
               <div class="item__top">
-                <label class="field__label" [attr.for]="'task_module_' + $index">Task {{ $index + 1 }}</label>
+                <p class="field__label">Task {{ $index + 1 }}</p>
                 <button type="button" class="linkish" (click)="removeTask($index)">Remove</button>
               </div>
-              <select
-                class="field__control"
-                [id]="'task_module_' + $index"
-                [name]="'taskModule' + $index"
-                [(ngModel)]="task.module"
-              >
-                @for (module of modules; track module) {
-                  <option [value]="module">{{ module }}</option>
-                }
-              </select>
-              <select
-                class="field__control"
-                [name]="'taskInput' + $index"
-                [(ngModel)]="task.expectedInput"
-              >
-                @for (input of expectedInputs; track input) {
-                  <option [value]="input">{{ input }}</option>
-                }
-              </select>
+              <div class="field__pair">
+                <div>
+                  <label class="field__label field__label--quiet" [attr.for]="'task_module_' + $index">
+                    Question type
+                  </label>
+                  <select
+                    class="field__control field__control--select"
+                    [id]="'task_module_' + $index"
+                    [name]="'taskModule' + $index"
+                    [(ngModel)]="task.module"
+                  >
+                    @for (option of moduleOptions; track option.id) {
+                      <option [value]="option.id">{{ option.title }}</option>
+                    }
+                  </select>
+                  @if (moduleDescription(task.module)) {
+                    <p class="field__hint">{{ moduleDescription(task.module) }}</p>
+                  }
+                </div>
+                <div>
+                  <label class="field__label field__label--quiet" [attr.for]="'task_input_' + $index">
+                    Answer type
+                  </label>
+                  <select
+                    class="field__control field__control--select"
+                    [id]="'task_input_' + $index"
+                    [name]="'taskInput' + $index"
+                    [(ngModel)]="task.expectedInput"
+                  >
+                    @for (option of expectedInputOptions; track option.id) {
+                      <option [value]="option.id">{{ option.title }}</option>
+                    }
+                  </select>
+                  @if (expectedInputDescription(task.expectedInput)) {
+                    <p class="field__hint">{{ expectedInputDescription(task.expectedInput) }}</p>
+                  }
+                </div>
+              </div>
               <textarea
                 class="field__control"
                 [name]="'taskContent' + $index"
@@ -189,7 +253,7 @@
 
         <div class="actions">
           <a class="btn btn--secondary" routerLink="/templates">Back</a>
-          <button type="submit" class="btn btn--primary" [disabled]="saving()">
+          <button type="submit" class="btn btn--primary" [disabled]="saving() || importing()">
             {{ saving() ? 'Saving…' : templateId() ? 'Save template' : 'Create template' }}
           </button>
         </div>

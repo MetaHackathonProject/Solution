@@ -115,6 +115,69 @@ public sealed class InterviewTemplatesController(IMediator mediator) : Controlle
         }
     }
 
+    [HttpPost("generate-from-offer")]
+    public async Task<ActionResult<StartEmployerOfferGenerationResponse>> GenerateFromOffer(
+        GenerateFromOfferRequest request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var started = await mediator.Send(
+                new StartEmployerOfferGenerationCommand(request.OfferUrl, request.Language),
+                cancellationToken);
+            return Ok(new StartEmployerOfferGenerationResponse(started.SessionId));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
+    }
+
+    [HttpGet("generate-from-offer/{sessionId}")]
+    public async Task<ActionResult<GeneratedTemplateFromOfferResponse>> GetGeneratedFromOffer(
+        string sessionId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var generated = await mediator.Send(
+                new GetGeneratedTemplateFromOfferQuery(sessionId),
+                cancellationToken);
+            return generated is null
+                ? NotFound()
+                : Ok(new GeneratedTemplateFromOfferResponse(
+                    generated.SessionId,
+                    generated.Status,
+                    generated.Title,
+                    generated.Company,
+                    generated.OfferUrl,
+                    generated.SpokenQuestions
+                        .Select(question => new TemplateSpokenQuestionResponse(
+                            question.Id,
+                            question.Module,
+                            question.Question,
+                            question.AssessmentGoal))
+                        .ToList(),
+                    generated.InteractiveTasks
+                        .Select(task => new TemplateInteractiveTaskResponse(
+                            task.Id,
+                            task.Module,
+                            task.QuestionContent,
+                            task.QuestionContentFormatted,
+                            task.ExpectedInput,
+                            task.AssessmentGoal))
+                        .ToList()));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { detail = ex.Message });
+        }
+    }
+
     [HttpPost("import-offer")]
     public async Task<ActionResult<ImportedOfferResponse>> ImportOffer(
         ImportOfferRequest request,
@@ -297,6 +360,24 @@ public sealed class ImportOfferRequest
 {
     public required string OfferUrl { get; init; }
 }
+
+public sealed class GenerateFromOfferRequest
+{
+    public required string OfferUrl { get; init; }
+
+    public string Language { get; init; } = "English";
+}
+
+public sealed record StartEmployerOfferGenerationResponse(string SessionId);
+
+public sealed record GeneratedTemplateFromOfferResponse(
+    string SessionId,
+    string Status,
+    string? Title,
+    string? Company,
+    string OfferUrl,
+    IReadOnlyList<TemplateSpokenQuestionResponse> SpokenQuestions,
+    IReadOnlyList<TemplateInteractiveTaskResponse> InteractiveTasks);
 
 public sealed record InterviewTemplateResponse(
     string TemplateId,
