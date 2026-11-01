@@ -47,13 +47,56 @@ data "aws_iam_policy_document" "agent" {
     actions = [
       "logs:CreateLogGroup",
       "logs:DescribeLogStreams",
+    ]
+    resources = [
+      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*",
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
     resources = [
-      "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*",
       "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*",
     ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["logs:PutResourcePolicy"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["bedrock-agentcore"]
+    }
   }
 
   statement {
@@ -180,9 +223,10 @@ resource "aws_bedrockagentcore_harness" "agent" {
   max_iterations     = each.value.config.max_iterations
 
   environment_variables = {
-    INTERVIEW_SESSIONS_BUCKET         = aws_s3_bucket.interview_sessions.bucket
-    INTERVIEW_SESSION_QUESTIONS_TABLE = aws_dynamodb_table.interview_session_questions.name
-    PENDING_INTERVIEW_TASKS_TABLE     = aws_dynamodb_table.pending_interview_tasks.name
+    INTERVIEW_SESSIONS_BUCKET          = aws_s3_bucket.interview_sessions.bucket
+    INTERVIEW_SESSION_QUESTIONS_TABLE  = aws_dynamodb_table.interview_session_questions.name
+    PENDING_INTERVIEW_TASKS_TABLE      = aws_dynamodb_table.pending_interview_tasks.name
+    UNIFIED_TRACES_DESTINATION_ENABLED = "true"
   }
 
   model {

@@ -95,3 +95,9 @@ output "agent_harnesses" {
     for name, harness in aws_bedrockagentcore_harness.agent : name => harness.arn
   }
 }
+
+output "agent_harness_log_groups" {
+  value = {
+    for name, group in aws_cloudwatch_log_group.harness_invocation : name => group.name
+  }
+}
