@@ -4,7 +4,9 @@
       <div>
         <p class="page__eyebrow">Employer</p>
         <h1 class="page__title">Candidate interviews</h1>
-        <p class="page__lead">Open a session to see progress and the full overview, including camera.</p>
+        <p class="page__lead">
+          Grouped by template. Completed candidates are ordered by overview score.
+        </p>
       </div>
       <a class="btn btn--primary" routerLink="/templates">Templates</a>
     </header>
@@ -27,21 +29,35 @@
         <a class="btn btn--primary" routerLink="/templates">Open templates</a>
       </section>
     } @else {
-      <ul class="list">
-        @for (item of assignments(); track item.sessionId) {
-          <li>
-            <a class="row" [routerLink]="['/interviews', item.sessionId]">
-              <span class="row__title">{{ candidateLabel(item) }}</span>
-              <span class="row__sub">{{ item.jobTitle }} · {{ item.company }}</span>
-              <span class="row__sub">
-                {{ item.templateName }}
-                · {{ statusLabel(item.status) }}
-                · {{ createdLabel(item.createdAt) | date: 'mediumDate' }}
-              </span>
-            </a>
-          </li>
+      <div class="sections">
+        @for (group of groups(); track group.templateId) {
+          <section class="section" [attr.aria-labelledby]="'template-' + group.templateId">
+            <h2 class="section__title" [id]="'template-' + group.templateId">
+              {{ group.templateName }}
+              <span class="section__count">{{ group.items.length }}</span>
+            </h2>
+            <p class="section__lead">{{ group.jobTitle }} · {{ group.company }}</p>
+            <ul class="list">
+              @for (item of group.items; track item.sessionId) {
+                <li>
+                  <a class="row" [routerLink]="['/interviews', item.sessionId]">
+                    <span class="row__main">
+                      <span class="row__title">{{ candidateLabel(item) }}</span>
+                      <span class="row__sub">
+                        {{ statusLabel(item.status) }}
+                        · {{ createdLabel(item.createdAt) | date: 'mediumDate' }}
+                      </span>
+                    </span>
+                    @if (hasScore(item)) {
+                      <span class="row__score">{{ item.score }}/10</span>
+                    }
+                  </a>
+                </li>
+              }
+            </ul>
+          </section>
         }
-      </ul>
+      </div>
     }
   </div>
 </main>

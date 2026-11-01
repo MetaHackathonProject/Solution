@@ -251,7 +251,8 @@ public sealed class InterviewTemplatesController(IMediator mediator) : Controlle
                     item.CandidateEmail,
                     item.Status,
                     item.OverviewStatus,
-                    item.CreatedAt))
+                    item.CreatedAt,
+                    item.Score))
                     .ToList());
         }
         catch (InvalidOperationException ex)
@@ -426,6 +427,7 @@ public sealed record EmployerAssignmentResponse(
     string CandidateEmail,
     string Status,
     string OverviewStatus,
-    long CreatedAt);
+    long CreatedAt,
+    int? Score);
 
 public sealed record ImportedOfferResponse(string? Title, string? Company, string OfferUrl);

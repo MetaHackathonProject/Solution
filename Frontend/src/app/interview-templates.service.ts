@@ -195,6 +195,7 @@ export interface EmployerAssignment {
   status: string;
   overviewStatus: OverviewStatus;
   createdAt: number;
+  score?: number | null;
 }
 
 export interface ImportedOffer {

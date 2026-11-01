@@ -70,7 +70,8 @@ public sealed record EmployerAssignmentResult(
     string CandidateEmail,
     string Status,
     string OverviewStatus,
-    long CreatedAt);
+    long CreatedAt,
+    int? Score = null);
 
 public sealed record ImportedOfferResult(string? Title, string? Company, string OfferUrl);
 

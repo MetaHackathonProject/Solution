@@ -1,5 +1,6 @@
 using Hackathon.Application.Accounts;
 using Hackathon.Application.Context;
+using Hackathon.Application.InterviewOverview;
 using Hackathon.Application.InterviewSessions;
 using Hackathon.Domain.Accounts;
 using Hackathon.Domain.InterviewSessions;
@@ -11,7 +12,8 @@ public sealed class ListEmployerAssignmentsQueryHandler(
     IUserContext userContext,
     IUserProfileStore profiles,
     IInterviewAssignmentStore assignments,
-    IInterviewSessionStore sessions)
+    IInterviewSessionStore sessions,
+    IInterviewOverviewArtifactStore overviews)
     : IRequestHandler<ListEmployerAssignmentsQuery, IReadOnlyList<EmployerAssignmentResult>>
 {
     public async Task<IReadOnlyList<EmployerAssignmentResult>> Handle(
@@ -34,6 +36,22 @@ public sealed class ListEmployerAssignmentsQueryHandler(
                 cancellationToken);
             var profile = await profiles.GetAsync(item.CandidateUserId, cancellationToken);
             var email = FirstNonEmpty(item.CandidateEmail, profile?.Email);
+            var status = session?.Status ?? InterviewSessionStatus.Started;
+            var overviewStatus = session?.OverviewStatus ?? OverviewStatus.NotAvailable;
+            int? score = null;
+            if (status == InterviewSessionStatus.Completed &&
+                overviewStatus == OverviewStatus.Ready)
+            {
+                var overview = await overviews.GetOverviewAsync(
+                    item.CandidateUserId,
+                    item.SessionId,
+                    cancellationToken);
+                if (overview is not null)
+                {
+                    score = overview.Score;
+                }
+            }
+
             results.Add(
                 new EmployerAssignmentResult(
                     item.SessionId,
@@ -43,9 +61,10 @@ public sealed class ListEmployerAssignmentsQueryHandler(
                     item.Company,
                     item.CandidateUserId,
                     email,
-                    session?.Status ?? InterviewSessionStatus.Started,
-                    session?.OverviewStatus ?? OverviewStatus.NotAvailable,
-                    item.CreatedAt));
+                    status,
+                    overviewStatus,
+                    item.CreatedAt,
+                    score));
         }
 
         return results;
