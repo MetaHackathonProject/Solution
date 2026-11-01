@@ -284,6 +284,7 @@ public sealed class InterviewTemplatesController(IMediator mediator) : Controlle
                     AssessmentGoal = task.AssessmentGoal,
                 })
                 .ToList(),
+            JobFacts = (request.JobFacts ?? new InterviewTemplateJobFacts()).Normalized(),
         };
 
     private static InterviewTemplateResponse ToResponse(InterviewTemplateResult template) =>
@@ -311,8 +312,21 @@ public sealed class InterviewTemplatesController(IMediator mediator) : Controlle
                     task.ExpectedInput,
                     task.AssessmentGoal))
                 .ToList(),
+            ToJobFactsResponse(template.Definition.ResolvedJobFacts()),
             template.CreatedAt,
             template.UpdatedAt);
+
+    private static TemplateJobFactsResponse ToJobFactsResponse(InterviewTemplateJobFacts facts)
+    {
+        var normalized = facts.Normalized();
+        return new TemplateJobFactsResponse(
+            normalized.WorkType,
+            normalized.ContractType,
+            normalized.Location,
+            normalized.Salary,
+            normalized.Benefits,
+            normalized.Notes);
+    }
 }
 
 public sealed class SaveInterviewTemplateRequest
@@ -330,6 +344,8 @@ public sealed class SaveInterviewTemplateRequest
     public IReadOnlyList<TemplateSpokenQuestionRequest> SpokenQuestions { get; init; } = [];
 
     public IReadOnlyList<TemplateInteractiveTaskRequest> InteractiveTasks { get; init; } = [];
+
+    public InterviewTemplateJobFacts? JobFacts { get; init; }
 }
 
 public sealed class TemplateSpokenQuestionRequest
@@ -391,8 +407,17 @@ public sealed record InterviewTemplateResponse(
     string InviteCode,
     IReadOnlyList<TemplateSpokenQuestionResponse> SpokenQuestions,
     IReadOnlyList<TemplateInteractiveTaskResponse> InteractiveTasks,
+    TemplateJobFactsResponse JobFacts,
     long CreatedAt,
     long UpdatedAt);
+
+public sealed record TemplateJobFactsResponse(
+    string? WorkType,
+    string? ContractType,
+    string? Location,
+    string? Salary,
+    IReadOnlyList<string> Benefits,
+    string? Notes);
 
 public sealed record TemplateSpokenQuestionResponse(
     string? Id,

@@ -12,7 +12,7 @@ public sealed class GetVoiceAgentContextQueryHandler(
 {
     private const int JobTitleMaxLength = 120;
     private const int CompanyMaxLength = 120;
-    private const int JobOverviewMaxLength = 1500;
+    private const int JobOverviewMaxLength = 2500;
 
     public async Task<VoiceAgentContextResult?> Handle(
         GetVoiceAgentContextQuery request,

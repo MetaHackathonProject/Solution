@@ -8,10 +8,13 @@ import {
   EXPECTED_INPUT_OPTIONS,
   expectedInputDescription,
   GeneratedTemplateFromOffer,
+  JOB_CONTRACT_TYPES,
+  JOB_WORK_TYPES,
+  InterviewTemplate,
+  InterviewTemplateJobFacts,
+  InterviewTemplatesService,
   MODULE_OPTIONS,
   moduleDescription,
-  InterviewTemplate,
-  InterviewTemplatesService,
   TemplateInteractiveTask,
   TemplateSpokenQuestion,
 } from '../interview-templates.service';
@@ -29,6 +32,8 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
 
   protected readonly moduleOptions = MODULE_OPTIONS;
   protected readonly expectedInputOptions = EXPECTED_INPUT_OPTIONS;
+  protected readonly workTypes = JOB_WORK_TYPES;
+  protected readonly contractTypes = JOB_CONTRACT_TYPES;
   protected readonly moduleDescription = moduleDescription;
   protected readonly expectedInputDescription = expectedInputDescription;
   protected readonly languages = [
@@ -63,6 +68,8 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
   protected autoGenerate = false;
   protected spoken: TemplateSpokenQuestion[] = [this.emptySpoken()];
   protected tasks: TemplateInteractiveTask[] = [];
+  protected jobFacts = this.emptyJobFacts();
+  protected benefitDraft = '';
   private generatePoll: Subscription | null = null;
 
   ngOnInit(): void {
@@ -103,6 +110,25 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
 
   protected removeTask(index: number): void {
     this.tasks = this.tasks.filter((_, i) => i !== index);
+  }
+
+  protected addBenefit(): void {
+    const value = this.benefitDraft.trim();
+    if (!value || this.jobFacts.benefits.length >= 12) {
+      return;
+    }
+
+    if (this.jobFacts.benefits.some((benefit) => benefit.toLowerCase() === value.toLowerCase())) {
+      this.benefitDraft = '';
+      return;
+    }
+
+    this.jobFacts.benefits = [...this.jobFacts.benefits, value];
+    this.benefitDraft = '';
+  }
+
+  protected removeBenefit(index: number): void {
+    this.jobFacts.benefits = this.jobFacts.benefits.filter((_, i) => i !== index);
   }
 
   protected importOffer(): void {
@@ -244,6 +270,14 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
       company: this.company.trim(),
       language: this.language,
       offerUrl: this.normalizeUrl(this.offerUrl().trim()) || null,
+      jobFacts: {
+        workType: this.jobFacts.workType || null,
+        contractType: this.jobFacts.contractType || null,
+        location: this.jobFacts.location.trim() || null,
+        salary: this.jobFacts.salary.trim() || null,
+        benefits: this.jobFacts.benefits,
+        notes: this.jobFacts.notes.trim() || null,
+      },
       spokenQuestions: this.spoken.map((question) => ({
         ...question,
         question: question.question.trim(),
@@ -302,12 +336,32 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
     this.company = template.company;
     this.language = template.language;
     this.offerUrl.set(template.offerUrl ?? '');
+    this.jobFacts = this.emptyJobFacts(template.jobFacts);
+    this.benefitDraft = '';
     this.spoken = template.spokenQuestions.length
       ? template.spokenQuestions.map((question) => ({ ...question }))
       : [this.emptySpoken()];
     this.tasks = template.interactiveTasks.map((task) => ({ ...task }));
     this.copied.set(false);
     this.loading.set(false);
+  }
+
+  private emptyJobFacts(facts?: InterviewTemplateJobFacts | null): {
+    workType: string;
+    contractType: string;
+    location: string;
+    salary: string;
+    benefits: string[];
+    notes: string;
+  } {
+    return {
+      workType: facts?.workType ?? '',
+      contractType: facts?.contractType ?? '',
+      location: facts?.location ?? '',
+      salary: facts?.salary ?? '',
+      benefits: [...(facts?.benefits ?? [])],
+      notes: facts?.notes ?? '',
+    };
   }
 
   private emptySpoken(): TemplateSpokenQuestion {

@@ -71,7 +71,7 @@ public sealed class JoinInterviewTemplateCommandHandler(
 
         await sessions.SaveAsync(session, cancellationToken);
 
-        var overview = BuildVoiceOverview(template);
+        var overview = BuildVoiceOverview(template, definition);
         await offerDetails.PutAsync(
             userContext.UserId,
             sessionId,
@@ -205,16 +205,26 @@ public sealed class JoinInterviewTemplateCommandHandler(
         };
     }
 
-    private static string BuildVoiceOverview(InterviewTemplate template)
+    private static string BuildVoiceOverview(
+        InterviewTemplate template,
+        InterviewTemplateDefinition definition)
     {
-        var overview =
-            $"Interview for {template.JobTitle} at {template.Company}. Language: {template.Language}.";
+        var parts = new List<string>
+        {
+            $"Interview for {template.JobTitle} at {template.Company}. Language: {template.Language}.",
+        };
         if (!string.IsNullOrWhiteSpace(template.OfferUrl))
         {
-            overview += $" Offer posting: {template.OfferUrl}.";
+            parts.Add($"Offer posting: {template.OfferUrl}.");
         }
 
-        return overview;
+        var facts = definition.ResolvedJobFacts().ToVoiceOverviewLines();
+        if (!string.IsNullOrWhiteSpace(facts))
+        {
+            parts.Add(facts);
+        }
+
+        return string.Join(' ', parts);
     }
 
     private static string FirstNonEmpty(params string?[] values)

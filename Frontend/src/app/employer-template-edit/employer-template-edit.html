@@ -4,7 +4,8 @@
       <p class="page__eyebrow">Employer</p>
       <h1 class="page__title">{{ templateId() ? 'Edit template' : 'New template' }}</h1>
       <p class="page__lead">
-        Job title, company, and language are required. You can also import those from an offer URL.
+        Job title, company, and language are required. Add work type, salary, and benefits so the
+        interviewer can answer candidate questions about the role.
       </p>
     </header>
 
@@ -135,6 +136,117 @@
                 {{ generateLabel() }}
               </p>
             }
+          </div>
+        </fieldset>
+
+        <fieldset class="form__card">
+          <legend class="form__legend">Job facts for the interviewer</legend>
+          <p class="field__hint">
+            Optional. The voice agent will only use what you list here. Leave a field blank if it
+            should say that is not stated.
+          </p>
+          <div class="field__pair">
+            <div class="field">
+              <label class="field__label" for="work_type">Work type</label>
+              <select
+                id="work_type"
+                name="workType"
+                class="field__control field__control--select"
+                [(ngModel)]="jobFacts.workType"
+              >
+                <option value="">Not stated</option>
+                @for (item of workTypes; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="contract_type">Contract</label>
+              <select
+                id="contract_type"
+                name="contractType"
+                class="field__control field__control--select"
+                [(ngModel)]="jobFacts.contractType"
+              >
+                <option value="">Not stated</option>
+                @for (item of contractTypes; track item) {
+                  <option [value]="item">{{ item }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="field__pair">
+            <div class="field">
+              <label class="field__label" for="location">Location</label>
+              <input
+                id="location"
+                name="location"
+                class="field__control"
+                maxlength="160"
+                autocomplete="off"
+                [(ngModel)]="jobFacts.location"
+                placeholder="City, country, or timezone"
+              />
+            </div>
+            <div class="field">
+              <label class="field__label" for="salary">Salary</label>
+              <input
+                id="salary"
+                name="salary"
+                class="field__control"
+                maxlength="160"
+                autocomplete="off"
+                [(ngModel)]="jobFacts.salary"
+                placeholder="Range or pay band, if you share it"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="benefit_draft">Benefits</label>
+            <div class="field__row">
+              <input
+                id="benefit_draft"
+                name="benefitDraft"
+                class="field__control"
+                maxlength="80"
+                autocomplete="off"
+                [(ngModel)]="benefitDraft"
+                (keydown.enter)="$event.preventDefault(); addBenefit()"
+                placeholder="Private healthcare, 26 days PTO…"
+              />
+              <button
+                type="button"
+                class="btn btn--secondary"
+                [disabled]="!benefitDraft.trim() || jobFacts.benefits.length >= 12"
+                (click)="addBenefit()"
+              >
+                Add
+              </button>
+            </div>
+            @if (jobFacts.benefits.length) {
+              <ul class="chips">
+                @for (benefit of jobFacts.benefits; track benefit) {
+                  <li class="chip">
+                    <span>{{ benefit }}</span>
+                    <button type="button" class="chip__remove" (click)="removeBenefit($index)">
+                      Remove
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <div class="field">
+            <label class="field__label" for="job_notes">Other facts</label>
+            <textarea
+              id="job_notes"
+              name="jobNotes"
+              class="field__control"
+              rows="3"
+              maxlength="800"
+              [(ngModel)]="jobFacts.notes"
+              placeholder="Team size, hiring process, or anything else the interviewer may be asked"
+            ></textarea>
           </div>
         </fieldset>
 

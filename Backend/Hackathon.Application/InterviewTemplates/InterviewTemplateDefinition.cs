@@ -20,6 +20,11 @@ public sealed class InterviewTemplateDefinition
     [JsonPropertyName("interactiveTasks")]
     public IReadOnlyList<TemplateInteractiveTask> InteractiveTasks { get; init; } = [];
 
+    [JsonPropertyName("jobFacts")]
+    public InterviewTemplateJobFacts? JobFacts { get; init; }
+
+    public InterviewTemplateJobFacts ResolvedJobFacts() => JobFacts ?? new();
+
     public static InterviewTemplateDefinition Parse(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -83,6 +88,123 @@ public sealed class InterviewTemplateDefinition
                     "expectedInput must be code, diagram, schema, text, or free_string.");
             }
         }
+
+        ResolvedJobFacts().Validate();
+    }
+}
+
+public sealed class InterviewTemplateJobFacts
+{
+    public static readonly string[] WorkTypes = ["Remote", "Hybrid", "On-site"];
+    public static readonly string[] ContractTypes = ["Full-time", "Part-time", "Contract", "Internship"];
+
+    [JsonPropertyName("workType")]
+    public string? WorkType { get; init; }
+
+    [JsonPropertyName("contractType")]
+    public string? ContractType { get; init; }
+
+    [JsonPropertyName("location")]
+    public string? Location { get; init; }
+
+    [JsonPropertyName("salary")]
+    public string? Salary { get; init; }
+
+    [JsonPropertyName("benefits")]
+    public IReadOnlyList<string> Benefits { get; init; } = [];
+
+    [JsonPropertyName("notes")]
+    public string? Notes { get; init; }
+
+    public InterviewTemplateJobFacts Normalized() =>
+        new()
+        {
+            WorkType = NormalizeChoice(WorkType, WorkTypes),
+            ContractType = NormalizeChoice(ContractType, ContractTypes),
+            Location = Truncate(Location, 160),
+            Salary = Truncate(Salary, 160),
+            Benefits = Benefits
+                .Select(benefit => Truncate(benefit, 80))
+                .Where(benefit => benefit is not null)
+                .Cast<string>()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(12)
+                .ToList(),
+            Notes = Truncate(Notes, 800),
+        };
+
+    public void Validate()
+    {
+        var normalized = Normalized();
+        if (WorkType is { Length: > 0 } && normalized.WorkType is null)
+        {
+            throw new ArgumentException("Work type must be Remote, Hybrid, or On-site.");
+        }
+
+        if (ContractType is { Length: > 0 } && normalized.ContractType is null)
+        {
+            throw new ArgumentException("Contract type must be Full-time, Part-time, Contract, or Internship.");
+        }
+    }
+
+    public string ToVoiceOverviewLines()
+    {
+        var facts = Normalized();
+        var parts = new List<string>();
+        if (facts.WorkType is not null)
+        {
+            parts.Add($"Work type: {facts.WorkType}.");
+        }
+
+        if (facts.ContractType is not null)
+        {
+            parts.Add($"Contract: {facts.ContractType}.");
+        }
+
+        if (facts.Location is not null)
+        {
+            parts.Add($"Location: {facts.Location}.");
+        }
+
+        if (facts.Salary is not null)
+        {
+            parts.Add($"Salary: {facts.Salary}.");
+        }
+
+        if (facts.Benefits.Count > 0)
+        {
+            parts.Add($"Benefits: {string.Join("; ", facts.Benefits)}.");
+        }
+
+        if (facts.Notes is not null)
+        {
+            parts.Add(facts.Notes);
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    private static string? NormalizeChoice(string? value, IReadOnlyList<string> allowed)
+    {
+        var trimmed = value?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return null;
+        }
+
+        return allowed.FirstOrDefault(option =>
+            string.Equals(option, trimmed, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? Truncate(string? value, int maxLength)
+    {
+        var trimmed = value?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return null;
+        }
+
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength].TrimEnd();
     }
 }
 

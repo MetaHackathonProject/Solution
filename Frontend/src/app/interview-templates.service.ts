@@ -154,6 +154,18 @@ export interface TemplateInteractiveTask {
   assessmentGoal: string;
 }
 
+export const JOB_WORK_TYPES = ['Remote', 'Hybrid', 'On-site'] as const;
+export const JOB_CONTRACT_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship'] as const;
+
+export interface InterviewTemplateJobFacts {
+  workType?: string | null;
+  contractType?: string | null;
+  location?: string | null;
+  salary?: string | null;
+  benefits?: string[];
+  notes?: string | null;
+}
+
 export interface SaveInterviewTemplateRequest {
   name: string;
   jobTitle: string;
@@ -162,6 +174,7 @@ export interface SaveInterviewTemplateRequest {
   offerUrl?: string | null;
   spokenQuestions: TemplateSpokenQuestion[];
   interactiveTasks: TemplateInteractiveTask[];
+  jobFacts?: InterviewTemplateJobFacts;
 }
 
 export interface InterviewTemplate extends SaveInterviewTemplateRequest {
