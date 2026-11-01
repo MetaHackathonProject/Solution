@@ -227,6 +227,11 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
           return;
         }
 
+        if (generated.status === 'OFFER_NOT_REACHABLE') {
+          this.error.set('We could not open that job posting. Check the URL or enter title and company manually.');
+          return;
+        }
+
         if (generated.status !== 'SUCCESS') {
           return;
         }

@@ -67,7 +67,7 @@ Separate from the prep pipeline (started on interactive answer submit when the a
 
 Do **not** have agents write the progress table. That table is for live-interview runtime.
 
-Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. After plan generation, Step Functions invokes `Hackathon.SeedInterviewProgress` to fill the progress table from `plan.json`, then sets `SUCCESS`. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `IN_PROGRESS`, `COMPLETED`, `FAILED`. The API persists the session then `states:StartExecution`. Do not have agents write status.
+Orchestrate with Step Functions (`Infrastructure/step_functions.tf`), not a supervisor agent. After plan generation, Step Functions invokes `Hackathon.SeedInterviewProgress` to fill the progress table from `plan.json`, then sets `SUCCESS`. Statuses live on the sessions table attribute `status`: `STARTED`, `READING_OFFER`, `GENERATING_QUESTIONS`, `GENERATING_PLAN`, `SUCCESS`, `IN_PROGRESS`, `COMPLETED`, `FAILED`, `OFFER_NOT_REACHABLE`. After extract, Step Functions heads `offer/details.json` and sets `OFFER_NOT_REACHABLE` (and stops) when the object is missing or smaller than a real offer file. The API persists the session then `states:StartExecution`. Do not have agents write status.
 
 Live interview (API + frontend, not AgentCore):
 

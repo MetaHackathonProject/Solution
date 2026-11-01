@@ -6,7 +6,8 @@ export type InterviewSessionStatus =
   | 'SUCCESS'
   | 'IN_PROGRESS'
   | 'COMPLETED'
-  | 'FAILED';
+  | 'FAILED'
+  | 'OFFER_NOT_REACHABLE';
 
 export interface StatusStep {
   id: InterviewSessionStatus;
@@ -37,10 +38,15 @@ export const PREPARING_STEPS: StatusStep[] = [
   },
 ];
 
+export function isFailedStatus(status: string): boolean {
+  return status === 'FAILED' || status === 'OFFER_NOT_REACHABLE';
+}
+
 export function isTerminalStatus(status: string): boolean {
   return (
     status === 'SUCCESS' ||
     status === 'FAILED' ||
+    status === 'OFFER_NOT_REACHABLE' ||
     status === 'IN_PROGRESS' ||
     status === 'COMPLETED'
   );
@@ -73,6 +79,8 @@ export function statusLabel(status: string): string {
       return 'Completed';
     case 'FAILED':
       return 'Failed';
+    case 'OFFER_NOT_REACHABLE':
+      return 'Offer not reachable';
     default:
       return status;
   }
@@ -96,6 +104,8 @@ export function statusDetail(status: string): string {
       return 'This interview is finished. An overview is built from the conversation and interactive answers.';
     case 'FAILED':
       return 'Preparation failed. Create a new session to try again.';
+    case 'OFFER_NOT_REACHABLE':
+      return 'We could not open that job posting. Check the URL or paste the title and company yourself.';
     default:
       return 'Checking preparation status…';
   }
@@ -114,7 +124,7 @@ export function statusTone(status: string): 'preparing' | 'ready' | 'failed' | '
     return 'done';
   }
 
-  if (status === 'FAILED') {
+  if (isFailedStatus(status)) {
     return 'failed';
   }
 

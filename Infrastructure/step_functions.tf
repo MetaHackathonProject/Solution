@@ -33,6 +33,12 @@ data "aws_iam_policy_document" "interview_planner" {
 
   statement {
     effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.interview_sessions.arn}/*"]
+  }
+
+  statement {
+    effect    = "Allow"
     actions   = ["lambda:InvokeFunction"]
     resources = [module.seed_interview_progress.function_arn]
   }
@@ -131,7 +137,48 @@ resource "aws_sfn_state_machine" "interview_planner" {
           ErrorEquals = ["States.ALL"]
           Next        = "Set status to FAILED"
         }]
-        Next = "Set status to GENERATING_QUESTIONS"
+        Next = "Read offer details"
+      }
+      "Read offer details" = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::aws-sdk:s3:headObject"
+        Arguments = {
+          Bucket = aws_s3_bucket.interview_sessions.bucket
+          Key    = "{% $user_id & '/' & $session_id & '/offer/details.json' %}"
+        }
+        Assign = {
+          offer_bytes = "{% $states.result.ContentLength %}"
+        }
+        Output = "{% $states.input %}"
+        Catch = [{
+          ErrorEquals = ["States.ALL"]
+          Next        = "Set status to OFFER_NOT_REACHABLE"
+        }]
+        Next = "Offer extracted?"
+      }
+      "Offer extracted?" = {
+        Type = "Choice"
+        Choices = [{
+          Condition = "{% $number($offer_bytes) >= 200 %}"
+          Next      = "Set status to GENERATING_QUESTIONS"
+        }]
+        Default = "Set status to OFFER_NOT_REACHABLE"
+      }
+      "Set status to OFFER_NOT_REACHABLE" = {
+        Type     = "Task"
+        Resource = "arn:aws:states:::dynamodb:updateItem"
+        Arguments = {
+          TableName        = aws_dynamodb_table.interview_sessions.name
+          Key              = local.interview_planner_status_key
+          UpdateExpression = "SET #status = :status_value"
+          ExpressionAttributeNames = {
+            "#status" = "status"
+          }
+          ExpressionAttributeValues = {
+            ":status_value" = { S = "OFFER_NOT_REACHABLE" }
+          }
+        }
+        End = true
       }
       "Set status to GENERATING_QUESTIONS" = {
         Type     = "Task"

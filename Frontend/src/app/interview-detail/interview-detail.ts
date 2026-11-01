@@ -6,6 +6,7 @@ import { Subscription, catchError, of, switchMap, timer } from 'rxjs';
 import { AuthService } from '../auth.service';
 import {
   PREPARING_STEPS,
+  isFailedStatus,
   isPreparingStatus,
   isTerminalStatus,
   statusDetail,
@@ -65,7 +66,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   protected readonly overviewFailed = computed(
     () => this.completed() && this.overviewStatus() === 'ERROR',
   );
-  protected readonly failed = computed(() => this.status() === 'FAILED');
+  protected readonly failed = computed(() => isFailedStatus(this.status()));
   protected readonly isEmployerView = computed(() => this.session()?.isOwner === false);
   protected readonly isAssignedCandidate = computed(
     () => this.session()?.source === 'employer' && this.session()?.isOwner !== false,
@@ -100,9 +101,13 @@ export class InterviewDetail implements OnInit, OnDestroy {
       ? 'Building this candidate’s hiring overview from the conversation and interactive answers…'
       : 'Building your overview from the conversation and interactive answers…',
   );
-  protected readonly stepStatus = computed(() =>
-    this.status() === 'FAILED' ? this.lastPreparingStatus() : this.status(),
-  );
+  protected readonly stepStatus = computed(() => {
+    if (this.status() === 'OFFER_NOT_REACHABLE') {
+      return 'READING_OFFER';
+    }
+
+    return this.status() === 'FAILED' ? this.lastPreparingStatus() : this.status();
+  });
 
   private pollSub: Subscription | null = null;
   private overviewFetchInFlight = false;
@@ -129,7 +134,7 @@ export class InterviewDetail implements OnInit, OnDestroy {
   }
 
   protected stepClass(stepId: (typeof PREPARING_STEPS)[number]['id']): string {
-    if (this.status() === 'FAILED' && stepId === this.lastPreparingStatus()) {
+    if (isFailedStatus(this.status()) && stepId === this.stepStatus()) {
       return 'prep-step prep-step--failed';
     }
 
@@ -152,6 +157,8 @@ export class InterviewDetail implements OnInit, OnDestroy {
           return 'This candidate finished. Review the hiring overview below, including scores and camera presence.';
         case 'FAILED':
           return 'This candidate’s session failed to prepare.';
+        case 'OFFER_NOT_REACHABLE':
+          return 'This candidate’s session could not open the job posting.';
         default:
           return statusDetail(status);
       }
@@ -169,6 +176,8 @@ export class InterviewDetail implements OnInit, OnDestroy {
           return 'Continue your assigned interview from where you left off.';
         case 'FAILED':
           return 'This assigned interview could not be prepared. Contact the employer for a new link.';
+        case 'OFFER_NOT_REACHABLE':
+          return 'We could not open that job posting. Contact the employer for a new link.';
         default:
           return statusDetail(status);
       }
@@ -292,6 +301,8 @@ export class InterviewDetail implements OnInit, OnDestroy {
 
         if (isPreparingStatus(session.status)) {
           this.lastPreparingStatus.set(session.status);
+        } else if (session.status === 'OFFER_NOT_REACHABLE') {
+          this.lastPreparingStatus.set('READING_OFFER');
         }
 
         this.session.set(session);

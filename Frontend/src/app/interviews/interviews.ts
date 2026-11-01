@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription, catchError, of, switchMap, timer } from 'rxjs';
 import { AuthService } from '../auth.service';
 import {
+  isFailedStatus,
   isPreparingStatus,
   statusLabel,
   statusTone,
@@ -39,7 +40,7 @@ export class Interviews implements OnInit, OnDestroy {
     this.sessions().filter((session) => session.status === 'COMPLETED'),
   );
   protected readonly failed = computed(() =>
-    this.sessions().filter((session) => session.status === 'FAILED'),
+    this.sessions().filter((session) => isFailedStatus(session.status)),
   );
 
   private pollSub: Subscription | null = null;

@@ -10,4 +10,5 @@ public static class InterviewSessionStatus
     public const string InProgress = "IN_PROGRESS";
     public const string Completed = "COMPLETED";
     public const string Failed = "FAILED";
+    public const string OfferNotReachable = "OFFER_NOT_REACHABLE";
 }
