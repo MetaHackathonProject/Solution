@@ -101,3 +101,10 @@ output "agent_harness_log_groups" {
     for name, group in aws_cloudwatch_log_group.harness_invocation : name => group.name
   }
 }
+
+output "agent_harness_runtime_log_groups" {
+  value = {
+    for name, runtime in local.harness_runtimes :
+    name => "/aws/bedrock-agentcore/runtimes/${runtime.agent_runtime_id}-DEFAULT"
+  }
+}

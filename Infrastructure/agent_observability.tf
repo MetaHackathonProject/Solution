@@ -45,12 +45,19 @@ resource "aws_cloudwatch_log_group" "harness_invocation" {
   retention_in_days = 5
 }
 
+locals {
+  harness_runtimes = {
+    for name, harness in aws_bedrockagentcore_harness.agent :
+    name => harness.environment_actual[0].agentcore_runtime_environment[0]
+  }
+}
+
 resource "aws_cloudwatch_log_delivery_source" "harness_logs" {
   for_each = local.agents
 
   name         = "${local.name_prefix}-${replace(each.key, "_", "-")}-logs"
   log_type     = "APPLICATION_LOGS"
-  resource_arn = aws_bedrockagentcore_harness.agent[each.key].arn
+  resource_arn = local.harness_runtimes[each.key].agent_runtime_arn
 }
 
 resource "aws_cloudwatch_log_delivery_source" "harness_traces" {
@@ -58,7 +65,7 @@ resource "aws_cloudwatch_log_delivery_source" "harness_traces" {
 
   name         = "${local.name_prefix}-${replace(each.key, "_", "-")}-traces"
   log_type     = "TRACES"
-  resource_arn = aws_bedrockagentcore_harness.agent[each.key].arn
+  resource_arn = local.harness_runtimes[each.key].agent_runtime_arn
 }
 
 resource "aws_cloudwatch_log_delivery_destination" "harness_logs" {

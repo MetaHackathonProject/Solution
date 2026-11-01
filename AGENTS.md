@@ -51,7 +51,7 @@ tools:
 
 Terraform injects `Authorization` from `TF_VAR_decodo_api_key` / GitHub `DECODO_API_KEY`. If the browser cannot open the posting, `offer_extraction` calls Decodo `scrape_as_markdown` on the same URL; if that also fails, it calls Decodo `chatgpt` with web search. Extract only from that page or answer.
 
-Harness env already set in Terraform: `INTERVIEW_SESSIONS_BUCKET`, `INTERVIEW_SESSION_QUESTIONS_TABLE`, `PENDING_INTERVIEW_TASKS_TABLE`. IAM covers S3 get/put on the sessions bucket, DynamoDB on the questions + pending-tasks tables, memory `ListEvents`, `GetResourceApiKey` on the token vault, workload identity, and the key ARN. Invocation logs are `/aws/vendedlogs/bedrock-agentcore/harness/<name>` plus `/aws/bedrock-agentcore/runtimes/*`; traces need CloudWatch Transaction Search.
+Harness env already set in Terraform: `INTERVIEW_SESSIONS_BUCKET`, `INTERVIEW_SESSION_QUESTIONS_TABLE`, `PENDING_INTERVIEW_TASKS_TABLE`. IAM covers S3 get/put on the sessions bucket, DynamoDB on the questions + pending-tasks tables, memory `ListEvents`, `GetResourceApiKey` on the token vault, workload identity, and the key ARN. Invocation logs are `/aws/vendedlogs/bedrock-agentcore/harness/<name>` (delivery from the underlying runtime) plus `/aws/bedrock-agentcore/runtimes/<runtime_id>-DEFAULT`; traces need CloudWatch Transaction Search.
 
 Prompts must name `$INTERVIEW_SESSIONS_BUCKET`, `$INTERVIEW_SESSION_QUESTIONS_TABLE`, and `$PENDING_INTERVIEW_TASKS_TABLE` where used. User message always includes `user_id` and `session_id`.
 
