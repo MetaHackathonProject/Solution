@@ -6,6 +6,10 @@ public sealed record InterviewSessionAccess(InterviewSession Session, bool IsOwn
 {
     public bool CanSeeCameraOverview => IsOwner ? !Session.HideCameraOverview : true;
 
+    public bool CanSeeOverview =>
+        !IsOwner ||
+        !string.Equals(Session.Source, InterviewSessionSource.Employer, StringComparison.Ordinal);
+
     public bool CanPlay => IsOwner;
 
     public bool CanRetake => IsOwner && Session.RetakeAllowed;

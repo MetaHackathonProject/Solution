@@ -102,6 +102,7 @@ public sealed class BuildInterviewOverviewCommandHandler(
                 transcriptJson,
                 judgments,
                 session.Settings.RecruiterLanguage,
+                string.Equals(session.Source, InterviewSessionSource.Employer, StringComparison.Ordinal),
                 cancellationToken);
 
             try

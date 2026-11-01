@@ -67,24 +67,37 @@ export class InterviewDetail implements OnInit, OnDestroy {
   );
   protected readonly failed = computed(() => this.status() === 'FAILED');
   protected readonly isEmployerView = computed(() => this.session()?.isOwner === false);
+  protected readonly isAssignedCandidate = computed(
+    () => this.session()?.source === 'employer' && this.session()?.isOwner !== false,
+  );
+  protected readonly canSeeOverview = computed(() => !this.isAssignedCandidate());
   protected readonly pageLead = computed(() => {
     if (this.isEmployerView()) {
-      return 'Review this candidate’s interview, including the full overview and camera presence.';
+      return 'Hiring overview for this candidate: summarized answers, scores, and camera presence.';
     }
 
-    if (this.session()?.source === 'employer') {
-      return 'This interview was assigned by an employer. You have one attempt, and your camera must stay on.';
+    if (this.isAssignedCandidate()) {
+      return this.completed()
+        ? 'This assigned interview is finished. The employer has your results.'
+        : 'This interview was assigned by an employer. You have one attempt, and your camera must stay on.';
     }
 
     return 'Follow preparation, then start the mock interview when the plan is ready.';
   });
-  protected readonly statusTitle = computed(() => statusLabel(this.status()));
+  protected readonly statusTitle = computed(() =>
+    this.completed() && this.isAssignedCandidate() ? 'Interview complete' : statusLabel(this.status()),
+  );
   protected readonly statusCopy = computed(() =>
-    this.detailCopy(this.status(), this.isEmployerView(), this.session()?.source === 'employer'),
+    this.detailCopy(
+      this.status(),
+      this.isEmployerView(),
+      this.session()?.source === 'employer',
+      this.isAssignedCandidate(),
+    ),
   );
   protected readonly overviewWaitingCopy = computed(() =>
     this.isEmployerView()
-      ? 'Building this candidate’s overview from the conversation and interactive answers…'
+      ? 'Building this candidate’s hiring overview from the conversation and interactive answers…'
       : 'Building your overview from the conversation and interactive answers…',
   );
   protected readonly stepStatus = computed(() =>
@@ -123,7 +136,12 @@ export class InterviewDetail implements OnInit, OnDestroy {
     return `prep-step prep-step--${stepState(stepId, this.stepStatus())}`;
   }
 
-  private detailCopy(status: string, employerView: boolean, assigned: boolean): string {
+  private detailCopy(
+    status: string,
+    employerView: boolean,
+    assigned: boolean,
+    assignedCandidate: boolean,
+  ): string {
     if (employerView) {
       switch (status) {
         case 'SUCCESS':
@@ -131,12 +149,16 @@ export class InterviewDetail implements OnInit, OnDestroy {
         case 'IN_PROGRESS':
           return 'This candidate’s interview is in progress.';
         case 'COMPLETED':
-          return 'This candidate finished the interview. Review the overview below, including camera presence.';
+          return 'This candidate finished. Review the hiring overview below, including scores and camera presence.';
         case 'FAILED':
           return 'This candidate’s session failed to prepare.';
         default:
           return statusDetail(status);
       }
+    }
+
+    if (assignedCandidate && status === 'COMPLETED') {
+      return 'Thank you for taking part. This interview is over, and your results have been sent to the employer.';
     }
 
     if (assigned) {
@@ -145,8 +167,6 @@ export class InterviewDetail implements OnInit, OnDestroy {
           return 'Your assigned interview is ready. Start when you can stay on camera.';
         case 'IN_PROGRESS':
           return 'Continue your assigned interview from where you left off.';
-        case 'COMPLETED':
-          return 'You finished this assigned interview. Your overview is below.';
         case 'FAILED':
           return 'This assigned interview could not be prepared. Contact the employer for a new link.';
         default:
@@ -278,7 +298,11 @@ export class InterviewDetail implements OnInit, OnDestroy {
         this.loading.set(false);
         this.error.set(null);
 
-        if (session.status === 'COMPLETED' && session.overviewStatus === 'READY') {
+        if (
+          session.status === 'COMPLETED' &&
+          session.overviewStatus === 'READY' &&
+          !(session.source === 'employer' && session.isOwner !== false)
+        ) {
           this.loadOverview(sessionId);
         }
 
@@ -300,6 +324,10 @@ export class InterviewDetail implements OnInit, OnDestroy {
     }
 
     if (current.status !== 'COMPLETED') {
+      return false;
+    }
+
+    if (current.source === 'employer' && current.isOwner !== false) {
       return false;
     }
 

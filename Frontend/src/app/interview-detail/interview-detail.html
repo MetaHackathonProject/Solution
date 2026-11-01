@@ -52,9 +52,9 @@
         aria-live="polite"
       >
         <div class="prep__hero">
-          @if (preparing() || overviewGenerating()) {
+          @if (preparing() || (overviewGenerating() && canSeeOverview())) {
             <span class="prep__spinner" aria-hidden="true"></span>
-          } @else if (ready() || overviewReady()) {
+          } @else if (ready() || overviewReady() || (completed() && isAssignedCandidate())) {
             <span class="prep__icon prep__icon--ready" aria-hidden="true">✓</span>
           } @else {
             <span class="prep__icon prep__icon--failed" aria-hidden="true">!</span>
@@ -144,9 +144,11 @@
         </div>
       </section>
 
-      @if (completed()) {
+      @if (completed() && canSeeOverview()) {
         <section class="overview" aria-labelledby="overview-title">
-          <h2 class="overview__title" id="overview-title">Interview overview</h2>
+          <h2 class="overview__title" id="overview-title">
+            {{ isEmployerView() ? 'Hiring overview' : 'Interview overview' }}
+          </h2>
 
           @if (overviewGenerating()) {
             <div class="overview__waiting" role="status" aria-live="polite">
@@ -165,7 +167,9 @@
           } @else if (overview(); as result) {
             <div class="overview__score" aria-label="Overall score {{ result.score }} out of 10">
               <span class="overview__score-value">{{ result.score }}</span>
-              <span class="overview__score-label">/ 10 overall</span>
+              <span class="overview__score-label">
+                {{ isEmployerView() ? '/ 10 overall score' : '/ 10 overall' }}
+              </span>
             </div>
 
             <p class="overview__summary">{{ result.summary }}</p>
@@ -200,7 +204,9 @@
 
             @if (result.recommendations.length) {
               <div class="overview__block">
-                <h3 class="overview__heading">Recommendations</h3>
+                <h3 class="overview__heading">
+                  {{ isEmployerView() ? 'Hiring notes' : 'Recommendations' }}
+                </h3>
                 <ul class="overview__list">
                   @for (item of result.recommendations; track item) {
                     <li>{{ item }}</li>
@@ -215,9 +221,20 @@
                 <ol class="overview__questions">
                   @for (item of result.questions; track item.question) {
                     <li class="overview__question">
-                      <p class="overview__q">{{ item.question }}</p>
-                      <p class="overview__a"><span>Answer</span> {{ item.answer }}</p>
-                      <p class="overview__opinion"><span>Opinion</span> {{ item.opinion }}</p>
+                      <div class="overview__q-row">
+                        <p class="overview__q">{{ item.question }}</p>
+                        @if (item.score != null) {
+                          <span class="overview__q-score">{{ item.score }}/10</span>
+                        }
+                      </div>
+                      <p class="overview__a">
+                        <span>{{ isEmployerView() ? 'What they said' : 'Answer' }}</span>
+                        {{ item.answer }}
+                      </p>
+                      <p class="overview__opinion">
+                        <span>{{ isEmployerView() ? 'Assessment' : 'Opinion' }}</span>
+                        {{ item.opinion }}
+                      </p>
                       @if (item.recommendations.length) {
                         <ul class="overview__list">
                           @for (tip of item.recommendations; track tip) {

@@ -31,13 +31,22 @@ public sealed class MetaInterviewOverviewComposer(
         string transcriptJson,
         IReadOnlyList<InteractiveJudgment> judgments,
         string feedbackLanguage,
+        bool forEmployer,
         CancellationToken cancellationToken)
     {
         var judgmentsJson = JsonSerializer.Serialize(judgments, OverviewJsonOptions);
         var language = string.IsNullOrWhiteSpace(feedbackLanguage) ? "en" : feedbackLanguage;
+        var audience = forEmployer
+            ? "Write a hiring-manager debrief in language '{0}'. Address the employer, not the candidate. " +
+              "Summarize what the candidate said, score their answers, and say what that means for the role. " +
+              "recommendations must be next steps for the employer (follow-ups, hire signals, risks), not coaching tips for the candidate. " +
+              "opinion is your assessment of that answer. Each spoken question must include score (1-10 int)."
+            : "Write an interview overview in language '{0}' for the person who just practiced. " +
+              "Be specific, fair, and concise. recommendations may coach the candidate.";
         var user =
-            $"Write an interview overview in language '{language}'. Return ONLY a single valid JSON object (no markdown).\n" +
-            "Keys: summary (string), score (1-10 int), questions (array of objects with question, answer, opinion, recommendations string array), " +
+            string.Format(audience, language) +
+            " Return ONLY a single valid JSON object (no markdown).\n" +
+            "Keys: summary (string), score (1-10 int), questions (array of objects with question, answer, opinion, recommendations string array, score 1-10 int), " +
             "recommendations (string array), interactiveTasks (array of objects with taskId, kind, score, strengths, gaps, summary).\n" +
             "Rules: every string must be JSON-escaped (\\\" for quotes, \\\\ for backslash, \\n for newlines). " +
             "Keep each question/answer/opinion under 400 characters. Prefer ASCII quotes. " +
@@ -47,7 +56,9 @@ public sealed class MetaInterviewOverviewComposer(
             $"Interactive judgments JSON:\n{Truncate(judgmentsJson, 8000)}";
 
         var raw = await SendChatAsync(
-            "You are an interview debrief writer. Be specific, fair, and concise. Output one valid JSON object only.",
+            forEmployer
+                ? "You write hiring debriefs for employers. Be specific, fair, and concise. Output one valid JSON object only."
+                : "You are an interview debrief writer. Be specific, fair, and concise. Output one valid JSON object only.",
             user,
             cancellationToken);
 
@@ -153,11 +164,13 @@ public sealed class MetaInterviewOverviewComposer(
                 continue;
             }
 
+            var questionScore = ReadInt(item, "score");
             list.Add(new OverviewQuestion(
                 question,
                 ReadString(item, "answer") ?? string.Empty,
                 ReadString(item, "opinion") ?? string.Empty,
-                ReadStringArray(item, "recommendations")));
+                ReadStringArray(item, "recommendations"),
+                questionScore is null ? null : Math.Clamp(questionScore.Value, 1, 10)));
         }
 
         return list;

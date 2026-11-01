@@ -6,5 +6,6 @@ public interface IInterviewOverviewComposer
         string transcriptJson,
         IReadOnlyList<InteractiveJudgment> judgments,
         string feedbackLanguage,
+        bool forEmployer,
         CancellationToken cancellationToken);
 }

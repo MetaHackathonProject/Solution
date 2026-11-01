@@ -43,16 +43,23 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
         string sessionId,
         CancellationToken cancellationToken)
     {
-        var overview = await mediator.Send(
-            new GetInterviewOverviewQuery(sessionId),
-            cancellationToken);
-
-        if (overview is null)
+        try
         {
-            return NotFound();
-        }
+            var overview = await mediator.Send(
+                new GetInterviewOverviewQuery(sessionId),
+                cancellationToken);
 
-        return Ok(ToOverviewResponse(overview));
+            if (overview is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(ToOverviewResponse(overview));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { detail = ex.Message });
+        }
     }
 
     [HttpGet("{sessionId}/question-helpers/active")]
@@ -369,7 +376,8 @@ public sealed class InterviewSessionsController(IMediator mediator) : Controller
                     question.Question,
                     question.Answer,
                     question.Opinion,
-                    question.Recommendations))
+                    question.Recommendations,
+                    question.Score))
                 .ToList(),
             overview.Recommendations,
             overview.InteractiveTasks
@@ -448,7 +456,8 @@ public sealed record InterviewOverviewQuestionResponse(
     string Question,
     string Answer,
     string Opinion,
-    IReadOnlyList<string> Recommendations);
+    IReadOnlyList<string> Recommendations,
+    int? Score);
 
 public sealed record CameraPresenceResponse(
     string Presence,

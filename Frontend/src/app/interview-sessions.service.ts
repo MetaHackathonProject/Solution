@@ -43,6 +43,7 @@ export interface InterviewOverviewQuestion {
   answer: string;
   opinion: string;
   recommendations: string[];
+  score?: number | null;
 }
 
 export interface InterviewOverviewInteractiveTask {

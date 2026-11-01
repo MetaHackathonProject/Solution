@@ -14,7 +14,8 @@ public sealed record OverviewQuestion(
     [property: JsonPropertyName("question")] string Question,
     [property: JsonPropertyName("answer")] string Answer,
     [property: JsonPropertyName("opinion")] string Opinion,
-    [property: JsonPropertyName("recommendations")] IReadOnlyList<string> Recommendations);
+    [property: JsonPropertyName("recommendations")] IReadOnlyList<string> Recommendations,
+    [property: JsonPropertyName("score")] int? Score = null);
 
 public sealed record InterviewResultOverview(
     [property: JsonPropertyName("summary")] string Summary,

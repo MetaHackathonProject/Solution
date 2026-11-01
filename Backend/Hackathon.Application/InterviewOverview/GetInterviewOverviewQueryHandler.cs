@@ -21,6 +21,11 @@ public sealed class GetInterviewOverviewQueryHandler(
             return null;
         }
 
+        if (!resolved.CanSeeOverview)
+        {
+            throw new UnauthorizedAccessException("Overview is only available to the employer.");
+        }
+
         if (resolved.Session.OverviewStatus != OverviewStatus.Ready)
         {
             return null;
