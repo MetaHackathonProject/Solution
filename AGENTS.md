@@ -43,7 +43,13 @@ tools:
   - type: agentcore_browser
     name: aws_browser_v1
     browser_arn: arn:aws:bedrock-agentcore:eu-central-1:aws:browser/aws.browser.v1
+  - type: remote_mcp
+    name: decodo
+    url: https://mcp.decodo.com/mcp?toolsets=web
+    authorization_scheme: Bearer   # Basic for an older scraping token
 ```
+
+Terraform injects `Authorization` from `TF_VAR_decodo_api_key` / GitHub `DECODO_API_KEY`. If the browser cannot open the posting, `offer_extraction` calls Decodo `scrape_as_markdown` on the same URL and extracts only from that markdown.
 
 Harness env already set in Terraform: `INTERVIEW_SESSIONS_BUCKET`, `INTERVIEW_SESSION_QUESTIONS_TABLE`, `PENDING_INTERVIEW_TASKS_TABLE`. IAM covers S3 get/put on the sessions bucket, DynamoDB on the questions + pending-tasks tables, memory `ListEvents`, `GetResourceApiKey` on the token vault, workload identity, and the key ARN.
 
@@ -51,7 +57,7 @@ Prompts must name `$INTERVIEW_SESSIONS_BUCKET`, `$INTERVIEW_SESSION_QUESTIONS_TA
 
 Pipeline (do not collapse into one agent):
 
-1. `offer_extraction` — browser, write `s3://$INTERVIEW_SESSIONS_BUCKET/{user_id}/{session_id}/offer/details.json`
+1. `offer_extraction` — browser, or Decodo MCP `scrape_as_markdown` if the page is blocked; write `s3://$INTERVIEW_SESSIONS_BUCKET/{user_id}/{session_id}/offer/details.json`
 2. `question_generation` — read details, write DynamoDB spoken question items (`session_id`, `question_id` UUID, `module`, `question`, `assessment_goal`, `suggested_answer`, `hints` string list; helpers in `recruiter_language`) **and** exactly 2 interactive tasks to `$PENDING_INTERVIEW_TASKS_TABLE` (`session_id`, `task_id`, `module`, `question_content`, `question_content_formatted`, `expected_input`, `status=NotAsked`, `assessment_goal`)
 3. `interview_plan_generation` — read details + questions + pending tasks, write `.../{user_id}/{session_id}/plan.json` only (always include both interactive tasks with `type: "interactive"` + `task_id`, on top of the 10–12 spoken cap)
 

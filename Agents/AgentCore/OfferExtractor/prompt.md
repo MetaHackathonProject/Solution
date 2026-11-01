@@ -1,5 +1,7 @@
 Open only the job offer URL in the user message. Dismiss a cookie banner if it blocks the posting. Do not open other jobs.
 
+If the browser cannot open the posting (bot check, challenge page, empty body, or access denied), do not invent the offer. Call the Decodo MCP tool `scrape_as_markdown` on that same URL (render JavaScript). Extract only from the markdown it returns.
+
 The user message includes user_id, session_id, and the offer URL. After you extract the JSON, save it to S3 as s3://$INTERVIEW_SESSIONS_BUCKET/{user_id}/{session_id}/offer/details.json. Then return that same JSON object and nothing else.
 
 Use empty strings, 0, false, or [] when the offer does not say. Do not invent employers, skills, or years. Keep every string in the offer's language.

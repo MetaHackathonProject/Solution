@@ -40,6 +40,13 @@ variable "meta_model_id" {
   default     = "muse-spark-1.3"
 }
 
+variable "decodo_api_key" {
+  description = "Decodo MCP / Web Scraping API token (set via TF_VAR_decodo_api_key / GitHub secret DECODO_API_KEY). Older plans use the Basic token."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "meta_wonder_model_id" {
   description = "Meta Muse Wonder model id used to judge coding interactive answers"
   type        = string

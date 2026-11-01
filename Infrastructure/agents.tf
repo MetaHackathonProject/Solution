@@ -213,6 +213,23 @@ resource "aws_bedrockagentcore_harness" "agent" {
           }
         }
       }
+
+      dynamic "config" {
+        for_each = tool.value.type == "remote_mcp" ? [1] : []
+
+        content {
+          remote_mcp {
+            url = tool.value.url
+            headers = {
+              Authorization = format(
+                "%s %s",
+                try(tool.value.authorization_scheme, "Bearer"),
+                var.decodo_api_key
+              )
+            }
+          }
+        }
+      }
     }
   }
 

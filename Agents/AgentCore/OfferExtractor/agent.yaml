@@ -10,3 +10,7 @@ tools:
   - type: agentcore_browser
     name: aws_browser_v1
     browser_arn: arn:aws:bedrock-agentcore:eu-central-1:aws:browser/aws.browser.v1
+  - type: remote_mcp
+    name: decodo
+    url: https://mcp.decodo.com/mcp?toolsets=web
+    authorization_scheme: Bearer
