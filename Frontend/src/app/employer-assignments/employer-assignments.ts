@@ -46,4 +46,8 @@ export class EmployerAssignments implements OnInit {
   protected createdLabel(unixSeconds: number): Date {
     return new Date(unixSeconds * 1000);
   }
+
+  protected candidateLabel(item: EmployerAssignment): string {
+    return item.candidateEmail?.trim() || 'Candidate';
+  }
 }

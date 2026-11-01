@@ -38,6 +38,7 @@ public sealed class DynamoDbUserProfileStore(
                     ["role"] = new(profile.Role),
                     ["created_at"] = new() { N = profile.CreatedAt.ToString() },
                     ["updated_at"] = new() { N = profile.UpdatedAt.ToString() },
+                    ["email"] = new(profile.Email),
                 },
             },
             cancellationToken);
@@ -47,7 +48,8 @@ public sealed class DynamoDbUserProfileStore(
             item["user_id"].S,
             item.GetValueOrDefault("role")?.S ?? string.Empty,
             ParseLong(item.GetValueOrDefault("created_at")),
-            ParseLong(item.GetValueOrDefault("updated_at")));
+            ParseLong(item.GetValueOrDefault("updated_at")),
+            item.GetValueOrDefault("email")?.S ?? string.Empty);
 
     private static long ParseLong(AttributeValue? value) =>
         value?.N is { Length: > 0 } number && long.TryParse(number, out var parsed)

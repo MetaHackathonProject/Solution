@@ -29,6 +29,7 @@ public sealed class DynamoDbInterviewAssignmentStore(
                     ["job_title"] = new(assignment.JobTitle),
                     ["company"] = new(assignment.Company),
                     ["created_at"] = new() { N = assignment.CreatedAt.ToString() },
+                    ["candidate_email"] = new(assignment.CandidateEmail),
                 },
             },
             cancellationToken);
@@ -123,7 +124,8 @@ public sealed class DynamoDbInterviewAssignmentStore(
             item.GetValueOrDefault("template_name")?.S ?? string.Empty,
             item.GetValueOrDefault("job_title")?.S ?? string.Empty,
             item.GetValueOrDefault("company")?.S ?? string.Empty,
-            ParseLong(item.GetValueOrDefault("created_at")));
+            ParseLong(item.GetValueOrDefault("created_at")),
+            item.GetValueOrDefault("candidate_email")?.S ?? string.Empty);
 
     private static long ParseLong(AttributeValue? value) =>
         value?.N is { Length: > 0 } number && long.TryParse(number, out var parsed)

@@ -66,8 +66,27 @@ export class InterviewDetail implements OnInit, OnDestroy {
     () => this.completed() && this.overviewStatus() === 'ERROR',
   );
   protected readonly failed = computed(() => this.status() === 'FAILED');
+  protected readonly isEmployerView = computed(() => this.session()?.isOwner === false);
+  protected readonly pageLead = computed(() => {
+    if (this.isEmployerView()) {
+      return 'Review this candidate’s interview, including the full overview and camera presence.';
+    }
+
+    if (this.session()?.source === 'employer') {
+      return 'This interview was assigned by an employer. You have one attempt, and your camera must stay on.';
+    }
+
+    return 'Follow preparation, then start the mock interview when the plan is ready.';
+  });
   protected readonly statusTitle = computed(() => statusLabel(this.status()));
-  protected readonly statusCopy = computed(() => statusDetail(this.status()));
+  protected readonly statusCopy = computed(() =>
+    this.detailCopy(this.status(), this.isEmployerView(), this.session()?.source === 'employer'),
+  );
+  protected readonly overviewWaitingCopy = computed(() =>
+    this.isEmployerView()
+      ? 'Building this candidate’s overview from the conversation and interactive answers…'
+      : 'Building your overview from the conversation and interactive answers…',
+  );
   protected readonly stepStatus = computed(() =>
     this.status() === 'FAILED' ? this.lastPreparingStatus() : this.status(),
   );
@@ -102,6 +121,40 @@ export class InterviewDetail implements OnInit, OnDestroy {
     }
 
     return `prep-step prep-step--${stepState(stepId, this.stepStatus())}`;
+  }
+
+  private detailCopy(status: string, employerView: boolean, assigned: boolean): string {
+    if (employerView) {
+      switch (status) {
+        case 'SUCCESS':
+          return 'This candidate’s interview is ready to take.';
+        case 'IN_PROGRESS':
+          return 'This candidate’s interview is in progress.';
+        case 'COMPLETED':
+          return 'This candidate finished the interview. Review the overview below, including camera presence.';
+        case 'FAILED':
+          return 'This candidate’s session failed to prepare.';
+        default:
+          return statusDetail(status);
+      }
+    }
+
+    if (assigned) {
+      switch (status) {
+        case 'SUCCESS':
+          return 'Your assigned interview is ready. Start when you can stay on camera.';
+        case 'IN_PROGRESS':
+          return 'Continue your assigned interview from where you left off.';
+        case 'COMPLETED':
+          return 'You finished this assigned interview. Your overview is below.';
+        case 'FAILED':
+          return 'This assigned interview could not be prepared. Contact the employer for a new link.';
+        default:
+          return statusDetail(status);
+      }
+    }
+
+    return statusDetail(status);
   }
 
   protected difficultyLabel(value: string): string {

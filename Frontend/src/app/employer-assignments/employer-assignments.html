@@ -31,7 +31,8 @@
         @for (item of assignments(); track item.sessionId) {
           <li>
             <a class="row" [routerLink]="['/interviews', item.sessionId]">
-              <span class="row__title">{{ item.jobTitle }} · {{ item.company }}</span>
+              <span class="row__title">{{ candidateLabel(item) }}</span>
+              <span class="row__sub">{{ item.jobTitle }} · {{ item.company }}</span>
               <span class="row__sub">
                 {{ item.templateName }}
                 · {{ statusLabel(item.status) }}

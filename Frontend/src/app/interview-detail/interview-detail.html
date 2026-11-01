@@ -14,15 +14,7 @@
           />
         }
       </div>
-      <p class="page__lead">
-        @if (session()?.source === 'employer' && session()?.isOwner === false) {
-          Review this candidate’s progress and overview. Camera presence is included for employers.
-        } @else if (session()?.source === 'employer') {
-          This interview was assigned by an employer. It is one-shot and requires your camera.
-        } @else {
-          Follow preparation progress, then start the mock interview when the plan is ready.
-        }
-      </p>
+      <p class="page__lead">{{ pageLead() }}</p>
     </header>
 
     @if (!auth.isAuthenticated()) {
@@ -89,10 +81,12 @@
 
         @if (ready()) {
           <dl class="facts">
-            <div class="facts__item">
-              <dt>Difficulty</dt>
-              <dd>{{ difficultyLabel(activeSession.settings.difficulty) }}</dd>
-            </div>
+            @if (isEmployerView()) {
+              <div class="facts__item">
+                <dt>Difficulty</dt>
+                <dd>{{ difficultyLabel(activeSession.settings.difficulty) }}</dd>
+              </div>
+            }
             <div class="facts__item">
               <dt>Language</dt>
               <dd>{{ activeSession.settings.recruiterLanguage }}</dd>
@@ -104,10 +98,12 @@
           </dl>
         }
 
-        <p class="prep__meta">
-          <span>Session ID</span>
-          <code>{{ activeSession.sessionId }}</code>
-        </p>
+        @if (isEmployerView()) {
+          <p class="prep__meta">
+            <span>Session ID</span>
+            <code>{{ activeSession.sessionId }}</code>
+          </p>
+        }
 
         @if (error()) {
           <p class="alert" role="alert">{{ error() }}</p>
@@ -155,7 +151,7 @@
           @if (overviewGenerating()) {
             <div class="overview__waiting" role="status" aria-live="polite">
               <span class="prep__spinner" aria-hidden="true"></span>
-              <p>Building your overview from the conversation and interactive answers…</p>
+              <p>{{ overviewWaitingCopy() }}</p>
             </div>
           } @else if (overviewFailed()) {
             <p class="alert" role="alert">

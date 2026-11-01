@@ -60,21 +60,6 @@ export class Interviews implements OnInit, OnDestroy {
   protected statusLabel = statusLabel;
   protected statusTone = statusTone;
 
-  protected difficultyLabel(value: string): string {
-    switch (value) {
-      case 'auto':
-        return 'Auto';
-      case 'easy':
-        return 'Easy';
-      case 'medium':
-        return 'Medium';
-      case 'hard':
-        return 'Hard';
-      default:
-        return value;
-    }
-  }
-
   protected createdLabel(unixSeconds: number): Date {
     return new Date(unixSeconds * 1000);
   }

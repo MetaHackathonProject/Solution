@@ -8,4 +8,5 @@ public sealed record InterviewAssignment(
     string TemplateName,
     string JobTitle,
     string Company,
-    long CreatedAt);
+    long CreatedAt,
+    string CandidateEmail = "");

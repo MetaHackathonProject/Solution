@@ -248,6 +248,7 @@ public sealed class InterviewTemplatesController(IMediator mediator) : Controlle
                     item.JobTitle,
                     item.Company,
                     item.CandidateUserId,
+                    item.CandidateEmail,
                     item.Status,
                     item.OverviewStatus,
                     item.CreatedAt))
@@ -422,6 +423,7 @@ public sealed record EmployerAssignmentResponse(
     string JobTitle,
     string Company,
     string CandidateUserId,
+    string CandidateEmail,
     string Status,
     string OverviewStatus,
     long CreatedAt);

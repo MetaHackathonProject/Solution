@@ -24,7 +24,9 @@ public sealed class MeController(IMediator mediator) : ControllerBase
     {
         try
         {
-            var user = await mediator.Send(new SetCurrentUserRoleCommand(request.Role), cancellationToken);
+            var user = await mediator.Send(
+                new SetCurrentUserRoleCommand(request.Role, request.Email),
+                cancellationToken);
             return Ok(ToResponse(user));
         }
         catch (ArgumentException ex)
@@ -44,6 +46,8 @@ public sealed class MeController(IMediator mediator) : ControllerBase
 public sealed class SetRoleRequest
 {
     public required string Role { get; init; }
+
+    public string? Email { get; init; }
 }
 
 public sealed record CurrentUserResponse(string UserId, string Email, string? Role);

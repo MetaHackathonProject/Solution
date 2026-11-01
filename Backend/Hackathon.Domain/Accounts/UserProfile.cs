@@ -4,4 +4,5 @@ public sealed record UserProfile(
     string UserId,
     string Role,
     long CreatedAt,
-    long UpdatedAt);
+    long UpdatedAt,
+    string Email = "");

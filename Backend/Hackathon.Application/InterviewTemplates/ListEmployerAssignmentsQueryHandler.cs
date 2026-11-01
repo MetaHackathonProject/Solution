@@ -32,6 +32,8 @@ public sealed class ListEmployerAssignmentsQueryHandler(
                 item.CandidateUserId,
                 item.SessionId,
                 cancellationToken);
+            var profile = await profiles.GetAsync(item.CandidateUserId, cancellationToken);
+            var email = FirstNonEmpty(item.CandidateEmail, profile?.Email);
             results.Add(
                 new EmployerAssignmentResult(
                     item.SessionId,
@@ -40,11 +42,25 @@ public sealed class ListEmployerAssignmentsQueryHandler(
                     item.JobTitle,
                     item.Company,
                     item.CandidateUserId,
+                    email,
                     session?.Status ?? InterviewSessionStatus.Started,
                     session?.OverviewStatus ?? OverviewStatus.NotAvailable,
                     item.CreatedAt));
         }
 
         return results;
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
     }
 }

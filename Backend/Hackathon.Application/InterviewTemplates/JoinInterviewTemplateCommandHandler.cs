@@ -27,7 +27,7 @@ public sealed class JoinInterviewTemplateCommandHandler(
         JoinInterviewTemplateCommand request,
         CancellationToken cancellationToken)
     {
-        await UserRoleGuard.RequireAsync(
+        var profile = await UserRoleGuard.RequireAsync(
             profiles,
             userContext.UserId,
             UserRoles.Candidate,
@@ -91,6 +91,19 @@ public sealed class JoinInterviewTemplateCommandHandler(
             new SeedInterviewProgressCommand(userContext.UserId, sessionId),
             cancellationToken);
 
+        var candidateEmail = FirstNonEmpty(userContext.Email, profile.Email);
+        if (!string.IsNullOrWhiteSpace(candidateEmail) &&
+            !string.Equals(profile.Email, candidateEmail, StringComparison.Ordinal))
+        {
+            await profiles.SaveAsync(
+                profile with
+                {
+                    Email = candidateEmail,
+                    UpdatedAt = now,
+                },
+                cancellationToken);
+        }
+
         await assignments.SaveAsync(
             new InterviewAssignment(
                 sessionId,
@@ -100,7 +113,8 @@ public sealed class JoinInterviewTemplateCommandHandler(
                 template.Name,
                 template.JobTitle,
                 template.Company,
-                now),
+                now,
+                candidateEmail),
             cancellationToken);
 
         return new JoinInterviewTemplateResult(sessionId, AlreadyJoined: false);
@@ -201,5 +215,18 @@ public sealed class JoinInterviewTemplateCommandHandler(
         }
 
         return overview;
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
     }
 }

@@ -67,6 +67,7 @@ public sealed record EmployerAssignmentResult(
     string JobTitle,
     string Company,
     string CandidateUserId,
+    string CandidateEmail,
     string Status,
     string OverviewStatus,
     long CreatedAt);

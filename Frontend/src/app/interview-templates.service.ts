@@ -191,6 +191,7 @@ export interface EmployerAssignment {
   jobTitle: string;
   company: string;
   candidateUserId: string;
+  candidateEmail?: string;
   status: string;
   overviewStatus: OverviewStatus;
   createdAt: number;
