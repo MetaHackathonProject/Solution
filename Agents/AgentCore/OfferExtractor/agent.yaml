@@ -12,5 +12,5 @@ tools:
     browser_arn: arn:aws:bedrock-agentcore:eu-central-1:aws:browser/aws.browser.v1
   - type: remote_mcp
     name: decodo
-    url: https://mcp.decodo.com/mcp?toolsets=web
+    url: https://mcp.decodo.com/mcp?toolsets=web,ai
     authorization_scheme: Bearer

@@ -38,7 +38,7 @@ flowchart LR
 
 Preparation is three AgentCore harnesses, in this order:
 
-1. **offer_extraction** opens the offer URL with the managed browser (or Decodo MCP `scrape_as_markdown` if the page is blocked) and writes `{user_id}/{session_id}/offer/details.json`.
+1. **offer_extraction** opens the offer URL with the managed browser (then Decodo MCP `scrape_as_markdown` if the page is blocked, then Decodo `chatgpt` with web search if scrape fails) and writes `{user_id}/{session_id}/offer/details.json`.
 2. **question_generation** reads that file and writes question items to DynamoDB.
 3. **interview_plan_generation** curates 10–12 questions into `{user_id}/{session_id}/plan.json`.
 
