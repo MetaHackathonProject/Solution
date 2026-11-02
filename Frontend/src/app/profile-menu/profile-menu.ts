@@ -5,6 +5,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { AccountService } from '../account.service';
 import { AuthService } from '../auth.service';
 
 @Component({
@@ -14,6 +15,7 @@ import { AuthService } from '../auth.service';
 })
 export class ProfileMenu {
   protected readonly auth = inject(AuthService);
+  private readonly account = inject(AccountService);
   protected readonly open = signal(false);
 
   constructor(private readonly host: ElementRef<HTMLElement>) {}
@@ -44,6 +46,7 @@ export class ProfileMenu {
     event.preventDefault();
     event.stopPropagation();
     this.open.set(false);
+    this.account.clear();
     this.auth.signOut();
   }
 }
