@@ -325,3 +325,95 @@ textarea.field__control {
   opacity: 0.65;
   cursor: wait;
 }
+
+.field--offer {
+  position: relative;
+}
+
+.field--offer .check {
+  anchor-name: --auto-generate;
+}
+
+.field--hinted .check {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.hint-pop {
+  box-sizing: border-box;
+  position: fixed;
+  inset: unset;
+  margin: 0;
+  width: min(22rem, calc(100vw - 2rem));
+  max-width: 22rem;
+  padding: 0.95rem 1.05rem 1rem;
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--color-accent);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 14px 40px rgb(17 17 17 / 14%);
+  position-anchor: --auto-generate;
+  top: auto;
+  bottom: calc(anchor(--auto-generate top) - 0.7rem);
+  left: anchor(--auto-generate left);
+  position-try-fallbacks: flip-block;
+}
+
+.hint-pop__eyebrow {
+  margin: 0 0 0.3rem;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hint-pop__title {
+  margin: 0 0 0.4rem;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.hint-pop__copy {
+  margin: 0 0 0.85rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.hint-pop__ok {
+  min-height: 2.4rem;
+  padding-inline: 0.95rem;
+  font-size: 0.88rem;
+}
+
+@supports not (anchor-name: --offer-url) {
+  .hint-pop {
+    position: absolute;
+    z-index: 6;
+    inset: auto auto auto 0;
+    margin-block-start: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hint-pop:popover-open {
+    animation: hint-in 160ms ease-out;
+  }
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}

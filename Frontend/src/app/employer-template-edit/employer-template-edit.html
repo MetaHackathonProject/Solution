@@ -79,7 +79,7 @@
               }
             </select>
           </div>
-          <div class="field">
+          <div class="field field--offer" [class.field--hinted]="showAutoGenerateHint()">
             <label class="field__label" for="offer_url">Offer URL</label>
             <span class="field__hint" id="offer_url_hint">
               Optional. Import fills empty title and company. Turn on auto-generate to also build
@@ -122,6 +122,7 @@
                 name="autoGenerate"
                 type="checkbox"
                 [(ngModel)]="autoGenerate"
+                (ngModelChange)="onAutoGenerateChange($event)"
               />
               <span>
                 Auto-generate spoken questions and interactive tasks from this offer
@@ -135,6 +136,35 @@
                 <strong>{{ generateTitle() }}</strong>
                 {{ generateLabel() }}
               </p>
+            }
+            @if (showAutoGenerateHint()) {
+              <div
+                #autoGenerateHint
+                id="auto_generate_coach"
+                class="hint-pop"
+                popover="manual"
+                role="dialog"
+                aria-labelledby="auto_generate_coach_title"
+                aria-describedby="auto_generate_coach_copy"
+              >
+                <p class="hint-pop__eyebrow">Tip</p>
+                <p class="hint-pop__title" id="auto_generate_coach_title">
+                  Auto-generate questions from a job posting
+                </p>
+                <p class="hint-pop__copy" id="auto_generate_coach_copy">
+                  Paste the offer URL, turn on auto-generate, then import. We’ll draft the spoken
+                  questions and interactive tasks from that posting.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn--primary hint-pop__ok"
+                  popovertarget="auto_generate_coach"
+                  popovertargetaction="hide"
+                  (click)="dismissAutoGenerateHint()"
+                >
+                  Got it
+                </button>
+              </div>
             }
           </div>
         </fieldset>

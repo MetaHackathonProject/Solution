@@ -1,5 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  afterRenderEffect,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription, catchError, of, switchMap, timer } from 'rxjs';
@@ -18,6 +28,8 @@ import {
   TemplateInteractiveTask,
   TemplateSpokenQuestion,
 } from '../interview-templates.service';
+
+const AUTO_GENERATE_HINT_KEY = 'hackathon.employer-template.auto-generate-hint';
 
 @Component({
   selector: 'app-employer-template-edit',
@@ -71,6 +83,37 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
   protected jobFacts = this.emptyJobFacts();
   protected benefitDraft = '';
   private generatePoll: Subscription | null = null;
+  private readonly autoGenerateHint = viewChild<ElementRef<HTMLElement>>('autoGenerateHint');
+  private readonly hintDismissed = signal(readHintDismissed());
+  private hintOpened = false;
+
+  protected readonly showAutoGenerateHint = computed(
+    () => !this.templateId() && !this.loading() && !this.hintDismissed(),
+  );
+
+  constructor() {
+    afterRenderEffect(() => {
+      const el = this.autoGenerateHint()?.nativeElement;
+      if (!el || this.hintOpened || !this.showAutoGenerateHint()) {
+        return;
+      }
+
+      this.hintOpened = true;
+      document.getElementById('auto_generate')?.closest('.check')?.scrollIntoView({
+        block: 'center',
+        behavior: 'instant',
+      });
+      if (typeof el.showPopover === 'function') {
+        try {
+          el.showPopover();
+        } catch {
+          /* already open */
+        }
+      }
+
+      el.querySelector<HTMLButtonElement>('.hint-pop__ok')?.focus();
+    });
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('templateId');
@@ -91,6 +134,26 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.generatePoll?.unsubscribe();
+  }
+
+  protected onAutoGenerateChange(value: boolean): void {
+    this.autoGenerate = value;
+    if (value) {
+      this.dismissAutoGenerateHint();
+    }
+  }
+
+  protected dismissAutoGenerateHint(): void {
+    this.hintDismissed.set(true);
+    writeHintDismissed();
+    const el = this.autoGenerateHint()?.nativeElement;
+    if (el && typeof el.hidePopover === 'function') {
+      try {
+        el.hidePopover();
+      } catch {
+        /* already closed */
+      }
+    }
   }
 
   protected addSpoken(): void {
@@ -400,5 +463,21 @@ export class EmployerTemplateEdit implements OnInit, OnDestroy {
     }
 
     return fallback;
+  }
+}
+
+function readHintDismissed(): boolean {
+  try {
+    return localStorage.getItem(AUTO_GENERATE_HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeHintDismissed(): void {
+  try {
+    localStorage.setItem(AUTO_GENERATE_HINT_KEY, '1');
+  } catch {
+    /* private mode */
   }
 }
