@@ -1,5 +1,7 @@
 # Interview solution
 
+Built during the Meta AI Developer Hackathon.
+
 Mock interviews from a public job offer. A recruiter pastes an offer URL. Agents extract the role, generate a question bank, then curate a spoken interview plan. The web app and API sit in front of that pipeline.
 
 Live:
@@ -70,7 +72,26 @@ Each folder under `Agents/AgentCore/` is one harness:
 | `QuestionGenerator` | `question_generation` | DynamoDB `hackathon-solution-interview-session-questions-table` |
 | `InterviewPlanGenerator` | `interview_plan_generation` | S3 `plan.json` |
 
-Models go through AgentCore LiteLLM (`openai/muse-spark-1.3`, `https://api.meta.ai/v1`) and an AgentCore Identity API key. Changing anything under `Agents/AgentCore/` triggers the infrastructure workflow.
+Changing anything under `Agents/AgentCore/` triggers the infrastructure workflow.
+
+## Meta AI models
+
+All reasoning that is not live speech goes through Meta models at `https://api.meta.ai/v1`.
+
+**Muse Spark 1.3** (`openai/muse-spark-1.3` on AgentCore LiteLLM; `muse-spark-1.3` on Lambdas):
+
+- Offer extraction, question generation, and interview plan generation (AgentCore harnesses)
+- Describe visual interactive answers (diagram, schema, image, PDF) in `Hackathon.DescribeSolutionVision`
+- Judge text and visual interactive answers, compose the interview overview, and review camera tape (stills, or video via Meta Files) in `Hackathon.BuildInterviewOverview`
+
+**Muse Wonder 1.0** (`openai/muse-wonder-1.0` / `muse-wonder-1.0`):
+
+- Judge coding interactive answers (`answer.zip`) in overview
+- `CodeSolutionJudge` AgentCore harness when a code solution is scored that way
+
+Live voice stays on ElevenLabs ConvAI. The interviewer and walkthrough agents use Meta **Muse Spark 1.2** as their custom LLM (`https://api.meta.ai/v1`, chat completions) so spoken turns also run on Meta models.
+
+The Lambda path uses GitHub `META_MODEL_API_KEY` (`TF_VAR_meta_model_api_key`). AgentCore harnesses use an AgentCore Identity API key ARN on each `agent.yaml`.
 
 ## Data
 
