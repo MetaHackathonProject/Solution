@@ -111,6 +111,7 @@ Plan: 10–12 spoken questions including mandatory 1–2 opening warm-ups (intro
   - In ElevenLabs MCP server settings set **transport = `STREAMABLE_HTTP`** (default is `SSE`, which will show zero tools against this Lambda).
   - URL must be HTTPS and end with `/mcp/interview-questions` or `/mcp/interview-questions/agent`.
   - Pass `sessionId` as a ConvAI dynamic variable when starting the call.
+  - For `get_next_question`, set MCP **pre-tool speech = force** so the interviewer says a short transition (move on / check notes) in the same turn as the tool (not a standalone line that waits for the candidate). Prompt in `Agents/ElevenLabsAgent/Interviewer/agent.json`.
 
 ## Frontend
 
