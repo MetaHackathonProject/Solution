@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Senior Python Developer · Hackathon Solution</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-sans: "Montserrat", "Segoe UI", system-ui, sans-serif;
+        --color-text: #111;
+        --color-muted: #5c6370;
+        --color-border: #e4e7ec;
+        --color-border-strong: #d0d5dd;
+        --color-surface: #fff;
+        --color-surface-muted: #f4f5f7;
+        --color-accent: #1b64f2;
+        --color-accent-hover: #1554cc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        color: var(--color-text);
+        background: var(--color-surface);
+        font-family: var(--font-sans);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .nav-v2 {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        background: #fff;
+        border-bottom: 1px solid #e4e7ec;
+      }
+
+      .nav-v2__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0.85rem 1.5rem;
+      }
+
+      .nav-v2__start {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        min-width: 0;
+      }
+
+      .nav-v2__brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #111;
+        text-decoration: none;
+      }
+
+      .nav-v2__brand svg {
+        display: block;
+        width: 2.15rem;
+        height: 2.15rem;
+      }
+
+      .nav-v2__wordmark {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .nav-v2__links {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+      }
+
+      .nav-v2__link {
+        color: #111;
+        font-size: 0.92rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none;
+      }
+
+      .profile__trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        border: 1px solid var(--color-border-strong);
+        border-radius: 999px;
+        background: #fff;
+        color: #111;
+      }
+
+      .profile__icon {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      .page {
+        min-height: calc(100vh - 4.25rem);
+      }
+
+      .page__inner {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 4rem;
+      }
+
+      .page__intro {
+        margin-block-end: 1.5rem;
+      }
+
+      .page__intro-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-block-end: 0.55rem;
+      }
+
+      .page__eyebrow {
+        margin: 0 0 0.45rem;
+        color: var(--color-accent);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .page__title {
+        margin: 0;
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+      }
+
+      .page__lead {
+        margin: 0;
+        color: var(--color-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .menu__trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--color-muted);
+        font-size: 1.35rem;
+        line-height: 1;
+      }
+
+      .prep {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 1.15rem;
+        border: 1px solid #c8d0da;
+        border-radius: 10px;
+        background: #f6f8fa;
+      }
+
+      .prep__hero {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+      }
+
+      .prep__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-block-start: 0.15rem;
+        border-radius: 50%;
+        font-size: 0.85rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        background: #18a957;
+        color: #fff;
+      }
+
+      .prep__title {
+        margin: 0 0 0.25rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .prep__copy {
+        margin: 0;
+        color: var(--color-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .prep__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        height: 2.35rem;
+        min-height: 2.35rem;
+        padding: 0.4rem 0.9rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 650;
+        line-height: 1.2;
+        text-decoration: none;
+        cursor: default;
+      }
+
+      .btn--primary {
+        border-color: var(--color-accent);
+        background: var(--color-accent);
+        color: #fff;
+      }
+
+      .btn--secondary {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .overview {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-block-start: 1.25rem;
+        padding: 1.15rem;
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+      }
+
+      .overview__title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .overview__score {
+        display: flex;
+        align-items: baseline;
+        gap: 0.45rem;
+      }
+
+      .overview__score-value {
+        font-size: 2.4rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1;
+      }
+
+      .overview__score-label {
+        color: var(--color-muted);
+        font-size: 0.9rem;
+        font-weight: 650;
+      }
+
+      .overview__summary {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .overview__block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        padding-block-start: 0.35rem;
+        border-block-start: 1px solid var(--color-border);
+      }
+
+      .overview__heading {
+        margin: 0;
+        font-size: 0.88rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+
+      .overview__presence-verdict {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 650;
+        line-height: 1.4;
+      }
+
+      .overview__disclaimer {
+        margin: 0.15rem 0 0;
+        color: var(--color-muted);
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      .overview__subhead {
+        margin: 0.35rem 0 0;
+        color: var(--color-muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .overview__list {
+        margin: 0;
+        padding-inline-start: 1.1rem;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .overview__list li + li {
+        margin-block-start: 0.25rem;
+      }
+
+      .overview__questions,
+      .overview__tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .overview__question,
+      .overview__task {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .overview__q-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .overview__q {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .overview__q-score {
+        flex: 0 0 auto;
+        color: var(--color-accent);
+        font-size: 0.88rem;
+        font-weight: 800;
+      }
+
+      .overview__a,
+      .overview__opinion,
+      .overview__task-summary {
+        margin: 0;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .overview__a span,
+      .overview__opinion span {
+        display: inline-block;
+        margin-inline-end: 0.35rem;
+        color: var(--color-muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .overview__task-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .overview__task-kind {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+      }
+
+      .overview__task-score {
+        font-size: 0.92rem;
+        font-weight: 800;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav-v2">
+      <nav class="nav-v2__inner" aria-label="Main">
+        <div class="nav-v2__start">
+          <a class="nav-v2__brand" href="#">
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <rect width="32" height="32" rx="8" fill="#1B64F2" />
+              <path
+                fill="#fff"
+                fill-rule="evenodd"
+                d="M10.8 6.5h10a2.6 2.6 0 0 1 2.6 2.6v9.2a2.6 2.6 0 0 1-2.6 2.6h-6.9l-5.7 4.9V9.1a2.6 2.6 0 0 1 2.6-2.6Zm4.4 3.7c.6 2.6 1.6 3.6 4.2 4.2-2.6.6-3.6 1.6-4.2 4.2-.6-2.6-1.6-3.6-4.2-4.2 2.6-.6 3.6-1.6 4.2-4.2Zm5.2-1.9c.27 1.17.73 1.63 1.9 1.9-1.17.27-1.63.73-1.9 1.9-.27-1.17-.73-1.63-1.9-1.9 1.17-.27 1.63-.73 1.9-1.9Z"
+              />
+            </svg>
+            <span class="nav-v2__wordmark">Hackathon Solution</span>
+          </a>
+          <div class="nav-v2__links">
+            <a class="nav-v2__link" href="#">Interviews</a>
+            <a class="nav-v2__link" href="#">New</a>
+          </div>
+        </div>
+        <div>
+          <button type="button" class="profile__trigger" aria-label="Account menu">
+            <svg class="profile__icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="8" r="3.25" stroke="currentColor" stroke-width="1.75" />
+              <path
+                d="M5.5 18.25c1.6-2.7 3.8-4 6.5-4s4.9 1.3 6.5 4"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="page">
+      <div class="page__inner">
+        <header class="page__intro">
+          <div class="page__intro-top">
+            <div>
+              <p class="page__eyebrow">Interview details</p>
+              <h1 class="page__title">Senior Python Developer</h1>
+            </div>
+            <button type="button" class="menu__trigger" aria-label="Actions for Senior Python Developer">⋯</button>
+          </div>
+          <p class="page__lead">Follow preparation, then start the mock interview when the plan is ready.</p>
+        </header>
+
+        <section class="prep">
+          <div class="prep__hero">
+            <span class="prep__icon" aria-hidden="true">✓</span>
+            <div>
+              <h2 class="prep__title">Completed</h2>
+              <p class="prep__copy">
+                This interview is finished. An overview is built from the conversation and interactive answers.
+              </p>
+            </div>
+          </div>
+          <div class="prep__actions">
+            <a class="btn btn--secondary" href="#">Back to interviews</a>
+            <button type="button" class="btn btn--primary">Retake interview</button>
+            <a class="btn btn--secondary" href="#">Create another session</a>
+          </div>
+        </section>
+
+        <section class="overview" aria-labelledby="overview-title">
+          <h2 class="overview__title" id="overview-title">Interview overview</h2>
+
+          <div class="overview__score" aria-label="Overall score 8 out of 10">
+            <span class="overview__score-value">8</span>
+            <span class="overview__score-label">/ 10 overall</span>
+          </div>
+
+          <p class="overview__summary">
+            Strong Senior Python / PostgreSQL profile for a fund-distribution platform. The candidate explained query
+            plans, isolation, and operational Docker/GCP choices with concrete examples, and both coding exercises
+            showed a working algorithmic approach with only minor edge-case gaps. English for the international-team
+            questions was fluent. Camera tape shows a single engaged person throughout; no integrity finding.
+          </p>
+
+          <div class="overview__block">
+            <h3 class="overview__heading">Camera presence</h3>
+            <p class="overview__presence-verdict">
+              No clear integrity risk · integrity risk 12/100 · confidence 78/100
+            </p>
+            <p class="overview__opinion">
+              <span>Mimics</span>
+              Candidate stayed in frame, looked at the camera when speaking, and showed a calm, engaged expression.
+              Occasional nods while listening. No second face in view.
+            </p>
+            <p class="overview__subhead">Observed signals</p>
+            <ul class="overview__list">
+              <li>Single adult visible for the full clip</li>
+              <li>Face mostly toward the camera during answers</li>
+              <li>Brief glances down when thinking, then back to camera</li>
+              <li>No second person or phone held up in frame</li>
+            </ul>
+            <p class="overview__a">
+              <span>Notes</span>
+              Tape quality is good enough to see one person at a desk for the session. Looking down while thinking is
+              normal. This is not a cheating finding.
+            </p>
+            <p class="overview__disclaimer">
+              Based on the camera tape when available, otherwise stills. This is not a finding that the candidate cheated.
+            </p>
+          </div>
+
+          <div class="overview__block">
+            <h3 class="overview__heading">Recommendations</h3>
+            <ul class="overview__list">
+              <li>
+                Probe write-amplification and statistics refresh on the next round — the index answers were solid but
+                light on monitoring.
+              </li>
+              <li>
+                Ask for a short follow-up on corporate-action as-of reporting; the data model was canonical but thin on
+                temporal queries.
+              </li>
+              <li>
+                The two coding tasks are hire-signal positive; a production review could still cover heap-vs-lazy-delete
+                trade-offs.
+              </li>
+            </ul>
+          </div>
+
+          <div class="overview__block">
+            <h3 class="overview__heading">Spoken answers</h3>
+            <ol class="overview__questions">
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    To start, please tell us a bit about yourself and walk us through your professional experience,
+                    especially with Python and PostgreSQL.
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I have been working with Python for about eight years, mostly FastAPI and data pipelines. The last
+                  three years were PostgreSQL 14/15 in fintech: partitions, EXPLAIN, and PL/pgSQL for balance checks. I
+                  keep business logic in the application and put in the database only what has to sit next to the data.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Clear, structured intro with relevant Python and PostgreSQL depth for a senior funds-platform role. No
+                  fluff, good seniority signal.
+                </p>
+                <ul class="overview__list">
+                  <li>Could name team size and ownership of production incidents more explicitly.</li>
+                </ul>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    What drew you to this Senior Python Developer role at CodeTalent, on a large project for a leader in
+                    investment-fund distribution?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I want a larger project with a real funds model, not another CRUD service. Hybrid work and a team that
+                  talks seriously about PostgreSQL and GCP matches what I already do. I would rather work closer to NAV,
+                  holdings, and reporting than only ETL.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Motivation is specific to the offer (funds, PostgreSQL, hybrid) rather than generic growth. Good fit
+                  signal.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How do you read EXPLAIN ANALYZE, and how do you tell a bad plan from bad statistics, for example
+                    with a nested loop, hash join, or bitmap scan?
+                  </p>
+                  <span class="overview__q-score">9/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I compare actual rows with the estimate. If the estimate is orders of magnitude off, I run ANALYZE and
+                  look at extended stats before adding an index. Nested loop with thousands of iterations on a bad
+                  estimate is the classic case. Hash join spilling to disk is work_mem or a poor hash key.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Correct mental model: stats versus access path, with named node types. Senior-level diagnosis.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    When would you move logic into PL/pgSQL instead of keeping it in Python, and what risks come with
+                    VOLATILE, STABLE, IMMUTABLE, and SECURITY DEFINER functions?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I put in the database what must be atomic with the data: balance checks, numbering, constraint-like
+                  rules. VOLATILE blocks inlining; IMMUTABLE on a function that calls now() is a classic bug. SECURITY
+                  DEFINER only with a fixed search_path and a non-superuser owner.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Knows volatility and definer risks, not just syntax. Right split between app and database.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How do you choose PostgreSQL transaction isolation levels for financial operations, and how would you
+                    diagnose anomalies such as phantom reads, write skew, or deadlocks at scale?
+                  </p>
+                  <span class="overview__q-score">9/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  Default is READ COMMITTED. For read-modify-write on holdings I use REPEATABLE READ or SELECT FOR
+                  UPDATE. Phantoms mean the range was not locked. Write skew I catch with serializable or an explicit
+                  lock. Deadlocks: timeout, retry, a fixed lock order, and log_lock_waits.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Maps isolation levels to real financial anomalies. Retry and lock-order discipline is what we want in
+                  production.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How do you build a production Docker image for a Python app that talks to PostgreSQL so it stays
+                    small, repeatable, and safe?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  Multi-stage: builder with pip, runtime on slim or distroless. Layers are system packages, requirements,
+                  then code. I pin image digests and requirements. Non-root, no secrets in the image env, migrations as a
+                  job not a forever entrypoint.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Covers size, reproducibility, and secrets. Practical production answer.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How do you design B-tree, partial, covering (INCLUDE), GIN, and BRIN indexes for specific queries,
+                    and how do you know an index has started to hurt writes?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  B-tree for equality and range. Partial when most rows are inactive. INCLUDE to avoid a heap fetch. GIN
+                  for JSONB and arrays. BRIN for append-only NAV history. Harm shows up in idx_scan versus inserts and in
+                  INSERT time.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Workload-matched index types plus a write-cost signal. Strong practical skills answer.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How would you model data for a fund-distribution platform — instruments, portfolios, holdings, NAV
+                    history, and corporate actions — balancing normalization with fast reporting?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  Canonical 3NF: instrument, share class, portfolio, holding with effective_from/to. NAV time series
+                  stored separately, partitioned by date. Corporate actions as an event log, not a mutation of history.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Separates system of record from reporting and treats corporate actions as events. Right architecture
+                  for funds data.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How would you design region and database failure resilience on GCP, defining RPO and RTO for a funds
+                    platform and proving them in practice?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  RPO near zero for holdings bookkeeping: Cloud SQL HA in-region plus PITR. RTO in minutes, not hours.
+                  Cross-region is async replica or backup, with lag called out. Quarterly game day: failover, restore to
+                  a timestamp, check the NAV job.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Quantifies RPO/RTO and insists on game days. Sensible GCP posture without over-promising sync
+                  cross-region.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    How would you explain the ETF lifecycle: creation/redemption, the Authorized Participant, NAV versus
+                    market price, tracking error, and where that data breaks in pipelines?
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  The primary market is creation and redemption through an Authorized Participant in creation units. The
+                  secondary market is the exchange, which is why you see premium or discount to NAV. Tracking error comes
+                  from fees, sampling, FX, and corporate actions.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Correct ETF mechanics and names real pipeline failure points. Enough domain knowledge for a
+                  distribution platform.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    Explain in English how you would convince an international team to choose a particular PostgreSQL
+                    indexing strategy for a slow fund-reporting query.
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I would start from the slow query, show EXPLAIN ANALYZE with actual versus estimated rows, then
+                  propose one index and the write cost. I would set a success metric — p95 of that report under two
+                  seconds — and a rollback: drop the index if inserts regress.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Fluent technical persuasion: evidence, trade-off, metric, rollback. Meets the English-for-stakeholders
+                  goal.
+                </p>
+              </li>
+              <li class="overview__question">
+                <div class="overview__q-row">
+                  <p class="overview__q">
+                    Present in English your approach to monitoring a fund-data platform with Prometheus and Grafana for
+                    an international stakeholder.
+                  </p>
+                  <span class="overview__q-score">8/10</span>
+                </div>
+                <p class="overview__a">
+                  <span>Answer</span>
+                  I would walk from user symptom to a red dashboard: NAV job freshness, replication lag, error rate, and
+                  p95 of the report API. Prometheus for RED plus Postgres extras like rollback ratio and connection
+                  saturation. Grafana with burn-rate alerts, not CPU.
+                </p>
+                <p class="overview__opinion">
+                  <span>Opinion</span>
+                  Symptom-first observability story with justified thresholds. Clear English.
+                </p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="overview__block">
+            <h3 class="overview__heading">Interactive tasks</h3>
+            <ul class="overview__tasks">
+              <li class="overview__task">
+                <div class="overview__task-top">
+                  <span class="overview__task-kind">code</span>
+                  <span class="overview__task-score">8/10</span>
+                </div>
+                <p class="overview__task-summary">
+                  Working expiring cache: map + heap, lazy stale entries, clear complexity notes. A production version
+                  still needs a firm clock and boundary tests.
+                </p>
+                <p class="overview__subhead">Strengths</p>
+                <ul class="overview__list">
+                  <li>Hash map plus min-heap of expiries, with lazy deletion on overwrite.</li>
+                  <li>Expiry treated as exclusive and deterministic.</li>
+                  <li>States amortized complexity and memory behavior at scale.</li>
+                </ul>
+                <p class="overview__subhead">Gaps</p>
+                <ul class="overview__list">
+                  <li>Did not discuss clock source or TTL collision on equal timestamps.</li>
+                  <li>No test for get-after-expiry immediately at the boundary.</li>
+                </ul>
+              </li>
+              <li class="overview__task">
+                <div class="overview__task-top">
+                  <span class="overview__task-kind">code</span>
+                  <span class="overview__task-score">7/10</span>
+                </div>
+                <p class="overview__task-summary">
+                  Correct sweep-line solution for peak congestion. Minor ambiguity on closed endpoints; otherwise
+                  hire-able for a practical coding bar.
+                </p>
+                <p class="overview__subhead">Strengths</p>
+                <ul class="overview__list">
+                  <li>Single sort then sweep of settlement windows.</li>
+                  <li>Merges adjacent intervals and computes peak concurrency.</li>
+                  <li>Handles empty input and quotes O(n log n) time, O(n) space.</li>
+                </ul>
+                <p class="overview__subhead">Gaps</p>
+                <ul class="overview__list">
+                  <li>Endpoint inclusivity at window close is slightly underspecified.</li>
+                  <li>No explanation of how overlapping overnight windows are normalized.</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
