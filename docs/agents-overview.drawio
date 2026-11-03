@@ -1,0 +1,143 @@
+<mxfile host="app.diagrams.net" agent="Hackathon Solution" version="24.7.17">
+  <diagram id="agents-overview" name="Agents overview">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1480" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Hackathon Solution — agents overview" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#111111;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="640" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Three AgentCore prep agents, then two ElevenLabs voice agents. MCPs are the only external tools the agents call." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#5C6370;" vertex="1" parent="1">
+          <mxGeometry x="40" y="54" width="780" height="22" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg-ac" value="AgentCore · Spark 1.3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="900" y="28" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-el" value="ElevenLabs · Spark 1.2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#6D28D9;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1072" y="28" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-mcp" value="MCP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF3;strokeColor=#027A48;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1244" y="28" width="80" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- PREP -->
+        <mxCell id="lane1" value="Prep — AgentCore (orchestrated by Step Functions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#D0D5DD;align=left;verticalAlign=top;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#1B64F2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="96" width="1400" height="300" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-extract" value="Offer extractor&#xa;reads the job posting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="200" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="a-qgen" value="Question generator&#xa;spoken questions + 2 interactive tasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="160" width="240" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="a-plan" value="Plan generator&#xa;interview order, including both tasks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="860" y="160" width="240" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="a-ready" value="Interview ready" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF3;strokeColor=#027A48;fontColor=#027A48;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="172" width="150" height="48" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mcp-decodo" value="Decodo MCP&#xa;scrape_as_markdown&#xa;chatgpt + web search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF3;strokeColor=#027A48;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="280" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="tool-browser" value="AgentCore browser&#xa;open the posting first" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B64F2;dashed=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="280" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="prep-note" value="Extractor tries the browser, then Decodo scrape, then Decodo ChatGPT. Questions and plan agents have no MCP. Employer join skips this whole pipeline." style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#5C6370;" vertex="1" parent="1">
+          <mxGeometry x="560" y="300" width="720" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1B64F2;endArrow=block;endFill=1;" edge="1" parent="1" source="a-extract" target="a-qgen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1B64F2;endArrow=block;endFill=1;" edge="1" parent="1" source="a-qgen" target="a-plan">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#027A48;endArrow=block;endFill=1;" edge="1" parent="1" source="a-plan" target="a-ready">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="if page blocked" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#027A48;endArrow=block;endFill=1;startArrow=block;startFill=1;fontSize=10;fontColor=#027A48;" edge="1" parent="1" source="a-extract" target="mcp-decodo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="first" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1B64F2;endArrow=block;endFill=1;startArrow=block;startFill=1;fontSize=10;fontColor=#1B64F2;" edge="1" parent="1" source="a-extract" target="tool-browser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LIVE -->
+        <mxCell id="lane2" value="Live interview — ElevenLabs ConvAI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF8FF;strokeColor=#DDD6FE;align=left;verticalAlign=top;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#6D28D9;" vertex="1" parent="1">
+          <mxGeometry x="40" y="420" width="1400" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a-voice" value="Voice interviewer&#xa;asks the planned questions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#6D28D9;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="484" width="220" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="mcp-questions" value="Interview-questions MCP&#xa;get_next_question" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF3;strokeColor=#027A48;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="588" width="220" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="a-vision" value="Vision describer&#xa;Spark 1.3 · visual answers only&#xa;(Lambda, not AgentCore)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="476" width="230" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="a-walk" value="Walkthrough agent&#xa;talks through the submitted solution" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F3FF;strokeColor=#6D28D9;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="760" y="484" width="250" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="walk-mcp" value="No interview-questions MCP&#xa;so it cannot pop the next question" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#027A48;dashed=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="760" y="588" width="250" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="live-note" value="Spoken items stay on the interviewer. Interactive items pause the call; after submit the walkthrough runs, then finish_solution_walkthrough reconnects the interviewer." style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#5C6370;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="484" width="340" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6D28D9;endArrow=block;endFill=1;" edge="1" parent="1" source="a-ready" target="a-voice">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1235" y="400" />
+              <mxPoint x="190" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" value="each next question" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#027A48;endArrow=block;endFill=1;startArrow=block;startFill=1;fontSize=10;fontColor=#027A48;" edge="1" parent="1" source="a-voice" target="mcp-questions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="interactive submit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6D28D9;endArrow=block;endFill=1;fontSize=10;fontColor=#6D28D9;" edge="1" parent="1" source="a-voice" target="a-vision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="visual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1B64F2;endArrow=block;endFill=1;fontSize=10;fontColor=#1B64F2;" edge="1" parent="1" source="a-vision" target="a-walk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="code / text" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6D28D9;dashed=1;endArrow=block;endFill=1;fontSize=10;fontColor=#6D28D9;" edge="1" parent="1" source="a-voice" target="a-walk">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="456" />
+              <mxPoint x="885" y="456" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#027A48;dashed=1;endArrow=none;" edge="1" parent="1" source="a-walk" target="walk-mcp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="back to interview" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6D28D9;dashed=1;endArrow=block;endFill=1;fontSize=10;fontColor=#6D28D9;" edge="1" parent="1" source="a-walk" target="a-voice">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1070" y="450" />
+              <mxPoint x="190" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- AFTER -->
+        <mxCell id="lane3" value="After the call — not AgentCore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#D0D5DD;align=left;verticalAlign=top;spacingLeft=14;spacingTop=8;fontStyle=1;fontSize=13;fontColor=#111111;" vertex="1" parent="1">
+          <mxGeometry x="40" y="724" width="1400" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="a-overview" value="Overview builder&#xa;judges answers and camera tape" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1B64F2;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="776" width="240" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="overview-note" value="Lambda with Muse Spark 1.3 (spoken / visual / camera) and Muse Wonder 1.0 (code). No MCP. The unused code_solution_judge AgentCore harness is not on this path." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#5C6370;" vertex="1" parent="1">
+          <mxGeometry x="360" y="788" width="900" height="48" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
