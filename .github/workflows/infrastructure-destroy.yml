@@ -1,0 +1,62 @@
+name: Destroy infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type destroy to tear down the hackathon Terraform stack
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infrastructure-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  destroy:
+    name: Terraform destroy
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: Infrastructure
+    env:
+      TF_VAR_eleven_labs_api_key: ${{ secrets.ELEVEN_LABS_API_KEY }}
+      TF_VAR_meta_model_api_key: ${{ secrets.META_MODEL_API_KEY }}
+      TF_VAR_decodo_api_key: ${{ secrets.DECODO_API_KEY }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Confirm destroy
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          if [ "$CONFIRM" != "destroy" ]; then
+            echo "Type destroy in the confirm input to run this workflow."
+            exit 1
+          fi
+        working-directory: .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: eu-central-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform init
+        run: terraform init -input=false -backend-config=env/hackathon.tfbackend
+
+      - name: Terraform plan destroy
+        run: terraform plan -input=false -destroy
+
+      - name: Terraform destroy
+        run: terraform destroy -input=false -auto-approve

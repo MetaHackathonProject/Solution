@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "lambdas" {
-  bucket = "${local.name_prefix}-lambdas-bucket"
+  bucket        = "${local.name_prefix}-lambdas-bucket"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "lambdas" {
@@ -19,7 +20,8 @@ resource "aws_s3_bucket_public_access_block" "lambdas" {
 }
 
 resource "aws_s3_bucket" "interview_sessions" {
-  bucket = "${local.name_prefix}-interview-sessions-bucket"
+  bucket        = "${local.name_prefix}-interview-sessions-bucket"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "interview_sessions" {

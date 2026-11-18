@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${local.name_prefix}-hosting-bucket"
+  bucket        = "${local.name_prefix}-hosting-bucket"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "frontend" {

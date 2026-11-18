@@ -155,4 +155,6 @@ Push or PR on `main` runs `.github/workflows/solution.yml`. Path filters:
 - `Backend/` → `dotnet lambda package` (deploy `hackathon-solution-api-hackathon` on non-PR)
 - `Frontend/` → `npm run build` (sync hosting bucket + CloudFront invalidation on non-PR)
 
+Manual **Destroy infrastructure** (`workflow_dispatch`, type `destroy`) runs `terraform destroy`. It shares the infrastructure concurrency group so it cannot overlap an apply. The Route 53 hosted zone is left in place.
+
 Secrets: `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `COGNITO_AUTHORITY`, `COGNITO_CLIENT_ID`, `ELEVEN_LABS_API_KEY`.
